@@ -1,0 +1,4 @@
+enableFeaturePreview('VERSION_CATALOGS')
+rootProject.name = 'nva-publication-channels-java'
+//include 'nfr-verified-funding'
+
