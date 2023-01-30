@@ -1,0 +1,25 @@
+openapi: 3.0.3
+
+info:
+  title: NVA Publication Channel API
+  description: >
+      The NVA publication channel API. It provides transformed data from third party publication channel API.
+  termsOfService: https://nva.unit.no/terms/
+  contact:
+    email: nva@unit.no
+  license:
+    name: MIT/NLOD 2.0
+    url: https://link.to.license
+  version: 1.0.0
+
+externalDocs:
+  description: Find out more about NVA
+  url: https://nva.unit.no
+
+servers:
+  - url: https://api.nva.unit.no/channels
+  - url: https://api.dev.nva.aws.unit.no/channels
+  - url: https://api.sandbox.nva.aws.unit.no/channels
+  - url: https://api.test.nva.aws.unit.no/channels
+
+paths:
