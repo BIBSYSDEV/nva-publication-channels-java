@@ -23,3 +23,92 @@ servers:
   - url: https://api.test.nva.aws.unit.no/channels
 
 paths:
+
+components:
+  schemas:
+    Journal:
+      type: object
+      properties:
+        '@context':
+          $ref: '#/components/schemas/Context'
+        id:
+          type: string
+          pattern: '^https:\/\/example.org/journal/[0-9]+$'
+          description: The URI of the object
+        type:
+          type: string
+          pattern: 'Journal'
+          description: The type of the returned object, always Journal
+        name:
+          $ref: '#/components/schemas/Name'
+        identifier:
+          $ref: '#/components/schemas/Identifier'
+        eIssn:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{4}$'
+          description: The ISSN of the online edition of the Journal
+        issn:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{4}$'
+          nullable: true
+          description: The ISSN of the print edition of the Journal
+        active:
+          $ref: '#/components/schemas/Active'
+        language:
+          type: string
+          pattern: '^http:\/\/lexvo.org\/id\/iso639-3\/[a-z]{3}$'
+          description: The lexvo URI for the language of the Journal
+        webpage:
+          $ref: '#/components/schemas/Webpage'
+        publisher:
+          type: string
+          pattern: '^http(s)?:\/\/example.org/publisher/[0-9]+$'
+          description: The URI for the publisher of the Journal in NSD DBH
+        npiDomain:
+          type: string
+          pattern: '^http(s)?:\/\/example.org/npi-domain/[0-9]+$'
+          description: The URI of the NPI academic domain (e.g. computer science, biology) that the Journal covers.
+        scientificValue:
+          $ref: '#/components/schemas/ScientificValue'
+    Context:
+      type: string
+      pattern: 'https:\/\/.*$'
+      description: The JSON-LD context object for the data, which describes the object in the data and allows machine processing of the data at a semantic level
+    Name:
+      type: string
+      description: The name of the publication channel
+    Identifier:
+      type: string
+      pattern: '^[0-9]+$'
+      description: The NSD DBH persistent identifier of the publication channel
+    Webpage:
+      type: string
+      pattern: '^http(s)?:\/\/.*$'
+      nullable: true
+      description: The URI for the homepage of the publication channel
+    Active:
+      type: boolean
+      description: The activity status of the Publisher; true if it is currently publishing content, false if it has ceased publishing
+    ScientificValue:
+      type: string
+      enum: [ 'LEVEL_0', 'LEVEL_1', 'LEVEL_2' ]
+      nullable: true
+      description: The NPI level of the journal, either null, LEVEL_0, LEVEL_1, LEVEL_2
+
+  examples:
+    JournalExample:
+      value:
+        '@context': 'https://example.org/context.json'
+        id: 'https://example.org/journal/123123123'
+        type: 'Journal'
+        name: 'The journal of eternal fury'
+        identifier: '123123123'
+        eIssn: '1234-1234'
+        issn: '4321-4321'
+        active: true
+        language: 'http://lexvo.org/id/iso639-3/eng'
+        webpage: 'https://www.example.org/journalofefury'
+        publisher: 'https://example.org/publisher/4321432'
+        npiDomain: 'https://example.org/npi-fagfelt/3001'
+        scientificValue: 'LEVEL_1'
+      summary: A sample journal

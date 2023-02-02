@@ -285,7 +285,3 @@ gradle-app.setting
 
 # AWS Build folder
 .aws-sam
-
-/cristin-project/target/
-/cristin-organization/target/
-/cristin-person/target/
