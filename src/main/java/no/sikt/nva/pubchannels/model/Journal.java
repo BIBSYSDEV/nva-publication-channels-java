@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.net.URI;
 import java.util.Objects;
+import no.sikt.nva.pubchannels.Immutable;
 import nva.commons.core.JacocoGenerated;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -14,14 +15,11 @@ public final class Journal implements Immutable {
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
     private static final String IDENTIFIER_FIELD = "identifier";
-    private static final String ELECTRONIC_ISSN_FIELD = "eIssn";
-    private static final String ISSN_FIELD = "issn";
-    private static final String ACTIVE_FIELD = "active";
-    private static final String LANGUAGE_FIELD = "language";
-    private static final String WEBPAGE_FIELD = "webpage";
-    private static final String PUBLISHER_FIELD = "publisher";
-    private static final String NPI_DOMAIN_FIELD = "npiDomain";
-    private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
+    private static final String YEAR_FIELD = "year";
+    private static final String ONLINE_ISSN_FIELD = "onlineIssn";
+    private static final String PRINT_ISSN_FIELD = "printIssn";
+    private static final String LEVEL_FIELD = "level";
+    private static final String LANDING_PAGE_FIELD = "landingPage";
 
     @JsonProperty(CONTEXT_FIELD)
     private final URI context;
@@ -29,52 +27,40 @@ public final class Journal implements Immutable {
     private final URI id;
     @JsonProperty(IDENTIFIER_FIELD)
     private final String identifier;
+    @JsonProperty(YEAR_FIELD)
+    private final String year;
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(ELECTRONIC_ISSN_FIELD)
-    private final String electronicIssn;
-    @JsonProperty(ISSN_FIELD)
-    private final String issn;
-    @JsonProperty(ACTIVE_FIELD)
-    private final boolean active;
-    @JsonProperty(LANGUAGE_FIELD)
-    private final URI language;
-    @JsonProperty(WEBPAGE_FIELD)
-    private final URI webpage;
-    @JsonProperty(PUBLISHER_FIELD)
-    private final URI publisher;
-    @JsonProperty(NPI_DOMAIN_FIELD)
-    private final URI npiDomain;
-    @JsonProperty(SCIENTIFIC_VALUE_FIELD)
-    private final ScientificValue scientificValue;
+    @JsonProperty(ONLINE_ISSN_FIELD)
+    private final String onlineIssn;
+    @JsonProperty(PRINT_ISSN_FIELD)
+    private final String printIssn;
+    @JsonProperty(LEVEL_FIELD)
+    private final String level;
+    @JsonProperty(LANDING_PAGE_FIELD)
+    private final URI landingPage;
 
     @JsonCreator
     @SuppressWarnings("PMD.ExcessiveParameterList")
     public Journal(@JsonProperty(CONTEXT_FIELD) URI context,
                    @JsonProperty(ID_FIELD) URI id,
                    @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                   @JsonProperty(YEAR_FIELD) String year,
                    @JsonProperty(NAME_FIELD) String name,
-                   @JsonProperty(ELECTRONIC_ISSN_FIELD) String electronicIssn,
-                   @JsonProperty(ISSN_FIELD) String issn,
-                   @JsonProperty(ACTIVE_FIELD) boolean active,
-                   @JsonProperty(LANGUAGE_FIELD) URI language,
-                   @JsonProperty(WEBPAGE_FIELD) URI webpage,
-                   @JsonProperty(PUBLISHER_FIELD) URI publisher,
-                   @JsonProperty(NPI_DOMAIN_FIELD) URI npiDomain,
-                   @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue) {
+                   @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                   @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                   @JsonProperty(LEVEL_FIELD) String level,
+                   @JsonProperty(LANDING_PAGE_FIELD) URI landingPage) {
 
         this.context = context;
         this.id = id;
         this.identifier = identifier;
+        this.year = year;
         this.name = name;
-        this.electronicIssn = electronicIssn;
-        this.issn = issn;
-        this.active = active;
-        this.language = language;
-        this.webpage = webpage;
-        this.publisher = publisher;
-        this.npiDomain = npiDomain;
-        this.scientificValue = scientificValue;
+        this.onlineIssn = onlineIssn;
+        this.printIssn = printIssn;
+        this.level = level;
+        this.landingPage = landingPage;
     }
 
     public URI getContext() {
@@ -89,40 +75,28 @@ public final class Journal implements Immutable {
         return identifier;
     }
 
+    public String getYear() {
+        return year;
+    }
+
     public String getName() {
         return name;
     }
 
-    public String getElectronicIssn() {
-        return electronicIssn;
+    public String getOnlineIssn() {
+        return onlineIssn;
     }
 
-    public String getIssn() {
-        return issn;
+    public String getPrintIssn() {
+        return printIssn;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getLevel() {
+        return level;
     }
 
-    public URI getLanguage() {
-        return language;
-    }
-
-    public URI getWebpage() {
-        return webpage;
-    }
-
-    public URI getPublisher() {
-        return publisher;
-    }
-
-    public URI getNpiDomain() {
-        return npiDomain;
-    }
-
-    public ScientificValue getScientificValue() {
-        return scientificValue;
+    public URI getLandingPage() {
+        return landingPage;
     }
 
     @JacocoGenerated
@@ -135,25 +109,44 @@ public final class Journal implements Immutable {
             return false;
         }
         Journal journal = (Journal) o;
-        return isActive() == journal.isActive()
-               && Objects.equals(getContext(), journal.getContext())
+        return Objects.equals(getContext(), journal.getContext())
                && Objects.equals(getId(), journal.getId())
                && Objects.equals(getIdentifier(), journal.getIdentifier())
+               && Objects.equals(getYear(), journal.getYear())
                && Objects.equals(getName(), journal.getName())
-               && Objects.equals(getElectronicIssn(), journal.getElectronicIssn())
-               && Objects.equals(getIssn(), journal.getIssn())
-               && Objects.equals(getLanguage(), journal.getLanguage())
-               && Objects.equals(getWebpage(), journal.getWebpage())
-               && Objects.equals(getPublisher(), journal.getPublisher())
-               && Objects.equals(getNpiDomain(), journal.getNpiDomain())
-               && getScientificValue() == journal.getScientificValue();
+               && Objects.equals(getOnlineIssn(), journal.getOnlineIssn())
+               && Objects.equals(getPrintIssn(), journal.getPrintIssn())
+               && Objects.equals(getLevel(), journal.getLevel())
+               && Objects.equals(getLandingPage(), journal.getLandingPage());
     }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(getContext(), getId(), getIdentifier(), getName(), getElectronicIssn(), getIssn(),
-                            isActive(), getLanguage(), getWebpage(), getPublisher(), getNpiDomain(),
-                            getScientificValue());
+        return Objects.hash(getContext(),
+                            getId(),
+                            getIdentifier(),
+                            getYear(),
+                            getName(),
+                            getOnlineIssn(),
+                            getPrintIssn(),
+                            getLevel(),
+                            getLandingPage());
+    }
+
+    @JacocoGenerated
+    @Override
+    public String toString() {
+        return "Journal{"
+               + "context=" + context
+               + ", id=" + id
+               + ", identifier='" + identifier + '\''
+               + ", year='" + year + '\''
+               + ", name='" + name + '\''
+               + ", onlineIssn='" + onlineIssn + '\''
+               + ", printIssn='" + printIssn + '\''
+               + ", level='" + level + '\''
+               + ", landingPage=" + landingPage
+               + '}';
     }
 }

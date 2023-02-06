@@ -1,3 +1,7 @@
 plugins {
     id 'nva.publication.channels.java.rootplugin'
 }
+
+test {
+    environment("ALLOWED_ORIGIN", "*")
+}

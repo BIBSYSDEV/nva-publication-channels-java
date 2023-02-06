@@ -23,8 +23,76 @@ servers:
   - url: https://api.test.nva.aws.unit.no/channels
 
 paths:
+  /journal/{identifier}/{year}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYear.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - Journal
+      summary: Fetch journal by identifier and year
+      description: Returns a single Journal
+      operationId: FetchJournalByIdentifierAndYear
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of journal to return
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z'
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        - name: year
+          in: path
+          description: year for journal data
+          required: true
+          schema:
+            type: integer
+            minimum: 1900
+            maximum: 2999
+          example: '1910'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Journal'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Journal'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+        502:
+          $ref: '#/components/responses/502'
 
 components:
+  responses:
+    400:
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    500:
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    502:
+      description: Bad Gateway
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
   schemas:
     Journal:
       type: object
@@ -33,7 +101,7 @@ components:
           $ref: '#/components/schemas/Context'
         id:
           type: string
-          pattern: '^https:\/\/example.org/journal/[0-9]+$'
+          pattern: '^https:\/\/example.org/journal/[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}/[0-9]{4}$'
           description: The URI of the object
         type:
           type: string
@@ -43,6 +111,8 @@ components:
           $ref: '#/components/schemas/Name'
         identifier:
           $ref: '#/components/schemas/Identifier'
+        year:
+          $ref: '#/components/schemas/Year'
         eIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
@@ -52,24 +122,10 @@ components:
           pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
           description: The ISSN of the print edition of the Journal
-        active:
-          $ref: '#/components/schemas/Active'
-        language:
-          type: string
-          pattern: '^http:\/\/lexvo.org\/id\/iso639-3\/[a-z]{3}$'
-          description: The lexvo URI for the language of the Journal
-        webpage:
-          $ref: '#/components/schemas/Webpage'
-        publisher:
-          type: string
-          pattern: '^http(s)?:\/\/example.org/publisher/[0-9]+$'
-          description: The URI for the publisher of the Journal in NSD DBH
-        npiDomain:
-          type: string
-          pattern: '^http(s)?:\/\/example.org/npi-domain/[0-9]+$'
-          description: The URI of the NPI academic domain (e.g. computer science, biology) that the Journal covers.
-        scientificValue:
-          $ref: '#/components/schemas/ScientificValue'
+        level:
+          $ref: '#/components/schemas/Level'
+        landingPage:
+          $ref: '#/components/schemas/LandingPage'
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -79,36 +135,54 @@ components:
       description: The name of the publication channel
     Identifier:
       type: string
-      pattern: '^[0-9]+$'
+      pattern: '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z'
       description: The NSD DBH persistent identifier of the publication channel
-    Webpage:
+    Year:
+      type: integer
+      minimum: 1900
+      maximum: 2999
+      description: The year of the publication channel to get
+    LandingPage:
       type: string
       pattern: '^http(s)?:\/\/.*$'
       nullable: true
       description: The URI for the homepage of the publication channel
-    Active:
-      type: boolean
-      description: The activity status of the Publisher; true if it is currently publishing content, false if it has ceased publishing
-    ScientificValue:
+    Level:
       type: string
-      enum: [ 'LEVEL_0', 'LEVEL_1', 'LEVEL_2' ]
+      enum: [ '0', '1', '2' ]
       nullable: true
-      description: The NPI level of the journal, either null, LEVEL_0, LEVEL_1, LEVEL_2
+      description: The NPI level of the journal, either null, 0, 1 or 2
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: A URI describing the error and mitigations, in generic cases, this is about:blank
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code associated with the problem
+        title:
+          type: string
+          description: Human-readable description of the error status
+        detail:
+          type: string
+          description: A more detailed error message describing the error and potential mitigations
+        instance:
+          type: string
+          description: The requested path associated with the error
 
   examples:
     JournalExample:
       value:
         '@context': 'https://example.org/context.json'
-        id: 'https://example.org/journal/123123123'
+        id: 'https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Journal'
         name: 'The journal of eternal fury'
-        identifier: '123123123'
-        eIssn: '1234-1234'
-        issn: '4321-4321'
-        active: true
-        language: 'http://lexvo.org/id/iso639-3/eng'
-        webpage: 'https://www.example.org/journalofefury'
-        publisher: 'https://example.org/publisher/4321432'
-        npiDomain: 'https://example.org/npi-fagfelt/3001'
-        scientificValue: 'LEVEL_1'
+        identifier: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        year: '2010'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
+        level: '1'
+        landingPage: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample journal
