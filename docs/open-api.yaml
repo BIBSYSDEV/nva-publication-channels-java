@@ -99,25 +99,21 @@ components:
       properties:
         '@context':
           $ref: '#/components/schemas/Context'
-        id:
-          type: string
-          pattern: '^https:\/\/example.org/journal/[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}/[0-9]{4}$'
-          description: The URI of the object
         type:
           type: string
           pattern: 'Journal'
           description: The type of the returned object, always Journal
-        name:
-          $ref: '#/components/schemas/Name'
         identifier:
           $ref: '#/components/schemas/Identifier'
         year:
           $ref: '#/components/schemas/Year'
-        eIssn:
+        name:
+          $ref: '#/components/schemas/Name'
+        onlineIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
           description: The ISSN of the online edition of the Journal
-        issn:
+        printIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
@@ -136,7 +132,7 @@ components:
     Identifier:
       type: string
       pattern: '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z'
-      description: The NSD DBH persistent identifier of the publication channel
+      description: The NSD DBH persistent identifier of the publication channel (UUID)
     Year:
       type: integer
       minimum: 1900
