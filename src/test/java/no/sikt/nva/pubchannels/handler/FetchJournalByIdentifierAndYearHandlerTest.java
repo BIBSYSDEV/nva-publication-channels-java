@@ -5,6 +5,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -20,6 +21,9 @@ import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.TestAppender;
+import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -141,14 +145,23 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
                                                                               basePath);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(publicationChannelSource);
 
+        var identifier = UUID.randomUUID().toString();
+        var year = randomYear();
+
         var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
                         .withPathParameters(Map.of(
-                            "identifier", UUID.randomUUID().toString(),
-                            "year", randomYear()
+                            "identifier", identifier,
+                            "year", year
                         ))
                         .build();
 
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
         handlerUnderTest.handleRequest(input, output, context);
+
+        var upstreamUrl = "https://localhost:9898/findjournal/" + identifier + "/" + year;
+        assertThat(appender.getMessages(), containsString("Unable to reach upstream: " + upstreamUrl));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -161,7 +174,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    public void shouldReturnBadGatewayWhenChannelRegistryReturnsNonSuccess() throws IOException {
+    public void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
@@ -178,11 +191,40 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                   is(equalTo("Journal not found!")));
+    }
+
+    @Test
+    public void shouldLogAndReturnBadGatewayWhenChannelRegistryReturnsUnhandledResponseCode() throws IOException {
+        var identifier = UUID.randomUUID().toString();
+        var year = randomYear();
+
+        mockRegistry.internalServerErrorJournal(identifier, year);
+
+        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                        .withPathParameters(Map.of(
+                            "identifier", identifier,
+                            "year", year
+                        ))
+                        .build();
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Error fetching journal: 500"));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream! Got status code 404.")));
+                   is(equalTo("Unexpected response from upstream! Got status code 500.")));
     }
 }

@@ -12,8 +12,8 @@ version '1.0-SNAPSHOT'
 dependencies {
     testImplementation libs.bundles.testing
     implementation libs.bundles.nva
+    implementation libs.bundles.logging
     implementation libs.bundles.jackson
-    implementation libs.slf4j.api
 }
 
 sourceCompatibility = JavaVersion.VERSION_11  // source-code version and must be <= targetCompatibility

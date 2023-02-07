@@ -15,6 +15,7 @@ import no.sikt.nva.pubchannels.model.Journal;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.NotFoundException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -80,18 +81,21 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
 
             if (response.statusCode() == HttpURLConnection.HTTP_OK) {
                 return JsonUtils.dtoObjectMapper.readValue(response.body(), clazz);
+            } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                throw new NotFoundException("Journal not found!");
             } else {
+                LOGGER.error("Error fetching journal: {} {}", response.statusCode(), response.body());
                 throw new BadGatewayException(String.format("Unexpected response from upstream! Got status code %d.",
                                                             response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
-            throw logAndCreateBadRequestException(e);
+            throw logAndCreateBadRequestException(request.uri(), e);
         }
     }
 
     @JacocoGenerated // InterruptedException hard to trigger in a test
-    private BadGatewayException logAndCreateBadRequestException(Exception e) {
-        LOGGER.error("Unable to reach upstream!", e);
+    private BadGatewayException logAndCreateBadRequestException(URI uri, Exception e) {
+        LOGGER.error("Unable to reach upstream: " + uri, e);
         if (e instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         }

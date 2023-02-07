@@ -22,16 +22,29 @@ import nva.commons.core.paths.UriWrapper;
 public class PublicationChannelMockRegistry {
 
     public void notFoundJournal(String identifier, String year) {
-        mockDataportenNotFound(identifier, year);
+        mockJournalNotFound(identifier, year);
     }
 
-    private void mockDataportenNotFound(String identifier, String year) {
+    public void internalServerErrorJournal(String identifier, String year) {
+        mockJournalInternalServerError(identifier, year);
+    }
+
+    private void mockJournalNotFound(String identifier, String year) {
         stubFor(
             get("/findjournal/" + identifier + "/" + year)
                 .withHeader("Accept", equalTo("application/json"))
                 .willReturn(
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_NOT_FOUND)));
+    }
+
+    private void mockJournalInternalServerError(String identifier, String year) {
+        stubFor(
+            get("/findjournal/" + identifier + "/" + year)
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
     public Journal randomJournal(String year) throws JsonProcessingException {
