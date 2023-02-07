@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.model.Journal;
 import no.unit.nva.commons.json.JsonUtils;
 import no.unit.nva.testutils.RandomDataGenerator;
+import nva.commons.core.paths.UriWrapper;
 
 public class PublicationChannelMockRegistry {
 
@@ -36,7 +37,9 @@ public class PublicationChannelMockRegistry {
     public Journal randomJournal(String year) throws JsonProcessingException {
         var context = URI.create(PUBLICATION_CHANNEL_CONTEXT);
         var identifier = UUID.randomUUID().toString();
-        var id = URI.create("https://localhost/journal/" + identifier + "/" + year);
+        var id = UriWrapper.fromUri("https://localhost")
+                     .addChild("publication-channels", "journal", identifier, year)
+                     .getUri();
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();

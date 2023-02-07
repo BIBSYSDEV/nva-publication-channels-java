@@ -25,25 +25,28 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelSource.class);
 
-    private static final String DATAPORTEN_CHANNELS_BASE_URI_ENV_NAME = "DATAPORTEN_CHANNELS_BASE_URI";
+    private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
+    private static final String ENV_API_DOMAIN = "API_DOMAIN";
+    private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
 
     private final transient HttpClient httpClient;
     private final transient URI baseUri;
     private final transient URI apiBaseUri;
 
-    public DataportenPublicationChannelSource(HttpClient httpClient, URI baseUri, String apiDomain) {
+    public DataportenPublicationChannelSource(HttpClient httpClient, URI baseUri, String apiDomain, String basePath) {
         this.httpClient = httpClient;
         this.baseUri = baseUri;
-        this.apiBaseUri = new UriWrapper(HTTPS, apiDomain).getUri();
+
+        this.apiBaseUri = new UriWrapper(HTTPS, apiDomain).addChild(basePath).getUri();
     }
 
     @JacocoGenerated // only used when running on AWS
     public static PublicationChannelSource defaultInstance() {
         var environment = new Environment();
-        var baseUri = URI.create(environment.readEnv(DATAPORTEN_CHANNELS_BASE_URI_ENV_NAME));
-        var apiDomain = environment.readEnv("API_DOMAIN");
-
-        return new DataportenPublicationChannelSource(HttpClient.newBuilder().build(), baseUri, apiDomain);
+        var baseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL));
+        var apiDomain = environment.readEnv(ENV_API_DOMAIN);
+        var basePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
+        return new DataportenPublicationChannelSource(HttpClient.newBuilder().build(), baseUri, apiDomain, basePath);
     }
 
     @Override

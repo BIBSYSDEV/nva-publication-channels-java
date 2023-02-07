@@ -43,10 +43,12 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     public void setup(WireMockRuntimeInfo runtimeInfo) {
         var httpClient = WiremockHttpClient.create();
         var apiDomain = "localhost";
+        var basePath = "publication-channels";
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
                                                                               dataportenBaseUri,
-                                                                              apiDomain);
+                                                                              apiDomain,
+                                                                              basePath);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockRegistry();
         this.output = new ByteArrayOutputStream();
@@ -132,9 +134,11 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
         var httpClient = WiremockHttpClient.create();
         var dataportenBaseUri = URI.create("https://localhost:9898");
         var apiDomain = "localhost";
+        var basePath = "publication-channels";
         var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
                                                                               dataportenBaseUri,
-                                                                              apiDomain);
+                                                                              apiDomain,
+                                                                              basePath);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(publicationChannelSource);
 
         var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
