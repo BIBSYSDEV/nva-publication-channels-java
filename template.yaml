@@ -39,7 +39,7 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
-    Default: publication-channels
+    Default: publication-channels-v2
 
 Resources:
 
