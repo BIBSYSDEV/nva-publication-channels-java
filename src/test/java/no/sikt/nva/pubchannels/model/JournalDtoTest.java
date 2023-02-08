@@ -60,7 +60,7 @@ public class JournalDtoTest {
             }
 
             @Override
-            public URI getLandingPage() {
+            public URI getHomepage() {
                 return randomUri();
             }
         };

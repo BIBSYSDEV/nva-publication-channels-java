@@ -11,6 +11,8 @@ version '1.0-SNAPSHOT'
 
 dependencies {
     testImplementation libs.bundles.testing
+
+    implementation libs.aws.lambda.java.core
     implementation libs.bundles.nva
     implementation libs.bundles.logging
     implementation libs.bundles.jackson

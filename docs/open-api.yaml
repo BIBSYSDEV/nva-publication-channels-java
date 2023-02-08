@@ -49,8 +49,8 @@ paths:
           required: true
           schema:
             type: integer
-            minimum: 1900
-            maximum: 2999
+            minimum: 2004
+            description: can maximum be set to next year
           example: '1910'
       responses:
         200:

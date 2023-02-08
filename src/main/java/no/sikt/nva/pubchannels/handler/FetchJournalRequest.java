@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler;
 
 import static nva.commons.core.attempt.Try.attempt;
+import java.time.LocalDate;
 import java.util.UUID;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -11,8 +12,7 @@ public final class FetchJournalRequest {
     private static final String YEAR_PATH_PARAM_NAME = "year";
     public static final String INVALID_YEAR_MESSAGE = "Invalid path parameter (year). Must be an integer between 1900"
                                                       + " and 2999.";
-    private static final int MIN_ACCEPTABLE_YEAR = 1900;
-    private static final int MAX_ACCEPTABLE_YEAR = 2999;
+    private static final int MIN_ACCEPTABLE_YEAR = 2004;
     private static final String INVALID_IDENTIFIER_MESSAGE = "Invalid path parameter (identifier). Must be a UUID "
                                                              + "version 4.";
     private static final int UUID_TYPE_4_LENGTH = 36;
@@ -54,7 +54,8 @@ public final class FetchJournalRequest {
         var yearAsInteger = attempt(() -> Integer.parseInt(year))
                                 .orElseThrow(failure -> new BadRequestException(INVALID_YEAR_MESSAGE));
 
-        if (yearAsInteger < MIN_ACCEPTABLE_YEAR || yearAsInteger > MAX_ACCEPTABLE_YEAR) {
+        var maxYear = LocalDate.now().getYear() + 1;
+        if (yearAsInteger < MIN_ACCEPTABLE_YEAR || yearAsInteger > maxYear) {
             throw new BadRequestException(INVALID_YEAR_MESSAGE);
         }
     }

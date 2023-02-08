@@ -61,7 +61,7 @@ public class JournalDto {
                               journal.getOnlineIssn(),
                               journal.getPrintIssn(),
                               journal.getScientificValue(),
-                              journal.getLandingPage());
+                              journal.getHomepage());
     }
 
     public String getType() {

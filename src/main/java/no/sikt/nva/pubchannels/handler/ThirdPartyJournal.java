@@ -16,5 +16,5 @@ public interface ThirdPartyJournal {
 
     ScientificValue getScientificValue();
 
-    URI getLandingPage();
+    URI getHomepage();
 }

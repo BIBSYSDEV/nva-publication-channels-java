@@ -8,15 +8,12 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.model.JournalDto;
-import no.unit.nva.commons.json.JsonUtils;
 
 public class PublicationChannelMockRegistry {
 
@@ -52,7 +49,7 @@ public class PublicationChannelMockRegistry {
                         .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
-    public String randomJournal(String year) throws JsonProcessingException {
+    public String randomJournal(String year) {
         var identifier = UUID.randomUUID().toString();
         var name = randomString();
         var electronicIssn = randomIssn();
@@ -95,7 +92,7 @@ public class PublicationChannelMockRegistry {
             }
 
             @Override
-            public URI getLandingPage() {
+            public URI getHomepage() {
                 return landingPage;
             }
         };
@@ -113,11 +110,18 @@ public class PublicationChannelMockRegistry {
                                 String electronicIssn,
                                 String issn,
                                 ScientificValue scientificValue,
-                                URI landingPage)
-        throws JsonProcessingException {
+                                URI landingPage) {
 
         var level = scientificValueToLevel(scientificValue);
-        var body = generateBody(year, identifier, name, electronicIssn, issn, level, landingPage);
+        var body = new DataportenBodyBuilder()
+                       .withYear(year)
+                       .withPid(identifier)
+                       .withName(name)
+                       .withEissn(electronicIssn)
+                       .withPissn(issn)
+                       .withLevel(level)
+                       .withKurl(landingPage.toString())
+                       .build();
 
         stubFor(
             get("/findjournal/" + identifier + "/" + year)
@@ -141,29 +145,5 @@ public class PublicationChannelMockRegistry {
             default:
                 return null;
         }
-    }
-
-    private String generateBody(String year,
-                                String identifier,
-                                String name,
-                                String electronicIssn,
-                                String issn,
-                                String level,
-                                URI landingPage) throws JsonProcessingException {
-
-        Map<String, Object> body = new ConcurrentHashMap<>();
-
-        body.put("Pid", identifier);
-        body.put("type", "Journal");
-        body.put("Name", name);
-        body.put("Eissn", electronicIssn);
-        body.put("Pissn", issn);
-        body.put("Year", year);
-        if (Objects.nonNull(level)) {
-            body.put("Level", level);
-        }
-        body.put("KURL", landingPage.toString());
-
-        return JsonUtils.dtoObjectMapper.writeValueAsString(body);
     }
 }

@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelSource;
 import no.sikt.nva.pubchannels.model.JournalDto;
 import no.unit.nva.stubs.FakeContext;
@@ -30,15 +32,15 @@ import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-public class FetchJournalByIdentifierAndYearHandlerTest {
+class FetchJournalByIdentifierAndYearHandlerTest {
 
-    private static final int YEAR_START = 1900;
-    private static final int RANDOM_YEAR_BOUND = 220;
+    private static final int YEAR_START = 2004;
 
     private transient FetchJournalByIdentifierAndYearHandler handlerUnderTest;
     private transient PublicationChannelMockRegistry mockRegistry;
@@ -49,7 +51,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     private transient Environment environment;
 
     @BeforeEach
-    public void setup(WireMockRuntimeInfo runtimeInfo) {
+    void setup(WireMockRuntimeInfo runtimeInfo) {
 
         this.environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
@@ -66,7 +68,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    public void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
+    void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
         var year = randomYear();
         var identifier = mockRegistry.randomJournal(year);
 
@@ -90,8 +92,8 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @ValueSource(strings = {" ", "abcd", "1899", "3000", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"})
-    public void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
+    @MethodSource("invalidYearsProvider")
+    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
         throws IOException {
 
         var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
@@ -115,7 +117,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
     @ValueSource(strings = { " ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8" })
-    public void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
+    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
         var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
@@ -137,12 +139,8 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
                    is(equalTo("Invalid path parameter (identifier). Must be a UUID version 4.")));
     }
 
-    private String randomYear() {
-        return Integer.toString(YEAR_START + randomInteger(RANDOM_YEAR_BOUND));
-    }
-
     @Test
-    public void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
+    void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var dataportenBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new DataportenPublicationChannelSource(httpClient, dataportenBaseUri);
@@ -210,7 +208,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    public void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
+    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
@@ -236,7 +234,7 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    public void shouldLogAndReturnBadGatewayWhenChannelRegistryReturnsUnhandledResponseCode() throws IOException {
+    void shouldLogAndReturnBadGatewayWhenChannelRegistryReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
@@ -262,5 +260,15 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream! Got status code 500.")));
+    }
+
+    private String randomYear() {
+        var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
+        return Integer.toString(YEAR_START + randomInteger(bound));
+    }
+
+    private static Stream<String> invalidYearsProvider() {
+        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
+        return Stream.of(" ", "abcd", "2003", yearAfterNextYear, "21000");
     }
 }

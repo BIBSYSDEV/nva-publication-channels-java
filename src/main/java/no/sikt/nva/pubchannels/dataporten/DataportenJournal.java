@@ -10,48 +10,48 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 
 /* default */ final class DataportenJournal implements Immutable, ThirdPartyJournal {
     private static final String YEAR_FIELD = "Year";
-    private static final String EISSN_FIELD = "Eissn";
-    private static final String PID_FIELD = "Pid";
-    private static final String LEVEL_FIELD = "Level";
-    private static final String PISSN_FIELD = "Pissn";
+    private static final String ONLINE_ISSN_FIELD = "Eissn";
+    private static final String IDENTIFIER_FIELD = "Pid";
+    private static final String SCIENTIFIC_VALUE_FIELD = "Level";
+    private static final String PRINT_ISSN_FIELD = "Pissn";
     private static final String NAME_FIELD = "Name";
-    private static final String KURL_FIELD = "KURL";
+    private static final String HOMEPAGE_FIELD = "KURL";
 
     @JsonProperty(YEAR_FIELD)
     private final String year;
-    @JsonProperty(EISSN_FIELD)
-    private final transient String eissn;
-    @JsonProperty(PID_FIELD)
-    private final transient String pid;
-    @JsonProperty(LEVEL_FIELD)
-    private final transient String level;
-    @JsonProperty(PISSN_FIELD)
-    private final transient String pissn;
+    @JsonProperty(ONLINE_ISSN_FIELD)
+    private final transient String onlineIssn;
+    @JsonProperty(IDENTIFIER_FIELD)
+    private final transient String identifier;
+    @JsonProperty(SCIENTIFIC_VALUE_FIELD)
+    private final transient String scientificValue;
+    @JsonProperty(PRINT_ISSN_FIELD)
+    private final transient String printIssn;
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(KURL_FIELD)
-    private final transient URI kurl;
+    @JsonProperty(HOMEPAGE_FIELD)
+    private final transient URI homepage;
 
     @JsonCreator
     public DataportenJournal(@JsonProperty(YEAR_FIELD) String year,
-                             @JsonProperty(EISSN_FIELD) String eissn,
-                             @JsonProperty(PID_FIELD) String pid,
-                             @JsonProperty(LEVEL_FIELD) String level,
-                             @JsonProperty(PISSN_FIELD) String pissn,
+                             @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                             @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
+                             @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                              @JsonProperty(NAME_FIELD) String name,
-                             @JsonProperty(KURL_FIELD) URI kurl) {
+                             @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.year = year;
-        this.eissn = eissn;
-        this.pid = pid;
-        this.level = level;
-        this.pissn = pissn;
+        this.onlineIssn = onlineIssn;
+        this.identifier = identifier;
+        this.scientificValue = scientificValue;
+        this.printIssn = printIssn;
         this.name = name;
-        this.kurl = kurl;
+        this.homepage = homepage;
     }
 
     @Override
     public String getIdentifier() {
-        return pid;
+        return identifier;
     }
 
     @Override
@@ -70,26 +70,26 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
     }
 
     @Override
-    public URI getLandingPage() {
-        return kurl;
+    public URI getHomepage() {
+        return homepage;
     }
 
     @Override
     public String getOnlineIssn() {
-        return eissn;
+        return onlineIssn;
     }
 
     @Override
     public String getPrintIssn() {
-        return pissn;
+        return printIssn;
     }
 
     private ScientificValue levelToScientificValue() {
         final ScientificValue scientificValue;
-        if (isNull(this.level)) {
+        if (isNull(this.scientificValue)) {
             scientificValue = ScientificValue.UNASSIGNED;
         } else {
-            switch (this.level) {
+            switch (this.scientificValue) {
                 case "0":
                     scientificValue = ScientificValue.LEVEL_ZERO;
                     break;
