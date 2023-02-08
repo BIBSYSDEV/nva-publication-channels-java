@@ -1,17 +1,14 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import static no.sikt.nva.pubchannels.handler.UrlUtils.JOURNAL_BASE_PATH;
-import static no.sikt.nva.pubchannels.model.Contexts.PUBLICATION_CHANNEL_CONTEXT;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.PublicationChannelSource;
-import no.sikt.nva.pubchannels.model.Journal;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
@@ -27,52 +24,27 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelSource.class);
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
-    private static final String ENV_API_DOMAIN = "API_DOMAIN";
-    private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
 
     private final transient HttpClient httpClient;
-    private final transient URI baseUri;
-    private final transient URI apiBaseUri;
+    private final transient URI dataportenBaseUri;
 
-    public DataportenPublicationChannelSource(HttpClient httpClient, URI baseUri, String apiDomain, String basePath) {
+    public DataportenPublicationChannelSource(HttpClient httpClient, URI dataportenBaseUri) {
         this.httpClient = httpClient;
-        this.baseUri = baseUri;
-
-        this.apiBaseUri = new UriWrapper(HTTPS, apiDomain).addChild(basePath).getUri();
+        this.dataportenBaseUri = dataportenBaseUri;
     }
 
     @JacocoGenerated // only used when running on AWS
     public static PublicationChannelSource defaultInstance() {
         var environment = new Environment();
         var baseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL));
-        var apiDomain = environment.readEnv(ENV_API_DOMAIN);
-        var basePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
-        return new DataportenPublicationChannelSource(HttpClient.newBuilder().build(), baseUri, apiDomain, basePath);
+        return new DataportenPublicationChannelSource(HttpClient.newBuilder().build(), baseUri);
     }
 
     @Override
-    public Journal getJournal(String identifier, String year) throws ApiGatewayException {
+    public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
         var request = createFetchJournalRequest(identifier, year);
 
-        return Optional.of(executeRequest(request, no.sikt.nva.pubchannels.dataporten.Journal.class))
-                   .map(journal -> toExternalModel(year, journal))
-                   .orElseThrow();
-    }
-
-    private Journal toExternalModel(String year, no.sikt.nva.pubchannels.dataporten.Journal localModel) {
-        var identifier = localModel.getPid();
-        var id = UriWrapper.fromUri(apiBaseUri).addChild(JOURNAL_BASE_PATH, identifier, year).getUri();
-        var context = URI.create(PUBLICATION_CHANNEL_CONTEXT);
-        return new Journal(context,
-                           id,
-                           identifier,
-                           localModel.getYear(),
-                           localModel.getName(),
-                           localModel.getEissn(),
-                           localModel.getPissn(),
-                           localModel.getLevel(),
-                           localModel.getKurl()
-        );
+        return executeRequest(request, DataportenJournal.class);
     }
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz) throws ApiGatewayException {
@@ -80,7 +52,7 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
             var response = httpClient.send(request, BodyHandlers.ofString());
 
             if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-                return JsonUtils.dtoObjectMapper.readValue(response.body(), clazz);
+                return attempt(() -> JsonUtils.dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
             } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
                 throw new NotFoundException("Journal not found!");
             } else {
@@ -93,7 +65,6 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
         }
     }
 
-    @JacocoGenerated // InterruptedException hard to trigger in a test
     private BadGatewayException logAndCreateBadRequestException(URI uri, Exception e) {
         LOGGER.error("Unable to reach upstream: " + uri, e);
         if (e instanceof InterruptedException) {
@@ -103,7 +74,7 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
     }
 
     private HttpRequest createFetchJournalRequest(String identifier, String year) {
-        var uri = UriWrapper.fromUri(baseUri)
+        var uri = UriWrapper.fromUri(dataportenBaseUri)
                       .addChild("findjournal", identifier, year)
                       .getUri();
         return HttpRequest.newBuilder()

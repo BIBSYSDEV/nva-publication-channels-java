@@ -4,7 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static no.sikt.nva.pubchannels.model.Contexts.PUBLICATION_CHANNEL_CONTEXT;
+import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -14,12 +14,12 @@ import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.model.Journal;
+import no.sikt.nva.pubchannels.model.JournalDto;
 import no.unit.nva.commons.json.JsonUtils;
-import no.unit.nva.testutils.RandomDataGenerator;
-import nva.commons.core.paths.UriWrapper;
 
 public class PublicationChannelMockRegistry {
+
+    private final Map<String, JournalDto> journalsByIdentifier = new ConcurrentHashMap<>();
 
     public void notFoundJournal(String identifier, String year) {
         mockJournalNotFound(identifier, year);
@@ -27,6 +27,10 @@ public class PublicationChannelMockRegistry {
 
     public void internalServerErrorJournal(String identifier, String year) {
         mockJournalInternalServerError(identifier, year);
+    }
+
+    public JournalDto getJournal(String identifier) {
+        return journalsByIdentifier.get(identifier);
     }
 
     private void mockJournalNotFound(String identifier, String year) {
@@ -47,21 +51,59 @@ public class PublicationChannelMockRegistry {
                         .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
-    public Journal randomJournal(String year) throws JsonProcessingException {
-        var context = URI.create(PUBLICATION_CHANNEL_CONTEXT);
+    public String randomJournal(String year) throws JsonProcessingException {
         var identifier = UUID.randomUUID().toString();
-        var id = UriWrapper.fromUri("https://localhost")
-                     .addChild("publication-channels", "journal", identifier, year)
-                     .getUri();
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
-        var level = RandomDataGenerator.randomElement("0", "1", "2");
+        var scientificValue = randomElement(ScientificValue.values());
         var landingPage = randomUri();
 
-        mockDataporten(year, identifier, name, electronicIssn, issn, level, landingPage);
+        mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
 
-        return new Journal(context, id, identifier, year, name, electronicIssn, issn, level, landingPage);
+        URI selfUriBase = URI.create("https://localhost/publication-channels/journal");
+        ThirdPartyJournal journal = new ThirdPartyJournal() {
+            @Override
+            public String getIdentifier() {
+                return identifier;
+            }
+
+            @Override
+            public String getYear() {
+                return year;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
+            }
+
+            @Override
+            public ScientificValue getScientificValue() {
+                return scientificValue;
+            }
+
+            @Override
+            public URI getLandingPage() {
+                return landingPage;
+            }
+        };
+
+        var journalDto = JournalDto.create(selfUriBase, journal);
+
+        journalsByIdentifier.put(identifier, journalDto);
+
+        return identifier;
     }
 
     private void mockDataporten(String year,
@@ -69,10 +111,11 @@ public class PublicationChannelMockRegistry {
                                 String name,
                                 String electronicIssn,
                                 String issn,
-                                String level,
+                                ScientificValue scientificValue,
                                 URI landingPage)
         throws JsonProcessingException {
 
+        var level = scientificValueToLevel(scientificValue);
         var body = generateBody(year, identifier, name, electronicIssn, issn, level, landingPage);
 
         stubFor(
@@ -83,6 +126,20 @@ public class PublicationChannelMockRegistry {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(body)));
+    }
+
+    private String scientificValueToLevel(ScientificValue scientificValue) {
+        switch (scientificValue) {
+            case LEVEL_ZERO:
+                return "0";
+            case LEVEL_ONE:
+                return "1";
+            case LEVEL_TWO:
+                return "2";
+            case UNASSIGNED:
+            default:
+                return null;
+        }
     }
 
     private String generateBody(String year,

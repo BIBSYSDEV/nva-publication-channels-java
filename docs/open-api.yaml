@@ -17,10 +17,10 @@ externalDocs:
   url: https://nva.unit.no
 
 servers:
-  - url: https://api.nva.unit.no/channels
-  - url: https://api.dev.nva.aws.unit.no/channels
-  - url: https://api.sandbox.nva.aws.unit.no/channels
-  - url: https://api.test.nva.aws.unit.no/channels
+  - url: https://api.sandbox.nva.aws.unit.no/publication-channels
+  - url: https://api.dev.nva.aws.unit.no/publication-channels
+  - url: https://api.test.nva.aws.unit.no/publication-channels
+  - url: https://api.nva.unit.no/publication-channels
 
 paths:
   /journal/{identifier}/{year}:
@@ -33,7 +33,7 @@ paths:
       tags:
         - Journal
       summary: Fetch journal by identifier and year
-      description: Returns a single Journal
+      description: Returns a single Journal with information for a specific year
       operationId: FetchJournalByIdentifierAndYear
       parameters:
         - name: identifier
@@ -42,7 +42,6 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z'
           example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
         - name: year
           in: path
@@ -69,6 +68,10 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalExample'
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
         502:
           $ref: '#/components/responses/502'
 
@@ -76,6 +79,12 @@ components:
   responses:
     400:
       description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    404:
+      description: Not found
       content:
         application/problem+json:
           schema:
@@ -103,10 +112,6 @@ components:
           type: string
           pattern: 'Journal'
           description: The type of the returned object, always Journal
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-        year:
-          $ref: '#/components/schemas/Year'
         name:
           $ref: '#/components/schemas/Name'
         onlineIssn:
@@ -118,10 +123,11 @@ components:
           pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
           description: The ISSN of the print edition of the Journal
-        level:
-          $ref: '#/components/schemas/Level'
-        landingPage:
-          $ref: '#/components/schemas/LandingPage'
+        scientificValue:
+          $ref: '#/components/schemas/ScientificValue'
+        sameAs:
+          type: string
+          nullable: true
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -129,25 +135,10 @@ components:
     Name:
       type: string
       description: The name of the publication channel
-    Identifier:
+    ScientificValue:
       type: string
-      pattern: '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z'
-      description: The NSD DBH persistent identifier of the publication channel (UUID)
-    Year:
-      type: integer
-      minimum: 1900
-      maximum: 2999
-      description: The year of the publication channel to get
-    LandingPage:
-      type: string
-      pattern: '^http(s)?:\/\/.*$'
-      nullable: true
-      description: The URI for the homepage of the publication channel
-    Level:
-      type: string
-      enum: [ '0', '1', '2' ]
-      nullable: true
-      description: The NPI level of the journal, either null, 0, 1 or 2
+      enum: [ 'Unassigned', 'LevelZero', 'LevelOne', 'LevelTwo' ]
+      description: The scientific value of the publication channel. Used in NVI score setting.
     Problem:
       type: object
       properties:
@@ -175,10 +166,8 @@ components:
         id: 'https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Journal'
         name: 'The journal of eternal fury'
-        identifier: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
-        year: '2010'
         onlineIssn: '1234-1234'
         printIssn: '4321-4321'
-        level: '1'
-        landingPage: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        scientificValue: 'LEVEL_1'
+        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample journal

@@ -6,6 +6,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -13,21 +16,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelSource;
-import no.sikt.nva.pubchannels.model.Journal;
+import no.sikt.nva.pubchannels.model.JournalDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
-import nva.commons.logutils.TestAppender;
-import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
@@ -42,18 +46,21 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     private transient ByteArrayOutputStream output;
 
     private static final Context context = new FakeContext();
+    private transient Environment environment;
 
     @BeforeEach
     public void setup(WireMockRuntimeInfo runtimeInfo) {
-        var httpClient = WiremockHttpClient.create();
-        var apiDomain = "localhost";
-        var basePath = "publication-channels";
+
+        this.environment = Mockito.mock(Environment.class);
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
+        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
+        var httpClient = WiremockHttpClient.create();
         var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
-                                                                              dataportenBaseUri,
-                                                                              apiDomain,
-                                                                              basePath);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(publicationChannelSource);
+                                                                              dataportenBaseUri);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockRegistry();
         this.output = new ByteArrayOutputStream();
     }
@@ -61,23 +68,24 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     @Test
     public void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
         var year = randomYear();
-        var expectedJournal = mockRegistry.randomJournal(year);
+        var identifier = mockRegistry.randomJournal(year);
 
         var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
                         .withPathParameters(Map.of(
-                            "identifier", expectedJournal.getIdentifier(),
+                            "identifier", identifier,
                             "year", year
                         ))
                         .build();
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Journal.class);
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(Journal.class);
+        var actualJournal = response.getBodyObject(JournalDto.class);
+        var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
@@ -137,13 +145,8 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
     public void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var dataportenBaseUri = URI.create("https://localhost:9898");
-        var apiDomain = "localhost";
-        var basePath = "publication-channels";
-        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
-                                                                              dataportenBaseUri,
-                                                                              apiDomain,
-                                                                              basePath);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(publicationChannelSource);
+        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient, dataportenBaseUri);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -171,6 +174,39 @@ public class FetchJournalByIdentifierAndYearHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unable to reach upstream!")));
+    }
+
+    @Test
+    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
+        var httpClient = mock(HttpClient.class);
+        when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
+        var dataportenBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
+                                                                              dataportenBaseUri);
+
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
+
+        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                        .withPathParameters(Map.of(
+                            "identifier", UUID.randomUUID().toString(),
+                            "year", randomYear()
+                        ))
+                        .build();
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
+        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(),
+                   is(equalTo("Unable to reach upstream!")));
+
     }
 
     @Test
