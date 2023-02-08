@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.model.JournalDto;
@@ -158,7 +159,9 @@ public class PublicationChannelMockRegistry {
         body.put("Eissn", electronicIssn);
         body.put("Pissn", issn);
         body.put("Year", year);
-        body.put("Level", level);
+        if (Objects.nonNull(level)) {
+            body.put("Level", level);
+        }
         body.put("KURL", landingPage.toString());
 
         return JsonUtils.dtoObjectMapper.writeValueAsString(body);
