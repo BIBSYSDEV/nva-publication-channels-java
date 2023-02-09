@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.model;
+package no.sikt.nva.pubchannels;
 
 /**
  * Marker interface for immutable classes.

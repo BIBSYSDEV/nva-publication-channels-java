@@ -17,59 +17,117 @@ externalDocs:
   url: https://nva.unit.no
 
 servers:
-  - url: https://api.nva.unit.no/channels
-  - url: https://api.dev.nva.aws.unit.no/channels
-  - url: https://api.sandbox.nva.aws.unit.no/channels
-  - url: https://api.test.nva.aws.unit.no/channels
+  - url: https://api.sandbox.nva.aws.unit.no/publication-channels
+  - url: https://api.dev.nva.aws.unit.no/publication-channels
+  - url: https://api.test.nva.aws.unit.no/publication-channels
+  - url: https://api.nva.unit.no/publication-channels
 
 paths:
+  /journal/{identifier}/{year}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYear.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - Journal
+      summary: Fetch journal by identifier and year
+      description: Returns a single Journal with information for a specific year
+      operationId: FetchJournalByIdentifierAndYear
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of journal to return
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        - name: year
+          in: path
+          description: year for journal data
+          required: true
+          schema:
+            type: integer
+            minimum: 2004
+            description: can maximum be set to next year
+          example: '1910'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Journal'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Journal'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
 
 components:
+  responses:
+    400:
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    404:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    500:
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    502:
+      description: Bad Gateway
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
   schemas:
     Journal:
       type: object
       properties:
         '@context':
           $ref: '#/components/schemas/Context'
-        id:
-          type: string
-          pattern: '^https:\/\/example.org/journal/[0-9]+$'
-          description: The URI of the object
         type:
           type: string
           pattern: 'Journal'
           description: The type of the returned object, always Journal
         name:
           $ref: '#/components/schemas/Name'
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-        eIssn:
+        onlineIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
           description: The ISSN of the online edition of the Journal
-        issn:
+        printIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
           description: The ISSN of the print edition of the Journal
-        active:
-          $ref: '#/components/schemas/Active'
-        language:
-          type: string
-          pattern: '^http:\/\/lexvo.org\/id\/iso639-3\/[a-z]{3}$'
-          description: The lexvo URI for the language of the Journal
-        webpage:
-          $ref: '#/components/schemas/Webpage'
-        publisher:
-          type: string
-          pattern: '^http(s)?:\/\/example.org/publisher/[0-9]+$'
-          description: The URI for the publisher of the Journal in NSD DBH
-        npiDomain:
-          type: string
-          pattern: '^http(s)?:\/\/example.org/npi-domain/[0-9]+$'
-          description: The URI of the NPI academic domain (e.g. computer science, biology) that the Journal covers.
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
+        sameAs:
+          type: string
+          nullable: true
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -77,38 +135,39 @@ components:
     Name:
       type: string
       description: The name of the publication channel
-    Identifier:
-      type: string
-      pattern: '^[0-9]+$'
-      description: The NSD DBH persistent identifier of the publication channel
-    Webpage:
-      type: string
-      pattern: '^http(s)?:\/\/.*$'
-      nullable: true
-      description: The URI for the homepage of the publication channel
-    Active:
-      type: boolean
-      description: The activity status of the Publisher; true if it is currently publishing content, false if it has ceased publishing
     ScientificValue:
       type: string
-      enum: [ 'LEVEL_0', 'LEVEL_1', 'LEVEL_2' ]
-      nullable: true
-      description: The NPI level of the journal, either null, LEVEL_0, LEVEL_1, LEVEL_2
+      enum: [ 'Unassigned', 'LevelZero', 'LevelOne', 'LevelTwo' ]
+      description: The scientific value of the publication channel. Used in NVI score setting.
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: A URI describing the error and mitigations, in generic cases, this is about:blank
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code associated with the problem
+        title:
+          type: string
+          description: Human-readable description of the error status
+        detail:
+          type: string
+          description: A more detailed error message describing the error and potential mitigations
+        instance:
+          type: string
+          description: The requested path associated with the error
 
   examples:
     JournalExample:
       value:
         '@context': 'https://example.org/context.json'
-        id: 'https://example.org/journal/123123123'
+        id: 'https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Journal'
         name: 'The journal of eternal fury'
-        identifier: '123123123'
-        eIssn: '1234-1234'
-        issn: '4321-4321'
-        active: true
-        language: 'http://lexvo.org/id/iso639-3/eng'
-        webpage: 'https://www.example.org/journalofefury'
-        publisher: 'https://example.org/publisher/4321432'
-        npiDomain: 'https://example.org/npi-fagfelt/3001'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
         scientificValue: 'LEVEL_1'
+        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample journal
