@@ -61,11 +61,11 @@ public class DataportenPublicationChannelSource implements PublicationChannelSou
                                                             response.statusCode()));
             }
         } catch (IOException | InterruptedException e) {
-            throw logAndCreateBadRequestException(request.uri(), e);
+            throw logAndCreateBadGatewayException(request.uri(), e);
         }
     }
 
-    private BadGatewayException logAndCreateBadRequestException(URI uri, Exception e) {
+    private BadGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
         LOGGER.error("Unable to reach upstream: " + uri, e);
         if (e instanceof InterruptedException) {
             Thread.currentThread().interrupt();

@@ -37,6 +37,7 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
 
         var request = new FetchJournalRequest(requestInfo);
+        request.validate();
 
         URI journalIdBaseUri = constructJournalIdBaseUri();
 

@@ -21,25 +21,31 @@ public final class FetchJournalRequest {
 
     private final String identifier;
     private final String year;
+    private transient boolean validated;
 
-    public FetchJournalRequest(RequestInfo requestInfo) throws BadRequestException {
+    public FetchJournalRequest(RequestInfo requestInfo) {
         this.identifier = requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim();
         this.year = requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim();
-
-        validate();
     }
 
     public String getIdentifier() {
+        if (!validated) {
+            throw new IllegalStateException("Request data has not been validate. Call validate() first!");
+        }
         return identifier;
     }
 
     public String getYear() {
+        if (!validated) {
+            throw new IllegalStateException("Request data has not been validate. Call validate() first!");
+        }
         return year;
     }
 
-    private void validate() throws BadRequestException {
+    public void validate() throws BadRequestException {
         validateIdentifier();
         validateYear();
+        this.validated = true;
     }
 
     private void validateYear() throws BadRequestException {
