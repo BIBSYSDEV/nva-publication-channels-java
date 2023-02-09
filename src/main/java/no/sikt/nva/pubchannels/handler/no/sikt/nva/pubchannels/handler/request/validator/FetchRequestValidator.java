@@ -20,7 +20,7 @@ public class FetchRequestValidator implements Validator {
     public static final String DELIMITER = ", ";
 
     @Override
-    public void validate(FetchJournalRequest request) throws ValidationException {
+    public void validate(FetchJournalRequest request) {
         var errorMessage = Stream.of(validateYear(request.getYear()), validateIdentifier(request.getIdentifier()))
                                .filter(Optional::isPresent)
                                .map(Optional::get)
