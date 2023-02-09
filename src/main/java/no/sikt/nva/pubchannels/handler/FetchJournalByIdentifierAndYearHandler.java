@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler;
 
+import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
@@ -9,6 +10,7 @@ import no.sikt.nva.pubchannels.model.JournalDto;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -36,10 +38,10 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     @Override
     protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
 
-        var request = new FetchJournalRequest(requestInfo);
-        request.validate();
+        var request = attempt(() -> new FetchJournalRequest(requestInfo))
+                          .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
-        URI journalIdBaseUri = constructJournalIdBaseUri();
+        var journalIdBaseUri = constructJournalIdBaseUri();
 
         return JournalDto.create(journalIdBaseUri, publicationChannelSource.getJournal(request.getIdentifier(),
                                                                                        request.getYear()));
