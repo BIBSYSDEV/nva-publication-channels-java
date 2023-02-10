@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelSource;
+import no.sikt.nva.pubchannels.handler.request.FetchJournalRequest;
 import no.sikt.nva.pubchannels.model.JournalDto;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
