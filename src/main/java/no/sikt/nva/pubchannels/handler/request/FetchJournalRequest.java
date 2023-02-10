@@ -1,7 +1,7 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.request;
 
-import no.sikt.nva.pubchannels.handler.no.sikt.nva.pubchannels.handler.request.validator.FetchRequestValidator;
-import no.sikt.nva.pubchannels.handler.no.sikt.nva.pubchannels.handler.request.validator.Validator;
+import no.sikt.nva.pubchannels.handler.request.validator.FetchRequestValidator;
+import no.sikt.nva.pubchannels.handler.request.validator.Validator;
 import nva.commons.apigateway.RequestInfo;
 
 public final class FetchJournalRequest {

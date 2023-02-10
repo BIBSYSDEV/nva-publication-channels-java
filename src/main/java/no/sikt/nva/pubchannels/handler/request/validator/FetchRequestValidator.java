@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.no.sikt.nva.pubchannels.handler.request.validator;
+package no.sikt.nva.pubchannels.handler.request.validator;
 
 import static java.util.Objects.isNull;
 import static nva.commons.core.attempt.Try.attempt;
@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.handler.FetchJournalRequest;
+import no.sikt.nva.pubchannels.handler.request.FetchJournalRequest;
 import nva.commons.core.StringUtils;
 
 public class FetchRequestValidator implements Validator {
