@@ -13,7 +13,7 @@ import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import org.junit.jupiter.api.Test;
 
-public class JournalDtoTest {
+class JournalDtoTest {
 
     @Test
     void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {

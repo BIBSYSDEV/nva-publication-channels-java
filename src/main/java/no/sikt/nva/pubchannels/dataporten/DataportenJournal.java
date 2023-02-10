@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import no.sikt.nva.pubchannels.Immutable;
-import no.sikt.nva.pubchannels.dataporten.mapper.Mapper;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -85,7 +84,7 @@ final class DataportenJournal implements Immutable, ThirdPartyJournal {
         return printIssn;
     }
 
-    private ScientificValue levelToScientificValue(Mapper mapper) {
+    private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
         return mapper.map(scientificValue);
     }
 }

@@ -53,5 +53,4 @@ public class DataportenBodyBuilder {
     public String build() {
         return Try.attempt(() -> JsonUtils.dtoObjectMapper.writeValueAsString(bodyMap)).orElseThrow();
     }
-
 }

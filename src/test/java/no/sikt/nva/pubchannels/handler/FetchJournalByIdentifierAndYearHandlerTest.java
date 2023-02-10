@@ -62,8 +62,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
-                                                                              dataportenBaseUri);
+        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient, dataportenBaseUri);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockRegistry();
         this.output = new ByteArrayOutputStream();
@@ -107,7 +106,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = { " ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8" })
+    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
@@ -177,9 +176,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unable to reach upstream!")));
-
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test
@@ -199,8 +196,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Journal not found!")));
+        assertThat(problem.getDetail(), is(equalTo("Journal not found!")));
     }
 
     @Test
