@@ -12,7 +12,7 @@ phases:
 #      - pip3 install --upgrade awscli
 #
       # Install aws-sam-cli
-      - pip3 install aws-sam-cli
+      - pip3 install -U aws-sam-cli
 
   build:
     commands:
