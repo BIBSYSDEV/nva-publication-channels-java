@@ -11,9 +11,12 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.model.JournalDto;
+import nva.commons.core.SingletonCollector;
 
 public class PublicationChannelMockRegistry {
 
@@ -134,16 +137,11 @@ public class PublicationChannelMockRegistry {
     }
 
     private String scientificValueToLevel(ScientificValue scientificValue) {
-        switch (scientificValue) {
-            case LEVEL_ZERO:
-                return "0";
-            case LEVEL_ONE:
-                return "1";
-            case LEVEL_TWO:
-                return "2";
-            case UNASSIGNED:
-            default:
-                return null;
-        }
+
+        return ScientificValueMapper.VALUES.entrySet()
+                   .stream()
+                   .filter(item -> item.getValue().equals(scientificValue))
+                   .map(Entry::getKey)
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 }

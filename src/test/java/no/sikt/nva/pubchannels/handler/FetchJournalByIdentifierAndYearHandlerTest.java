@@ -10,10 +10,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -60,8 +62,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient,
-                                                                              dataportenBaseUri);
+        var publicationChannelSource = new DataportenPublicationChannelSource(httpClient, dataportenBaseUri);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockRegistry();
         this.output = new ByteArrayOutputStream();
@@ -71,13 +72,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
         var year = randomYear();
         var identifier = mockRegistry.randomJournal(year);
-
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", identifier,
-                            "year", year
-                        ))
-                        .build();
+        var input = constructRequest(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -96,12 +91,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
         throws IOException {
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", UUID.randomUUID().toString(),
-                            "year", year
-                        ))
-                        .build();
+        var input = constructRequest(year, UUID.randomUUID().toString());
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -116,16 +106,11 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = { " ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8" })
+    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", identifier,
-                            "year", randomYear()
-                        ))
-                        .build();
+        var input = constructRequest(randomYear(), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -149,13 +134,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", identifier,
-                            "year", year
-                        ))
-                        .build();
-
+        var input = constructRequest(year, identifier);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -184,12 +163,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", UUID.randomUUID().toString(),
-                            "year", randomYear()
-                        ))
-                        .build();
+        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -202,9 +176,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unable to reach upstream!")));
-
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test
@@ -214,12 +186,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         mockRegistry.notFoundJournal(identifier, year);
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", identifier,
-                            "year", year
-                        ))
-                        .build();
+        var input = constructRequest(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -229,8 +196,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Journal not found!")));
+        assertThat(problem.getDetail(), is(equalTo("Journal not found!")));
     }
 
     @Test
@@ -240,12 +206,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         mockRegistry.internalServerErrorJournal(identifier, year);
 
-        var input = new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                        .withPathParameters(Map.of(
-                            "identifier", identifier,
-                            "year", year
-                        ))
-                        .build();
+        var input = constructRequest(year, identifier);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -260,6 +221,15 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream! Got status code 500.")));
+    }
+
+    private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
+        return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                   .withPathParameters(Map.of(
+                       "identifier", identifier,
+                       "year", year
+                   ))
+                   .build();
     }
 
     private String randomYear() {

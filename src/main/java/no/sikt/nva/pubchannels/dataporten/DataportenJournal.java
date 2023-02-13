@@ -1,10 +1,10 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import static java.util.Objects.isNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import no.sikt.nva.pubchannels.Immutable;
+import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 
@@ -66,7 +66,7 @@ final class DataportenJournal implements Immutable, ThirdPartyJournal {
 
     @Override
     public ScientificValue getScientificValue() {
-        return levelToScientificValue();
+        return levelToScientificValue(new ScientificValueMapper());
     }
 
     @Override
@@ -84,27 +84,7 @@ final class DataportenJournal implements Immutable, ThirdPartyJournal {
         return printIssn;
     }
 
-    private ScientificValue levelToScientificValue() {
-        final ScientificValue scientificValue;
-        if (isNull(this.scientificValue)) {
-            scientificValue = ScientificValue.UNASSIGNED;
-        } else {
-            switch (this.scientificValue) {
-                case "0":
-                    scientificValue = ScientificValue.LEVEL_ZERO;
-                    break;
-                case "1":
-                    scientificValue = ScientificValue.LEVEL_ONE;
-                    break;
-                case "2":
-                    scientificValue = ScientificValue.LEVEL_TWO;
-                    break;
-                default:
-                    scientificValue = ScientificValue.UNASSIGNED;
-                    break;
-            }
-        }
-
-        return scientificValue;
+    private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
+        return mapper.map(scientificValue);
     }
 }
