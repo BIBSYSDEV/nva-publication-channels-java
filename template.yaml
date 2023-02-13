@@ -43,6 +43,23 @@ Parameters:
 
 Resources:
 
+  DefaultLambdaPermissions:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub DefaultLambdaPermissions-${AWS::StackName}
+      Roles:
+        - !Ref LambdaRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - lambda:InvokeFunction
+            Resource: "*"
+
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
 
