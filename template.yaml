@@ -43,23 +43,6 @@ Parameters:
 
 Resources:
 
-#  DefaultLambdaPermissions:
-#    Type: AWS::IAM::Policy
-#    Properties:
-#      PolicyName: !Sub DefaultLambdaPermissions-${AWS::StackName}
-#      Roles:
-#        - !Ref LambdaRole
-#      PolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: Allow
-#            Action:
-#              - logs:CreateLogGroup
-#              - logs:CreateLogStream
-#              - logs:PutLogEvents
-#              - lambda:InvokeFunction
-#            Resource: "*"
-
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
 
@@ -105,7 +88,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.FetchJournalByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
+      Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       SnapStart:
         ApplyOn: PublishedVersions
@@ -116,6 +99,13 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /journal/{identifier}/{year}
             Method: get
+
+  FetchJournalByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
 
   PublicationChannelsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
