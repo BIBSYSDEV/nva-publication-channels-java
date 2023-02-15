@@ -9,13 +9,13 @@ import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 
 final class DataportenJournal implements Immutable, ThirdPartyJournal {
-    private static final String YEAR_FIELD = "Year";
-    private static final String ONLINE_ISSN_FIELD = "Eissn";
-    private static final String IDENTIFIER_FIELD = "Pid";
-    private static final String SCIENTIFIC_VALUE_FIELD = "Level";
-    private static final String PRINT_ISSN_FIELD = "Pissn";
-    private static final String NAME_FIELD = "Name";
-    private static final String HOMEPAGE_FIELD = "KURL";
+    private static final String YEAR_FIELD = "year";
+    private static final String ONLINE_ISSN_FIELD = "eissn";
+    private static final String IDENTIFIER_FIELD = "pid";
+    private static final String SCIENTIFIC_VALUE_FIELD = "level";
+    private static final String PRINT_ISSN_FIELD = "pissn";
+    private static final String NAME_FIELD = "name";
+    private static final String HOMEPAGE_FIELD = "kURL";
 
     @JsonProperty(YEAR_FIELD)
     private final String year;
