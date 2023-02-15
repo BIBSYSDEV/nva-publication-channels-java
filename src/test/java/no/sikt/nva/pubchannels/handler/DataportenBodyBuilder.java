@@ -14,39 +14,39 @@ public class DataportenBodyBuilder {
     }
 
     public DataportenBodyBuilder withPid(String pid) {
-        bodyMap.put("Pid", pid);
+        bodyMap.put("pid", pid);
         return this;
     }
 
     public DataportenBodyBuilder withName(String name) {
-        bodyMap.put("Name", name);
+        bodyMap.put("name", name);
         return this;
     }
 
     public DataportenBodyBuilder withEissn(String eissn) {
-        bodyMap.put("Eissn", eissn);
+        bodyMap.put("eissn", eissn);
         return this;
     }
 
     public DataportenBodyBuilder withPissn(String pissn) {
-        bodyMap.put("Pissn", pissn);
+        bodyMap.put("pissn", pissn);
         return this;
     }
 
     public DataportenBodyBuilder withYear(String year) {
-        bodyMap.put("Year", year);
+        bodyMap.put("year", year);
         return this;
     }
 
     public DataportenBodyBuilder withLevel(String level) {
         if (Objects.nonNull(level)) {
-            bodyMap.put("Level", level);
+            bodyMap.put("level", level);
         }
         return this;
     }
 
     public DataportenBodyBuilder withKurl(String kurl) {
-        bodyMap.put("KURL", kurl);
+        bodyMap.put("kURL", kurl);
         return this;
     }
 
