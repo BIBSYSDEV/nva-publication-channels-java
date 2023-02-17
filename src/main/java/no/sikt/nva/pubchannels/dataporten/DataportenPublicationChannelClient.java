@@ -56,10 +56,9 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     @Override
     public String createJournal(String name) throws ApiGatewayException {
-
-            var token = authClient.createToken();
-            var request = createCreateJournalRequest(token, name);
-            return executeRequest(request, String.class);
+        var token = authClient.createToken();
+        var request = createCreateJournalRequest(token, name);
+        return executeRequest(request, String.class);
     }
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz) throws ApiGatewayException {
@@ -113,7 +112,8 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
         JournalRequestBody journalRequestBody = new JournalRequestBody(name);
 
-        String journalRequestBodyAsString = attempt(()->dtoObjectMapper.writeValueAsString(journalRequestBody)).orElseThrow();
+        String journalRequestBodyAsString = attempt(() -> dtoObjectMapper.writeValueAsString(journalRequestBody))
+                .orElseThrow();
 
         return HttpRequest.newBuilder()
                 .header("Accept", APPLICATION_JSON)

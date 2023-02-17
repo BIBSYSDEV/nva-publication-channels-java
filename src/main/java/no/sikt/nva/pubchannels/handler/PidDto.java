@@ -21,8 +21,12 @@ public class PidDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         PidDto pidDto = (PidDto) o;
         return Objects.equals(pid, pidDto.pid);
     }
