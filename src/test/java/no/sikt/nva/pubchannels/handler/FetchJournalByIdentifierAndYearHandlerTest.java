@@ -220,7 +220,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream! Got status code 500.")));
+                   is(equalTo("Unexpected response from upstream!")));
     }
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {

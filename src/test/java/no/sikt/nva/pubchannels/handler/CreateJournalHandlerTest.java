@@ -17,6 +17,7 @@ import nva.commons.core.Environment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.zalando.problem.Problem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -63,15 +64,13 @@ class CreateJournalHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var name = "Test Journal";
-        InputStream input = new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper)
-                .withBody(new CreateJournalRequest(name))
-                .build();
+        InputStream input = constructRequest(name);
         var output = new ByteArrayOutputStream();
         var expectedPid = UUID.randomUUID().toString();
 
         TokenBody token = new TokenBody("token1", "Bearer");
         stubAuth(token);
-        stubResponse(expectedPid, token);
+        stubResponse(expectedPid, token, HttpURLConnection.HTTP_OK);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -86,7 +85,82 @@ class CreateJournalHandlerTest {
         assertThat(actualPid, is(equalTo(PidDto.create(selfUriBase, expectedPid))));
     }
 
-    private static void stubResponse(String expectedPid, TokenBody token) {
+    @Test
+    void shoudReturnBadGatewayWhenUnautorized() throws IOException {
+        var name = "Test Journal";
+        InputStream input = constructRequest(name);
+        var output = new ByteArrayOutputStream();
+
+        TokenBody token = new TokenBody("token1", "Bearer");
+        stubAuth(token);
+        stubResponse(null, token, HttpURLConnection.HTTP_UNAUTHORIZED);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shoudReturnBadGatewayWhenForbidden() throws IOException {
+        var name = "Test Journal";
+        InputStream input = constructRequest(name);
+        var output = new ByteArrayOutputStream();
+
+        TokenBody token = new TokenBody("token1", "Bearer");
+        stubAuth(token);
+        stubResponse(null, token, HttpURLConnection.HTTP_FORBIDDEN);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
+        var name = "Test Journal";
+        InputStream input = constructRequest(name);
+        var output = new ByteArrayOutputStream();
+
+        TokenBody token = new TokenBody("token1", "Bearer");
+        stubAuth(token);
+        stubResponse(null, token, HttpURLConnection.HTTP_INTERNAL_ERROR);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(equalTo("Unexpected response from upstream!")));
+    }
+
+    private static InputStream constructRequest(String name) throws JsonProcessingException {
+        return new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper)
+                .withBody(new CreateJournalRequest(name))
+                .build();
+    }
+
+    private static void stubResponse(String expectedPid, TokenBody token, int status) {
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader("Accept", WireMock.equalTo("application/json"))
@@ -96,7 +170,7 @@ class CreateJournalHandlerTest {
                         .willReturn(
                                 aResponse()
                                         .withBody(expectedPid)
-                                        .withStatus(HttpURLConnection.HTTP_OK)
+                                        .withStatus(status)
 
                         )
         );

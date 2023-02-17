@@ -31,6 +31,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private final transient URI dataportenBaseUri;
     private final transient AuthClient authClient;
 
+    @JacocoGenerated
     public DataportenPublicationChannelClient(URI uri, AuthClient authClient) {
         this(HttpClient.newBuilder().build(), uri, authClient);
     }
@@ -77,9 +78,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                     throw new NotFoundException("Journal not found!");
                 default:
                     LOGGER.error("Error fetching journal: {} {}", response.statusCode(), response.body());
-                    throw new BadGatewayException(
-                            String.format("Unexpected response from upstream! Got status code %d.",
-                            response.statusCode()));
+                    throw new BadGatewayException("Unexpected response from upstream!");
             }
         } catch (IOException | InterruptedException e) {
             throw logAndCreateBadGatewayException(request.uri(), e);
