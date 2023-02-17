@@ -5,7 +5,7 @@ import static nva.commons.core.paths.UriWrapper.HTTPS;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelSource;
+import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.request.FetchJournalRequest;
 import no.sikt.nva.pubchannels.model.JournalDto;
 import nva.commons.apigateway.ApiGatewayHandler;
@@ -22,18 +22,18 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     public static final String JOURNAL_PATH_ELEMENT = "journal";
 
-    private final transient PublicationChannelSource publicationChannelSource;
+    private final transient PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
     public FetchJournalByIdentifierAndYearHandler() {
         super(Void.class, new Environment());
-        this.publicationChannelSource = DataportenPublicationChannelSource.defaultInstance();
+        this.publicationChannelClient = DataportenPublicationChannelClient.defaultInstance();
     }
 
     public FetchJournalByIdentifierAndYearHandler(Environment environment,
-                                                  PublicationChannelSource publicationChannelSource) {
+                                                  PublicationChannelClient publicationChannelClient) {
         super(Void.class, environment);
-        this.publicationChannelSource = publicationChannelSource;
+        this.publicationChannelClient = publicationChannelClient;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
 
         var journalIdBaseUri = constructJournalIdBaseUri();
 
-        return JournalDto.create(journalIdBaseUri, publicationChannelSource.getJournal(request.getIdentifier(),
+        return JournalDto.create(journalIdBaseUri, publicationChannelClient.getJournal(request.getIdentifier(),
                                                                                        request.getYear()));
     }
 
