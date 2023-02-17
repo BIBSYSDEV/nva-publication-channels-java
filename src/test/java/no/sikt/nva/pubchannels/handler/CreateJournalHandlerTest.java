@@ -82,7 +82,8 @@ class CreateJournalHandlerTest {
 
         var actualPid = response.getBodyObject(PidDto.class);
 
-        assertThat(actualPid, is(equalTo(new PidDto(expectedPid))));
+        URI selfUriBase = URI.create("https://localhost/findjournal");
+        assertThat(actualPid, is(equalTo(PidDto.create(selfUriBase, expectedPid))));
     }
 
     private static void stubResponse(String expectedPid, TokenBody token) {
