@@ -16,6 +16,8 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
@@ -69,7 +71,7 @@ class CreateJournalHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         TokenBody token = new TokenBody("token1", "Bearer");
-        stubAuth(token);
+        stubAuth(token, HttpURLConnection.HTTP_OK);
         stubResponse(expectedPid, token, HttpURLConnection.HTTP_OK);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -92,7 +94,7 @@ class CreateJournalHandlerTest {
         var output = new ByteArrayOutputStream();
 
         TokenBody token = new TokenBody("token1", "Bearer");
-        stubAuth(token);
+        stubAuth(token, HttpURLConnection.HTTP_OK);
         stubResponse(null, token, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -115,7 +117,7 @@ class CreateJournalHandlerTest {
         var output = new ByteArrayOutputStream();
 
         TokenBody token = new TokenBody("token1", "Bearer");
-        stubAuth(token);
+        stubAuth(token, HttpURLConnection.HTTP_OK);
         stubResponse(null, token, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -138,8 +140,31 @@ class CreateJournalHandlerTest {
         var output = new ByteArrayOutputStream();
 
         TokenBody token = new TokenBody("token1", "Bearer");
-        stubAuth(token);
+        stubAuth(token, HttpURLConnection.HTTP_OK);
         stubResponse(null, token, HttpURLConnection.HTTP_INTERNAL_ERROR);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
+    void shoudReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
+        var name = "Test Journal";
+        InputStream input = constructRequest(name);
+        var output = new ByteArrayOutputStream();
+
+        TokenBody token = new TokenBody("token1", "Bearer");
+        stubAuth(token, httpStatusCode);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -160,7 +185,7 @@ class CreateJournalHandlerTest {
                 .build();
     }
 
-    private static void stubResponse(String expectedPid, TokenBody token, int status) {
+    private static void stubResponse(String expectedPid, TokenBody token, int statusCode) {
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader("Accept", WireMock.equalTo("application/json"))
@@ -170,13 +195,13 @@ class CreateJournalHandlerTest {
                         .willReturn(
                                 aResponse()
                                         .withBody(expectedPid)
-                                        .withStatus(status)
+                                        .withStatus(statusCode)
 
                         )
         );
     }
 
-    private static void stubAuth(TokenBody token) throws JsonProcessingException {
+    private static void stubAuth(TokenBody token, int statusCode) throws JsonProcessingException {
         stubFor(
                 post("/oauth/token")
                         .withBasicAuth("", "")
@@ -184,7 +209,7 @@ class CreateJournalHandlerTest {
                         .willReturn(
                                 aResponse()
                                         .withBody(dtoObjectMapper.writeValueAsString(token))
-                                        .withStatus(HttpURLConnection.HTTP_OK)
+                                        .withStatus(statusCode)
                         )
         );
     }

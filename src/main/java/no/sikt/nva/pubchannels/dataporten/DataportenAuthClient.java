@@ -67,8 +67,7 @@ public class DataportenAuthClient implements AuthClient {
                 return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
             }
             LOGGER.error("Error excecuting request: {} {} {}", request.uri(), response.statusCode(), response.body());
-            throw new BadGatewayException(String.format("Unexpected response from upstream! Got status code %d.",
-                    response.statusCode()));
+            throw new BadGatewayException("Unexpected response from upstream!");
         } catch (IOException | InterruptedException e) {
             throw logAndCreateBadGatewayException(request.uri(), e);
         }
