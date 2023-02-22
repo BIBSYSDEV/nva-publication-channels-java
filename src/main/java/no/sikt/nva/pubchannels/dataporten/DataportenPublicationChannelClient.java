@@ -1,17 +1,5 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static nva.commons.core.attempt.Try.attempt;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Set;
-
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -23,6 +11,19 @@ import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Set;
+
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static nva.commons.core.attempt.Try.attempt;
 
 public class DataportenPublicationChannelClient implements PublicationChannelClient {
 
@@ -51,16 +52,16 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     @Override
     public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
         var request = createFetchJournalRequest(identifier, year);
-        return attempt(()->executeRequest(request, DataportenJournal.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(),failure.getException()));
+        return attempt(() -> executeRequest(request, DataportenJournal.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
     public String createJournal(String name) throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, name);
-        return attempt(()->executeRequest(request, String.class))
-                .orElseThrow(failure->logAndCreateBadGatewayException(request.uri(),failure.getException()));
+        return attempt(() -> executeRequest(request, String.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz)
@@ -96,13 +97,13 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private HttpRequest createFetchJournalRequest(String identifier, String year) {
         var uri = UriWrapper.fromUri(dataportenBaseUri)
-                      .addChild("findjournal", identifier, year)
-                      .getUri();
+                .addChild("findjournal", identifier, year)
+                .getUri();
         return HttpRequest.newBuilder()
-                   .header("Accept", APPLICATION_JSON)
-                   .uri(uri)
-                   .GET()
-                   .build();
+                .header("Accept", APPLICATION_JSON)
+                .uri(uri)
+                .GET()
+                .build();
     }
 
     private HttpRequest createCreateJournalRequest(String token, String name) {
