@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.dataporten;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
@@ -7,7 +8,9 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Set;
 
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -27,6 +30,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     public static final String APPLICATION_JSON = "application/json";
+    private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -47,43 +51,45 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     @Override
     public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
         var request = createFetchJournalRequest(identifier, year);
-        return executeRequest(request, DataportenJournal.class);
+        return attempt(()->executeRequest(request, DataportenJournal.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(),failure.getException()));
     }
 
     @Override
     public String createJournal(String name) throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, name);
-        return executeRequest(request, String.class);
+        return attempt(()->executeRequest(request, String.class))
+                .orElseThrow(failure->logAndCreateBadGatewayException(request.uri(),failure.getException()));
     }
 
-    private <T> T executeRequest(HttpRequest request, Class<T> clazz) throws ApiGatewayException {
-        try {
-            var response = httpClient.send(request, BodyHandlers.ofString());
+    private <T> T executeRequest(HttpRequest request, Class<T> clazz)
+            throws ApiGatewayException, IOException, InterruptedException {
+        var response = httpClient.send(request, BodyHandlers.ofString());
 
-            switch (response.statusCode()) {
-                case HttpURLConnection.HTTP_OK:
-                case HttpURLConnection.HTTP_CREATED:
-                    if (clazz == String.class) {
-                        return clazz.cast(response.body());
-                    } else {
-                        return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
-                    }
-                case HttpURLConnection.HTTP_NOT_FOUND:
-                    throw new NotFoundException("Journal not found!");
-                default:
-                    LOGGER.error("Error fetching journal: {} {}", response.statusCode(), response.body());
-                    throw new BadGatewayException("Unexpected response from upstream!");
-            }
-        } catch (IOException | InterruptedException e) {
-            throw logAndCreateBadGatewayException(request.uri(), e);
+        if (!OK_STATUSES.contains(response.statusCode())) {
+            handleError(response);
         }
+
+        return OK_STATUSES.contains(response.statusCode()) && clazz == String.class
+                ? clazz.cast(response.body())
+                : attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
     }
 
-    private BadGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
+    private void handleError(HttpResponse<String> response) throws ApiGatewayException {
+        if (HTTP_NOT_FOUND == response.statusCode()) {
+            throw new NotFoundException("Journal not found!");
+        }
+        LOGGER.error("Error fetching journal: {} {}", response.statusCode(), response.body());
+        throw new BadGatewayException("Unexpected response from upstream!");
+    }
+
+    private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
         LOGGER.error("Unable to reach upstream: {}", uri, e);
         if (e instanceof InterruptedException) {
             Thread.currentThread().interrupt();
+        } else if (e instanceof ApiGatewayException) {
+            return (ApiGatewayException) e;
         }
         return new BadGatewayException("Unable to reach upstream!");
     }
