@@ -41,7 +41,7 @@ public class DataportenAuthClient implements AuthClient {
     @Override
     public String getToken() throws ApiGatewayException {
         var request = createTokenRequest(clientId, clientSecret);
-        var tokenBody = fetchToken(request, TokenBody.class);
+        var tokenBody = fetchToken(request);
         return tokenBody.getAccessToken();
     }
 
@@ -66,19 +66,19 @@ public class DataportenAuthClient implements AuthClient {
                 .getUri();
     }
 
-    private <T> T fetchToken(HttpRequest request, Class<T> clazz) throws ApiGatewayException {
-        return attempt(() -> executeRequest(request, clazz))
+    private TokenBody fetchToken(HttpRequest request) throws ApiGatewayException {
+        return attempt(() -> executeRequest(request))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
-    private <T> T executeRequest(HttpRequest request, Class<T> clazz)
+    private TokenBody executeRequest(HttpRequest request)
             throws IOException, InterruptedException, BadGatewayException {
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             reportFailingRequest(request, response);
         }
-        return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
+        return attempt(() -> dtoObjectMapper.readValue(response.body(), TokenBody.class)).orElseThrow();
     }
 
     private static void reportFailingRequest(HttpRequest request, HttpResponse<String> response)
