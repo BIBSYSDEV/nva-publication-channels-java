@@ -57,7 +57,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     @Override
     public String createJournal(String name) throws ApiGatewayException {
-        var token = authClient.fetchToken();
+        var token = authClient.getToken();
         var request = createCreateJournalRequest(token, name);
         return executeRequest(request, String.class);
     }

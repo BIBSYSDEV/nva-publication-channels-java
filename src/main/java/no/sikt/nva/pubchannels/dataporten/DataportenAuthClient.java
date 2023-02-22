@@ -43,7 +43,7 @@ public class DataportenAuthClient implements AuthClient {
 
 
     @Override
-    public String fetchToken() throws ApiGatewayException {
+    public String getToken() throws ApiGatewayException {
         var request = createTokenRequest(clientId, clientSecret);
         var tokenBody = fetchToken(request, TokenBody.class);
         return tokenBody.getAccessToken();
@@ -75,7 +75,8 @@ public class DataportenAuthClient implements AuthClient {
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
-    private <T> T executeRequest(HttpRequest request, Class<T> clazz) throws IOException, InterruptedException, BadGatewayException {
+    private <T> T executeRequest(HttpRequest request, Class<T> clazz)
+            throws IOException, InterruptedException, BadGatewayException {
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
@@ -84,12 +85,12 @@ public class DataportenAuthClient implements AuthClient {
         return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
     }
 
-    private static void reportFailingRequest(HttpRequest request, HttpResponse<String> response) throws BadGatewayException {
+    private static void reportFailingRequest(HttpRequest request, HttpResponse<String> response)
+            throws BadGatewayException {
         LOGGER.error("Error executing request: {} {} {}", request.uri(), response.statusCode(), response.body());
         throw new BadGatewayException("Unexpected response from upstream!");
     }
 
-    // And here it is. I guess I like having the collected handling of exceptions in this way. It makes it easy to throw anywhere and delegate to a single method. It works here because we're throwing ApiGatewayExceptions. Is it pretty? No, but it arguably less ugly than the alternative.
     private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
 
         LOGGER.error("Unable to reach upstream: {}", uri, e);
