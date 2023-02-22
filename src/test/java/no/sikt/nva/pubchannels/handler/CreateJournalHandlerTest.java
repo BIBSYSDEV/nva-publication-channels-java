@@ -15,11 +15,11 @@ import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import org.junit.jupiter.api.AfterEach;
+import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 import java.io.ByteArrayOutputStream;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -36,7 +37,10 @@ import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest {
@@ -58,7 +62,7 @@ class CreateJournalHandlerTest {
 
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
-        this.environment = Mockito.mock(Environment.class);
+        this.environment = mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
         when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
@@ -180,6 +184,36 @@ class CreateJournalHandlerTest {
 
         assertThat(problem.getDetail(),
                 is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
+        var httpAuthClient = mock(HttpClient.class);
+        when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
+        var dataportenAuthBaseUri = URI.create("https://localhost:9898");
+        var dataportenAuthClient = new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
+        var httpPublicationChannelClient = mock(HttpClient.class);
+        var publicationChannelClient = new DataportenPublicationChannelClient(httpPublicationChannelClient,
+                        dataportenAuthBaseUri,
+                        dataportenAuthClient);
+        this.handlerUnderTest = new CreateJournalHandler(environment, publicationChannelClient);
+
+        var name = "Test Journal";
+        var input = constructRequest(name);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
+        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     private static InputStream constructRequest(String name) throws JsonProcessingException {
