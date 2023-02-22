@@ -27,14 +27,9 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     public static final String APPLICATION_JSON = "application/json";
-    private final transient HttpClient httpClient;
-    private final transient URI dataportenBaseUri;
-    private final transient AuthClient authClient;
-
-    @JacocoGenerated
-    public DataportenPublicationChannelClient(URI uri, AuthClient authClient) {
-        this(HttpClient.newBuilder().build(), uri, authClient);
-    }
+    private final HttpClient httpClient;
+    private final URI dataportenBaseUri;
+    private final AuthClient authClient;
 
     public DataportenPublicationChannelClient(HttpClient httpClient, URI dataportenBaseUri, AuthClient authClient) {
         this.httpClient = httpClient;

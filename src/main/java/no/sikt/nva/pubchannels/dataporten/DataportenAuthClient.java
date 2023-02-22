@@ -30,10 +30,6 @@ public class DataportenAuthClient implements AuthClient {
     private final String clientId;
     private final String clientSecret;
 
-    public DataportenAuthClient(URI baseUri, String clientId, String clientSecret) {
-        this(HttpClient.newBuilder().build(), baseUri, clientId, clientSecret);
-    }
-
     public DataportenAuthClient(HttpClient httpClient, URI baseUri, String clientId, String clientSecret) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;

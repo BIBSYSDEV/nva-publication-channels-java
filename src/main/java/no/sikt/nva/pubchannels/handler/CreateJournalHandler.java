@@ -13,6 +13,7 @@ import nva.commons.core.paths.UriWrapper;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.http.HttpClient;
 
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
@@ -34,8 +35,10 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
         String clientSecret = environment.readEnv(ENV_DATAPORTEN_AUTH_CLIENT_SECRET);
         URI authBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_AUTH_BASE_URI));
         URI pubChannelBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI));
-        AuthClient authClient = new DataportenAuthClient(authBaseUri, clientId, clientSecret);
-        publicationChannelClient = new DataportenPublicationChannelClient(pubChannelBaseUri, authClient);
+        AuthClient authClient =
+                new DataportenAuthClient(HttpClient.newBuilder().build(),authBaseUri, clientId, clientSecret);
+        publicationChannelClient =
+                new DataportenPublicationChannelClient(HttpClient.newBuilder().build(),pubChannelBaseUri, authClient);
     }
 
     public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
