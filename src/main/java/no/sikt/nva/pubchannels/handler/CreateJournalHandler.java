@@ -37,9 +37,9 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
         var clientSecret = environment.readEnv(ENV_DATAPORTEN_AUTH_CLIENT_SECRET);
         var authBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_AUTH_BASE_URI));
         var pubChannelBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI));
-        var authClient = new DataportenAuthClient(HttpClient.newBuilder().build(),authBaseUri, clientId, clientSecret);
+        var authClient = new DataportenAuthClient(HttpClient.newBuilder().build(), authBaseUri, clientId, clientSecret);
         publicationChannelClient =
-                new DataportenPublicationChannelClient(HttpClient.newBuilder().build(),pubChannelBaseUri, authClient);
+                new DataportenPublicationChannelClient(HttpClient.newBuilder().build(), pubChannelBaseUri, authClient);
     }
 
     public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
@@ -53,7 +53,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
 
         var journalPid = publicationChannelClient.createJournal(input.getName());
         var createdUri = constructJournalIdUri(journalPid);
-        addAdditionalHeaders(()-> Map.of(LOCATION_HEADER, createdUri.toString()));
+        addAdditionalHeaders(() -> Map.of(LOCATION_HEADER, createdUri.toString()));
         return null;
     }
 

@@ -92,7 +92,7 @@ class CreateJournalHandlerTest {
 
         handlerUnderTest.handleRequest(constructRequest("Test Journal"), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, PidDto.class);
+        var response = GatewayResponse.fromOutputStream(output, Void.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
