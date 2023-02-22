@@ -159,7 +159,7 @@ class CreateJournalHandlerTest {
     @ParameterizedTest
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
             HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
-    void shoudReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
+    void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
         var name = "Test Journal";
         InputStream input = constructRequest(name);
         var output = new ByteArrayOutputStream();
