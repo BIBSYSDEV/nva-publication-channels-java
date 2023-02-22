@@ -14,19 +14,21 @@ import nva.commons.core.paths.UriWrapper;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.util.Map;
 
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
-public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest, PidDto> {
+public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest, Void> {
     private static final String ENV_DATAPORTEN_AUTH_BASE_URI = "ENV_DATAPORTEN_AUTH_BASE_URI";
     private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI =
             "ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
-    private static final String JOURNAL_PATH_ELEMENT = "JOURNAL_PATH_ELEMENT";
-    private final PublicationChannelClient publicationChannelClient;
     private static final String ENV_DATAPORTEN_AUTH_CLIENT_ID = "ENV_DATAPORTEN_AUTH_CLIENT_ID";
     private static final String ENV_DATAPORTEN_AUTH_CLIENT_SECRET = "ENV_DATAPORTEN_AUTH_CLIENT_SECRET";
+    private static final String JOURNAL_PATH_ELEMENT = "journal";
+    private static final String LOCATION_HEADER = "Location";
+    private final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
     public CreateJournalHandler() {
@@ -46,24 +48,25 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     }
 
     @Override
-    protected PidDto processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
+    protected Void processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
 
         var journalPid = publicationChannelClient.createJournal(input.getName());
-        var uri = constructJournalIdBaseUri();
-        return PidDto.create(uri, journalPid);
+        var createdUri = constructJournalIdUri(journalPid);
+        addAdditionalHeaders(()-> Map.of(LOCATION_HEADER, createdUri.toString()));
+        return null;
     }
 
     @Override
-    protected Integer getSuccessStatusCode(CreateJournalRequest input, PidDto output) {
+    protected Integer getSuccessStatusCode(CreateJournalRequest input, Void output) {
         return HttpURLConnection.HTTP_CREATED;
     }
 
-    private URI constructJournalIdBaseUri() {
+    private URI constructJournalIdUri(String pid) {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
         return new UriWrapper(HTTPS, apiDomain)
-                .addChild(customDomainBasePath, JOURNAL_PATH_ELEMENT)
+                .addChild(customDomainBasePath, JOURNAL_PATH_ELEMENT, pid)
                 .getUri();
     }
 }

@@ -14,6 +14,7 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.AfterEach;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -46,7 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 class CreateJournalHandlerTest {
 
     public static final TokenBody TOKEN_BODY = new TokenBody("token1", "Bearer");
-    public static final String LOCATION = "https://localhost/findjournal";
+    public static final String LOCATION = "Location";
     public static final String HEADER_ACCEPT = "Accept";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_AUTHORIZATION = "Authorization";
@@ -95,11 +97,11 @@ class CreateJournalHandlerTest {
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
-        var actualPid = response.getBodyObject(PidDto.class);
 
-        var selfUriBase = URI.create(LOCATION);
-        assertThat(actualPid, is(equalTo(PidDto.create(selfUriBase, expectedPid))));
+        var actualLocation = URI.create(response.getHeaders().get(LOCATION));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
+
 
     @Test
     void shoudReturnBadGatewayWhenUnautorized() throws IOException {
@@ -214,6 +216,12 @@ class CreateJournalHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+    }
+
+    private URI createExpectedUri(String pid) {
+        return new UriWrapper(HTTPS, "localhost")
+                .addChild("publication-channels", "journal", pid)
+                .getUri();
     }
 
     private static InputStream constructRequest(String name) throws JsonProcessingException {
