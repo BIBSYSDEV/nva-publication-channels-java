@@ -59,7 +59,8 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
 
         var journalPid = publicationChannelClient.createJournal(validInput.getName());
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, constructJournalIdUri(journalPid).toString()));
+        var createdUri = constructJournalIdUri(journalPid.getPid());
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
     }
 

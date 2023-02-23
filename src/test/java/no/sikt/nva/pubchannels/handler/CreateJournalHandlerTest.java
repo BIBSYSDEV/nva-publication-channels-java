@@ -9,6 +9,7 @@ import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.TokenBody;
+import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
 import no.sikt.nva.pubchannels.model.CreateJournalRequest;
 import no.sikt.nva.pubchannels.model.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.FakeContext;
@@ -89,7 +90,7 @@ class CreateJournalHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
+        stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder().withName("Test Journal").build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -339,16 +340,18 @@ class CreateJournalHandlerTest {
                 .build();
     }
 
-    private static void stubResponse(String expectedPid, int statusCode) {
+    private static void stubResponse(String expectedPid, int statusCode) throws JsonProcessingException {
+        var body = new CreateJournalResponse(expectedPid);
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader(HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                        .withHeader(HttpHeaders.CONTENT_TYPE,
+                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
                         .withHeader(HttpHeaders.AUTHORIZATION,
                                 WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
                         .willReturn(
                                 aResponse()
-                                        .withBody(expectedPid)
+                                        .withBody(dtoObjectMapper.writeValueAsString(body))
                                         .withStatus(statusCode)
 
                         )
@@ -359,7 +362,8 @@ class CreateJournalHandlerTest {
         stubFor(
                 post("/oauth/token")
                         .withBasicAuth(USERNAME, PASSWORD)
-                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
+                        .withHeader(HttpHeaders.CONTENT_TYPE,
+                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
                         .willReturn(
                                 aResponse()
                                         .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))
