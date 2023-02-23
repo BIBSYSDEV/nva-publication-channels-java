@@ -18,7 +18,7 @@ import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.model.JournalDto;
 import nva.commons.core.SingletonCollector;
 
-public class PublicationChannelMockRegistry {
+public class PublicationChannelMockClient {
 
     private final Map<String, JournalDto> journalsByIdentifier = new ConcurrentHashMap<>();
 
