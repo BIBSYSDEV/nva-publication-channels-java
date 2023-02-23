@@ -226,7 +226,7 @@ class CreateJournalHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("String is too")));
+        assertThat(problem.getDetail(), is(containsString("Name is too")));
     }
 
     @ParameterizedTest
@@ -240,7 +240,7 @@ class CreateJournalHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Issn has an invalid format")));
+        assertThat(problem.getDetail(), is(containsString("PIssn has an invalid ISSN format")));
 
     }
 
@@ -280,7 +280,7 @@ class CreateJournalHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Issn has an invalid format")));
+        assertThat(problem.getDetail(), is(containsString("EIssn has an invalid ISSN format")));
 
     }
 
@@ -297,7 +297,7 @@ class CreateJournalHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Url has an invalid format")));
+        assertThat(problem.getDetail(), is(containsString("Url has an invalid URL format")));
 
     }
 

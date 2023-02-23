@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.request.validator.Validator;
 import no.sikt.nva.pubchannels.model.CreateJournalRequest;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -19,6 +18,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.Map;
 
+import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateOptionalIssn;
+import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateOptionalUrl;
+import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateString;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
@@ -62,10 +64,10 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     }
 
     private CreateJournalRequest validate(CreateJournalRequest input) {
-        Validator.string(input.getName(), 5, 300);
-        Validator.optIssn(input.getPissn());
-        Validator.optIssn(input.getEissn());
-        Validator.optUrl(input.getUrl());
+        validateString(input.getName(), 5, 300, "Name");
+        validateOptionalIssn(input.getPissn(), "PIssn");
+        validateOptionalIssn(input.getEissn(), "EIssn");
+        validateOptionalUrl(input.getUrl(), "Url");
         return input;
     }
 
