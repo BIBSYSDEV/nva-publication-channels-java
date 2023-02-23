@@ -310,7 +310,7 @@ class CreateJournalHandlerTest {
     }
 
     static Stream<String> validIssn() {
-        return Stream.of("1234-1234", "0000-000X", "9999-9999");
+        return Stream.of("0317-8471", "1050-124X");
     }
 
     static Stream<String> invalidUri() {
