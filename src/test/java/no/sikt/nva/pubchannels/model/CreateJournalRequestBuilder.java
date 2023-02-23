@@ -6,22 +6,22 @@ public class CreateJournalRequestBuilder {
     private String onlineIssn = null;
     private String url = null;
 
-    public CreateJournalRequestBuilder name(String name) {
+    public CreateJournalRequestBuilder withName(String name) {
         this.name = name;
         return this;
     }
 
-    public CreateJournalRequestBuilder printIssn(String printIssn) {
+    public CreateJournalRequestBuilder withPrintIssn(String printIssn) {
         this.printIssn = printIssn;
         return this;
     }
 
-    public CreateJournalRequestBuilder onlineIssn(String onlineIssn) {
+    public CreateJournalRequestBuilder withOnlineIssn(String onlineIssn) {
         this.onlineIssn = onlineIssn;
         return this;
     }
 
-    public CreateJournalRequestBuilder url(String url) {
+    public CreateJournalRequestBuilder withUrl(String url) {
         this.url = url;
         return this;
     }
