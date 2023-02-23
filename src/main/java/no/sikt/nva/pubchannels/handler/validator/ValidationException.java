@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.request.validator;
+package no.sikt.nva.pubchannels.handler.validator;
 
 public class ValidationException extends RuntimeException {
 
