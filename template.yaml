@@ -127,7 +127,7 @@ Resources:
           CreateJournalEvent:
             Type: Api
             Properties:
-              RestApiId: !Ref PublicChannelsApi
+              RestApiId: !Ref PublicationChannelsApi
               Path: /journal
               Method: post
 
