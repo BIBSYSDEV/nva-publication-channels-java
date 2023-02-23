@@ -57,8 +57,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
 
         var journalPid = publicationChannelClient.createJournal(validInput.getName());
-        var createdUri = constructJournalIdUri(journalPid);
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, constructJournalIdUri(journalPid).toString()));
         return null;
     }
 
@@ -66,6 +65,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
         Validator.string(input.getName(), 5, 300);
         Validator.optIssn(input.getPissn());
         Validator.optIssn(input.getEissn());
+        Validator.optUrl(input.getUrl());
         return input;
     }
 

@@ -4,6 +4,7 @@ public class CreateJournalRequestBuilder {
     private String name;
     private String pissn = null;
     private String eissn = null;
+    private String url = null;
 
     public CreateJournalRequestBuilder name(String name) {
         this.name = name;
@@ -20,7 +21,12 @@ public class CreateJournalRequestBuilder {
         return this;
     }
 
-    public CreateJournalRequest createCreateJournalRequest() {
-        return new CreateJournalRequest(name, pissn, eissn);
+    public CreateJournalRequestBuilder url(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public CreateJournalRequest build() {
+        return new CreateJournalRequest(name, pissn, eissn, url);
     }
 }
