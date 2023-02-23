@@ -54,7 +54,7 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
         var journalIdBaseUri = constructJournalIdBaseUri();
 
         return JournalDto.create(journalIdBaseUri,
-                publicationChannelClient.getJournal(request.getIdentifier(), request.getYear()));
+                publicationChannelClient.getJournalByIdentifierAndYear(request.getIdentifier(), request.getYear()));
     }
 
     private RequestInfo validate(RequestInfo requestInfo) {

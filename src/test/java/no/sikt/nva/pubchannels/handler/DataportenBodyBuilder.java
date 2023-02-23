@@ -1,8 +1,11 @@
 package no.sikt.nva.pubchannels.handler;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import no.sikt.nva.pubchannels.dataporten.DataportenLevel;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
@@ -47,6 +50,16 @@ public class DataportenBodyBuilder {
 
     public DataportenBodyBuilder withKurl(String kurl) {
         bodyMap.put("kURL", kurl);
+        return this;
+    }
+
+    public DataportenBodyBuilder withLevels(List<DataportenLevel> levels) {
+        bodyMap.put("levels", levels);
+        return this;
+    }
+
+    public DataportenBodyBuilder withCurrent(DataportenLevel currentLevel) {
+        bodyMap.put("current", currentLevel);
         return this;
     }
 

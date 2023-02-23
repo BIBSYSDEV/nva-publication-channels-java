@@ -37,6 +37,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+    private static final String FETCH_JOURNAL_PATH = "findjournal";
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -55,10 +56,16 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
-        var request = createFetchJournalRequest(identifier, year);
+    public ThirdPartyJournal getJournalByIdentifierAndYear(String identifier, String year) throws ApiGatewayException {
+        var request = createFetchRequest(FETCH_JOURNAL_PATH, identifier, year);
         return attempt(() -> executeRequest(request, DataportenJournal.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    }
+
+    @Override
+    public FetchJournalByIdentifierDto getJournalByIdentifier(String identifier) {
+        var request = createFetchRequest(FETCH_JOURNAL_PATH, identifier);
+        return attempt(() -> executeRequest(request, FetchJournalByIdentifierDto.class)).orElseThrow();
     }
 
     @Override
@@ -98,10 +105,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
         return new BadGatewayException("Unable to reach upstream!");
     }
 
-    private HttpRequest createFetchJournalRequest(String identifier, String year) {
+    private HttpRequest createFetchRequest(String... children) {
         return HttpRequest.newBuilder()
                 .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                .uri(constructUri("findjournal", identifier, year))
+                .uri(constructUri(children))
                 .GET()
                 .build();
     }
