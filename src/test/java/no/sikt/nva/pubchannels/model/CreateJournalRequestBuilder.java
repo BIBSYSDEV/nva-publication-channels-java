@@ -2,8 +2,8 @@ package no.sikt.nva.pubchannels.model;
 
 public class CreateJournalRequestBuilder {
     private String name;
-    private String pissn = null;
-    private String eissn = null;
+    private String printIssn = null;
+    private String onlineIssn = null;
     private String url = null;
 
     public CreateJournalRequestBuilder name(String name) {
@@ -11,13 +11,13 @@ public class CreateJournalRequestBuilder {
         return this;
     }
 
-    public CreateJournalRequestBuilder pissn(String pissn) {
-        this.pissn = pissn;
+    public CreateJournalRequestBuilder printIssn(String printIssn) {
+        this.printIssn = printIssn;
         return this;
     }
 
-    public CreateJournalRequestBuilder eissn(String eissn) {
-        this.eissn = eissn;
+    public CreateJournalRequestBuilder onlineIssn(String onlineIssn) {
+        this.onlineIssn = onlineIssn;
         return this;
     }
 
@@ -27,6 +27,6 @@ public class CreateJournalRequestBuilder {
     }
 
     public CreateJournalRequest build() {
-        return new CreateJournalRequest(name, pissn, eissn, url);
+        return new CreateJournalRequest(name, printIssn, onlineIssn, url);
     }
 }

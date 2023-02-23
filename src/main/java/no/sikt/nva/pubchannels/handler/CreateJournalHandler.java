@@ -18,9 +18,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.Map;
 
-import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateOptionalIssn;
-import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateOptionalUrl;
-import static no.sikt.nva.pubchannels.handler.request.validator.Validator.validateString;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
@@ -65,8 +65,8 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
 
     private CreateJournalRequest validate(CreateJournalRequest input) {
         validateString(input.getName(), 5, 300, "Name");
-        validateOptionalIssn(input.getPissn(), "PIssn");
-        validateOptionalIssn(input.getEissn(), "EIssn");
+        validateOptionalIssn(input.getPrintIssn(), "PrintIssn");
+        validateOptionalIssn(input.getOnlineIssn(), "OnlineIssn");
         validateOptionalUrl(input.getUrl(), "Url");
         return input;
     }

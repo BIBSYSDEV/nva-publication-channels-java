@@ -14,7 +14,10 @@ import nva.commons.core.paths.UriWrapper;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Year;
 
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateUuid;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
@@ -23,6 +26,9 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     public static final String JOURNAL_PATH_ELEMENT = "journal";
+    private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
+    private static final String YEAR_PATH_PARAM_NAME = "year";
+    public static final Year MIN_ACCEPTABLE_YEAR = Year.parse("2004");
 
     private final PublicationChannelClient publicationChannelClient;
 
@@ -41,13 +47,21 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     @Override
     protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
 
-        var request = attempt(() -> new FetchJournalRequest(requestInfo))
+        var request = attempt(() -> validate(requestInfo))
+                .map(FetchJournalRequest::new)
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
         var journalIdBaseUri = constructJournalIdBaseUri();
 
-        return JournalDto.create(journalIdBaseUri, publicationChannelClient.getJournal(request.getIdentifier(),
-                request.getYear()));
+        return JournalDto.create(journalIdBaseUri,
+                publicationChannelClient.getJournal(request.getIdentifier(), request.getYear()));
+    }
+
+    private RequestInfo validate(RequestInfo requestInfo) {
+        validateUuid(requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim(), "Pid");
+        validateYear(requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim(), MIN_ACCEPTABLE_YEAR,
+                "Year");
+        return requestInfo;
     }
 
     private URI constructJournalIdBaseUri() {

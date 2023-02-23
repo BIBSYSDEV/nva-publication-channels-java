@@ -233,14 +233,14 @@ class CreateJournalHandlerTest {
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
         var testJournal = new CreateJournalRequestBuilder().name(VALID_NAME)
-                .pissn(issn).build();
+                .printIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("PIssn has an invalid ISSN format")));
+        assertThat(problem.getDetail(), is(containsString("PrintIssn has an invalid ISSN format")));
 
     }
 
@@ -254,7 +254,7 @@ class CreateJournalHandlerTest {
 
         var testJournal = new CreateJournalRequestBuilder()
                 .name(VALID_NAME)
-                .pissn(issn)
+                .printIssn(issn)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
@@ -272,7 +272,7 @@ class CreateJournalHandlerTest {
     void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
         var testJournal = new CreateJournalRequestBuilder()
                 .name(VALID_NAME)
-                .eissn(issn)
+                .onlineIssn(issn)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -280,7 +280,7 @@ class CreateJournalHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("EIssn has an invalid ISSN format")));
+        assertThat(problem.getDetail(), is(containsString("OnlineIssn has an invalid ISSN format")));
 
     }
 
