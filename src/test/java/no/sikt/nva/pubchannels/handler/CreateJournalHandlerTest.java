@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.TokenBody;
@@ -50,14 +51,10 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest {
 
-    public static final TokenBody TOKEN_BODY = new TokenBody("token1", "Bearer");
-    public static final String LOCATION = "Location";
-    public static final String HEADER_ACCEPT = "Accept";
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HEADER_AUTHORIZATION = "Authorization";
-    public static final String PASSWORD = "";
-    public static final String USERNAME = "";
-    public static final String VALID_NAME = "Valid Name";
+    private static final TokenBody TOKEN_BODY = new TokenBody("token1", "Bearer");
+    private static final String PASSWORD = "";
+    private static final String USERNAME = "";
+    private static final String VALID_NAME = "Valid Name";
     private transient CreateJournalHandler handlerUnderTest;
 
     private static final Context context = new FakeContext();
@@ -94,7 +91,7 @@ class CreateJournalHandlerTest {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
 
-        var testJournal = new CreateJournalRequestBuilder().name("Test Journal").build();
+        var testJournal = new CreateJournalRequestBuilder().withName("Test Journal").build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, Void.class);
@@ -103,7 +100,7 @@ class CreateJournalHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
 
-        var actualLocation = URI.create(response.getHeaders().get(LOCATION));
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
 
@@ -111,7 +108,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenUnautorized() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(new CreateJournalRequestBuilder().name(name).build());
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(name).build());
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_UNAUTHORIZED);
@@ -132,7 +129,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenForbidden() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(new CreateJournalRequestBuilder().name(name).build());
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(name).build());
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_FORBIDDEN);
@@ -153,7 +150,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(new CreateJournalRequestBuilder().name(name).build());
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(name).build());
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -176,7 +173,7 @@ class CreateJournalHandlerTest {
             HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(new CreateJournalRequestBuilder().name(name).build());
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(name).build());
 
         stubAuth(httpStatusCode);
 
@@ -198,7 +195,7 @@ class CreateJournalHandlerTest {
         this.handlerUnderTest = new CreateJournalHandler(environment, setupIntteruptedClient());
 
         var name = "Test Journal";
-        var input = constructRequest(new CreateJournalRequestBuilder().name(name).build());
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(name).build());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -219,7 +216,7 @@ class CreateJournalHandlerTest {
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
-        var testJournal = new CreateJournalRequestBuilder().name(name).build();
+        var testJournal = new CreateJournalRequestBuilder().withName(name).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -232,8 +229,8 @@ class CreateJournalHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var testJournal = new CreateJournalRequestBuilder().name(VALID_NAME)
-                .printIssn(issn).build();
+        var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME)
+                .withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -253,8 +250,8 @@ class CreateJournalHandlerTest {
         stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateJournalRequestBuilder()
-                .name(VALID_NAME)
-                .printIssn(issn)
+                .withName(VALID_NAME)
+                .withPrintIssn(issn)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
@@ -263,7 +260,7 @@ class CreateJournalHandlerTest {
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
-        var actualLocation = URI.create(response.getHeaders().get(LOCATION));
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
 
@@ -271,8 +268,8 @@ class CreateJournalHandlerTest {
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
         var testJournal = new CreateJournalRequestBuilder()
-                .name(VALID_NAME)
-                .onlineIssn(issn)
+                .withName(VALID_NAME)
+                .withOnlineIssn(issn)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -288,8 +285,8 @@ class CreateJournalHandlerTest {
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
         var testJournal = new CreateJournalRequestBuilder()
-                .name(VALID_NAME)
-                .url(url)
+                .withName(VALID_NAME)
+                .withUrl(url)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -345,9 +342,9 @@ class CreateJournalHandlerTest {
     private static void stubResponse(String expectedPid, int statusCode) {
         stubFor(
                 post("/createjournal/createpid")
-                        .withHeader(HEADER_ACCEPT, WireMock.equalTo("application/json"))
-                        .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo("application/json"))
-                        .withHeader(HEADER_AUTHORIZATION,
+                        .withHeader(HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                        .withHeader(HttpHeaders.AUTHORIZATION,
                                 WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
                         .willReturn(
                                 aResponse()
@@ -362,7 +359,7 @@ class CreateJournalHandlerTest {
         stubFor(
                 post("/oauth/token")
                         .withBasicAuth(USERNAME, PASSWORD)
-                        .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo("x-www-form-urlencoded"))
+                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
                         .willReturn(
                                 aResponse()
                                         .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))
