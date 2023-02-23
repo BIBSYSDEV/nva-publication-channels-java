@@ -52,7 +52,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
             throws ApiGatewayException {
 
         var journalPid = publicationChannelClient.createJournal(input.getName());
-        var createdUri = constructJournalIdUri(journalPid);
+        var createdUri = constructJournalIdUri(journalPid.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
     }

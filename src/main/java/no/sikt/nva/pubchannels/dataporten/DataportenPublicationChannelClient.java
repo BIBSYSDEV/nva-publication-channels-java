@@ -1,5 +1,7 @@
 package no.sikt.nva.pubchannels.dataporten;
 
+import no.sikt.nva.pubchannels.dataporten.model.CreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -60,10 +62,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public String createJournal(String name) throws ApiGatewayException {
+    public CreateJournalResponse createJournal(String name) throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, name);
-        return attempt(() -> executeRequest(request, String.class))
+        return attempt(() -> executeRequest(request, CreateJournalResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
@@ -75,9 +77,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
             handleError(response);
         }
 
-        return OK_STATUSES.contains(response.statusCode()) && clazz == String.class
-                ? clazz.cast(response.body())
-                : attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
+        return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
     }
 
     private void handleError(HttpResponse<String> response) throws ApiGatewayException {
@@ -108,8 +108,9 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private HttpRequest createCreateJournalRequest(String token, String name) {
 
-        var journalRequestBodyAsString = attempt(() -> dtoObjectMapper.writeValueAsString(new JournalRequestBody(name)))
-                .orElseThrow();
+        var journalRequestBodyAsString =
+                attempt(() -> dtoObjectMapper.writeValueAsString(new CreateJournalRequest(name)))
+                        .orElseThrow();
 
         return HttpRequest.newBuilder()
                 .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)

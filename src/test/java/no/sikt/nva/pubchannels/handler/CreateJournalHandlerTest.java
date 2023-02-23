@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.TokenBody;
+import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
 import no.sikt.nva.pubchannels.model.CreateJournalRequest;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -235,7 +236,8 @@ class CreateJournalHandlerTest {
                 .build();
     }
 
-    private static void stubResponse(String expectedPid, int statusCode) {
+    private static void stubResponse(String expectedPid, int statusCode) throws JsonProcessingException {
+        var body = new CreateJournalResponse(expectedPid);
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader(HEADER_ACCEPT, WireMock.equalTo("application/json"))
@@ -244,7 +246,7 @@ class CreateJournalHandlerTest {
                                 WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
                         .willReturn(
                                 aResponse()
-                                        .withBody(expectedPid)
+                                        .withBody(dtoObjectMapper.writeValueAsString(body))
                                         .withStatus(statusCode)
 
                         )

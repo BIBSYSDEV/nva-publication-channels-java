@@ -1,14 +1,14 @@
-package no.sikt.nva.pubchannels.dataporten;
+package no.sikt.nva.pubchannels.dataporten.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class JournalRequestBody {
+public class CreateJournalRequest {
     @JsonProperty
     private final String name;
 
     @JsonCreator
-    public JournalRequestBody(@JsonProperty String name) {
+    public CreateJournalRequest(@JsonProperty String name) {
         this.name = name;
     }
 
