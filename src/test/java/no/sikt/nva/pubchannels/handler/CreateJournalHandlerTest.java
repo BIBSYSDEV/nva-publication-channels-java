@@ -89,7 +89,7 @@ class CreateJournalHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
+        stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED);
 
         handlerUnderTest.handleRequest(constructRequest("Test Journal"), output, context);
 
