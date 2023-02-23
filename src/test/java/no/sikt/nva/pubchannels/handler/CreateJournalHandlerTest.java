@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
@@ -30,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -62,6 +64,7 @@ class CreateJournalHandlerTest {
 
     private Environment environment;
 
+
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
         this.environment = mock(Environment.class);
@@ -90,7 +93,7 @@ class CreateJournalHandlerTest {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
 
-        handlerUnderTest.handleRequest(constructRequest("Test Journal"), output, context);
+        handlerUnderTest.handleRequest(constructRequest(new CreateJournalRequest("Test Journal")), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, Void.class);
 
@@ -106,7 +109,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenUnautorized() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(name);
+        var input = constructRequest(new CreateJournalRequest(name));
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_UNAUTHORIZED);
@@ -127,7 +130,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenForbidden() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(name);
+        var input = constructRequest(new CreateJournalRequest(name));
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_FORBIDDEN);
@@ -148,7 +151,7 @@ class CreateJournalHandlerTest {
     @Test
     void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(name);
+        var input = constructRequest(new CreateJournalRequest(name));
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -171,7 +174,7 @@ class CreateJournalHandlerTest {
             HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
         var name = "Test Journal";
-        var input = constructRequest(name);
+        var input = constructRequest(new CreateJournalRequest(name));
 
         stubAuth(httpStatusCode);
 
@@ -193,7 +196,7 @@ class CreateJournalHandlerTest {
         this.handlerUnderTest = new CreateJournalHandler(environment, setupIntteruptedClient());
 
         var name = "Test Journal";
-        var input = constructRequest(name);
+        var input = constructRequest(new CreateJournalRequest(name));
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -208,6 +211,23 @@ class CreateJournalHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidNames")
+    void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
+
+        var testJournal = new CreateJournalRequest(name);
+        handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(containsString("String is too")));
+    }
+    static Stream<String> invalidNames() {
+        return Stream.of("name", "abcdefghi ".repeat(31));
     }
 
     private static DataportenPublicationChannelClient setupIntteruptedClient()
@@ -229,9 +249,9 @@ class CreateJournalHandlerTest {
                 .getUri();
     }
 
-    private static InputStream constructRequest(String name) throws JsonProcessingException {
+    private static InputStream constructRequest(CreateJournalRequest body) throws JsonProcessingException {
         return new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper)
-                .withBody(new CreateJournalRequest(name))
+                .withBody(body)
                 .build();
     }
 
