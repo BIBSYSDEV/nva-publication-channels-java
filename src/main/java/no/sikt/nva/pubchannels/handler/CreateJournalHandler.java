@@ -64,6 +64,8 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
 
     private CreateJournalRequest validate(CreateJournalRequest input) {
         Validator.string(input.getName(), 5, 300);
+        Validator.optIssn(input.getPissn());
+        Validator.optIssn(input.getEissn());
         return input;
     }
 
