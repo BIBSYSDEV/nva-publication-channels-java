@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.dataporten;
 
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
@@ -21,9 +22,6 @@ import static nva.commons.core.attempt.Try.attempt;
 
 public class DataportenAuthClient implements AuthClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenAuthClient.class);
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String AUTHORIZATION = "Authorization";
-    public static final String CONTENT_TYPE_X_WWW_FORM_URLENCODED = "x-www-form-urlencoded";
     private final HttpClient httpClient;
     private final URI baseUri;
     private final String clientId;
@@ -46,8 +44,8 @@ public class DataportenAuthClient implements AuthClient {
 
     private HttpRequest createTokenRequest(String clientId, String clientSecret) {
         return HttpRequest.newBuilder()
-                .header(CONTENT_TYPE, CONTENT_TYPE_X_WWW_FORM_URLENCODED)
-                .header(AUTHORIZATION, getCredentialsString(clientId, clientSecret))
+                .header(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED)
+                .header(HttpHeaders.AUTHORIZATION, getCredentialsString(clientId, clientSecret))
                 .uri(getTokenRequestUri())
                 .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials", StandardCharsets.UTF_8))
                 .build();

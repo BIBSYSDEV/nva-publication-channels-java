@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.model.CreateJournalRequest;
@@ -27,7 +28,6 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     private static final String ENV_DATAPORTEN_AUTH_CLIENT_ID = "ENV_DATAPORTEN_AUTH_CLIENT_ID";
     private static final String ENV_DATAPORTEN_AUTH_CLIENT_SECRET = "ENV_DATAPORTEN_AUTH_CLIENT_SECRET";
     private static final String JOURNAL_PATH_ELEMENT = "journal";
-    private static final String LOCATION_HEADER = "Location";
     private final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
@@ -53,7 +53,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
 
         var journalPid = publicationChannelClient.createJournal(input.getName());
         var createdUri = constructJournalIdUri(journalPid);
-        addAdditionalHeaders(() -> Map.of(LOCATION_HEADER, createdUri.toString()));
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
     }
 

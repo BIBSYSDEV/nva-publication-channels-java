@@ -15,8 +15,8 @@ import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
-import org.junit.jupiter.api.AfterEach;
 import nva.commons.logutils.LogUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,9 +40,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest {
@@ -87,8 +87,8 @@ class CreateJournalHandlerTest {
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        stubAuth(TOKEN_BODY, HttpURLConnection.HTTP_OK);
-        stubResponse(expectedPid, TOKEN_BODY, HttpURLConnection.HTTP_OK);
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(expectedPid, HttpURLConnection.HTTP_OK);
 
         handlerUnderTest.handleRequest(constructRequest("Test Journal"), output, context);
 
@@ -108,8 +108,8 @@ class CreateJournalHandlerTest {
         var name = "Test Journal";
         var input = constructRequest(name);
 
-        stubAuth(TOKEN_BODY, HttpURLConnection.HTTP_OK);
-        stubResponse(null, TOKEN_BODY, HttpURLConnection.HTTP_UNAUTHORIZED);
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(null, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -129,8 +129,8 @@ class CreateJournalHandlerTest {
         var name = "Test Journal";
         var input = constructRequest(name);
 
-        stubAuth(TOKEN_BODY, HttpURLConnection.HTTP_OK);
-        stubResponse(null, TOKEN_BODY, HttpURLConnection.HTTP_FORBIDDEN);
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(null, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -150,8 +150,8 @@ class CreateJournalHandlerTest {
         var name = "Test Journal";
         var input = constructRequest(name);
 
-        stubAuth(TOKEN_BODY, HttpURLConnection.HTTP_OK);
-        stubResponse(null, TOKEN_BODY, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(null, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -173,7 +173,7 @@ class CreateJournalHandlerTest {
         var name = "Test Journal";
         var input = constructRequest(name);
 
-        stubAuth(TOKEN_BODY, httpStatusCode);
+        stubAuth(httpStatusCode);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -190,15 +190,7 @@ class CreateJournalHandlerTest {
 
     @Test
     void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
-        var httpAuthClient = mock(HttpClient.class);
-        when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
-        var dataportenAuthBaseUri = URI.create("https://localhost:9898");
-        var dataportenAuthClient = new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
-        var httpPublicationChannelClient = mock(HttpClient.class);
-        var publicationChannelClient = new DataportenPublicationChannelClient(httpPublicationChannelClient,
-                        dataportenAuthBaseUri,
-                        dataportenAuthClient);
-        this.handlerUnderTest = new CreateJournalHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new CreateJournalHandler(environment, setupIntteruptedClient());
 
         var name = "Test Journal";
         var input = constructRequest(name);
@@ -218,6 +210,19 @@ class CreateJournalHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
+    private static DataportenPublicationChannelClient setupIntteruptedClient()
+            throws IOException, InterruptedException {
+        var httpAuthClient = mock(HttpClient.class);
+        when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
+        var dataportenAuthBaseUri = URI.create("https://localhost:9898");
+        var dataportenAuthClient =
+                new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
+        var httpPublicationChannelClient = mock(HttpClient.class);
+        return new DataportenPublicationChannelClient(httpPublicationChannelClient,
+                dataportenAuthBaseUri,
+                dataportenAuthClient);
+    }
+
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
                 .addChild("publication-channels", "journal", pid)
@@ -230,13 +235,13 @@ class CreateJournalHandlerTest {
                 .build();
     }
 
-    private static void stubResponse(String expectedPid, TokenBody token, int statusCode) {
+    private static void stubResponse(String expectedPid, int statusCode) {
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader(HEADER_ACCEPT, WireMock.equalTo("application/json"))
                         .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo("application/json"))
                         .withHeader(HEADER_AUTHORIZATION,
-                                WireMock.equalTo(token.getTokenType() + " " + token.getAccessToken()))
+                                WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
                         .willReturn(
                                 aResponse()
                                         .withBody(expectedPid)
@@ -246,14 +251,14 @@ class CreateJournalHandlerTest {
         );
     }
 
-    private static void stubAuth(TokenBody token, int statusCode) throws JsonProcessingException {
+    private static void stubAuth(int statusCode) throws JsonProcessingException {
         stubFor(
                 post("/oauth/token")
                         .withBasicAuth(USERNAME, PASSWORD)
                         .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo("x-www-form-urlencoded"))
                         .willReturn(
                                 aResponse()
-                                        .withBody(dtoObjectMapper.writeValueAsString(token))
+                                        .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))
                                         .withStatus(statusCode)
                         )
         );

@@ -22,6 +22,10 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Set;
 
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 
@@ -30,7 +34,6 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelClient.class);
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
-    public static final String APPLICATION_JSON = "application/json";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
@@ -96,32 +99,30 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     private HttpRequest createFetchJournalRequest(String identifier, String year) {
-        var uri = UriWrapper.fromUri(dataportenBaseUri)
-                .addChild("findjournal", identifier, year)
-                .getUri();
         return HttpRequest.newBuilder()
-                .header("Accept", APPLICATION_JSON)
-                .uri(uri)
+                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                .uri(constructUri("findjournal", identifier, year))
                 .GET()
                 .build();
     }
 
     private HttpRequest createCreateJournalRequest(String token, String name) {
-        var uri = UriWrapper.fromUri(dataportenBaseUri)
-                .addChild("createjournal", "createpid")
-                .getUri();
 
-        JournalRequestBody journalRequestBody = new JournalRequestBody(name);
-
-        String journalRequestBodyAsString = attempt(() -> dtoObjectMapper.writeValueAsString(journalRequestBody))
+        var journalRequestBodyAsString = attempt(() -> dtoObjectMapper.writeValueAsString(new JournalRequestBody(name)))
                 .orElseThrow();
 
         return HttpRequest.newBuilder()
-                .header("Accept", APPLICATION_JSON)
-                .header("Content-Type", APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
-                .uri(uri)
+                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
+                .header(AUTHORIZATION, "Bearer " + token)
+                .uri(constructUri("createjournal", "createpid"))
                 .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
                 .build();
+    }
+
+    private URI constructUri(String... children) {
+        return UriWrapper.fromUri(dataportenBaseUri)
+                .addChild(children)
+                .getUri();
     }
 }
