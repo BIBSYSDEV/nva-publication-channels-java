@@ -345,7 +345,8 @@ class CreateJournalHandlerTest {
         stubFor(
                 post("/createjournal/createpid")
                         .withHeader(HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                        .withHeader(HttpHeaders.CONTENT_TYPE,
+                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
                         .withHeader(HttpHeaders.AUTHORIZATION,
                                 WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
                         .willReturn(
@@ -361,7 +362,8 @@ class CreateJournalHandlerTest {
         stubFor(
                 post("/oauth/token")
                         .withBasicAuth(USERNAME, PASSWORD)
-                        .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
+                        .withHeader(HttpHeaders.CONTENT_TYPE,
+                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
                         .willReturn(
                                 aResponse()
                                         .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))
