@@ -88,7 +88,7 @@ paths:
       operationId: CreateJournal
       requestBody:
         content:
-          'application/json':
+          'application/ld+json':
             schema:
               $ref: '#/components/schemas/CreateJournal'
             examples:
@@ -166,15 +166,15 @@ components:
         name:
           type: string
           description: Name of the journal
-        pIssn:
+        printIssn:
           type: string
           nullable: true
-          description: The publication ISSN
+          description: The print publication ISSN
           pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
-        eIssn:
+        onlineIssn:
           type: string
           nullable: true
-          description: The electronic ISSN
+          description: The electronic publication ISSN
           pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
         url:
           type: string
