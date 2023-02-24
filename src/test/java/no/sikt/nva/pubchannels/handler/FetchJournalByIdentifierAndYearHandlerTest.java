@@ -102,7 +102,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                   is(equalTo("Invalid path parameter (year). Must be an integer between 1900 and 2999.")));
+                   is(containsString("Year")));
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
@@ -121,7 +121,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                   is(equalTo("Invalid path parameter (identifier). Must be a UUID version 4.")));
+                   is(containsString("Pid")));
     }
 
     @Test

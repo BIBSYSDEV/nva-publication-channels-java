@@ -8,6 +8,7 @@ import no.sikt.nva.pubchannels.model.CreateJournalRequest;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -17,6 +18,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.Map;
 
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
+import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
 public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest, Void> {
@@ -50,11 +55,21 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     @Override
     protected Void processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
+        var validInput = attempt(() -> validate(input))
+                .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
 
-        var journalPid = publicationChannelClient.createJournal(input.getName());
-        var createdUri = constructJournalIdUri(journalPid);
+        var journalPid = publicationChannelClient.createJournal(validInput.getName());
+        var createdUri = constructJournalIdUri(journalPid.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
+    }
+
+    private CreateJournalRequest validate(CreateJournalRequest input) {
+        validateString(input.getName(), 5, 300, "Name");
+        validateOptionalIssn(input.getPrintIssn(), "PrintIssn");
+        validateOptionalIssn(input.getOnlineIssn(), "OnlineIssn");
+        validateOptionalUrl(input.getUrl(), "Url");
+        return input;
     }
 
     @Override
