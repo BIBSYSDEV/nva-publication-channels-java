@@ -14,7 +14,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.fetch.FetchJournalByIdentifierAndYearResponse;
 import org.junit.jupiter.api.Test;
 
-class FetchJournalByIdentifierAndYearResponseTest {
+class FetchJournalByIdentifierAndYearDtoTest {
 
     @Test
     void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {

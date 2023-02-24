@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels.handler.fetch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierDto;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -50,7 +51,7 @@ public class FetchJournalByIdentifierResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchJournalByIdentifierResponse create(URI selfUriBase, no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierResponse journal) {
+    public static FetchJournalByIdentifierResponse create(URI selfUriBase, FetchJournalByIdentifierDto journal) {
         var id = UriWrapper.fromUri(selfUriBase)
                      .addChild(journal.getIdentifier())
                      .getUri();

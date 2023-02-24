@@ -6,7 +6,7 @@ import no.sikt.nva.pubchannels.Immutable;
 
 import java.net.URI;
 
-public class FetchJournalByIdentifierResponse implements Immutable {
+public class FetchJournalByIdentifierDto implements Immutable {
     private static final String IDENTIFIER_FIELD = "pid";
     private static final String NAME_FIELD = "name";
     private static final String ONLINE_ISSN_FIELD = "eissn";
@@ -28,12 +28,12 @@ public class FetchJournalByIdentifierResponse implements Immutable {
     private final URI homepage;
 
     @JsonCreator
-    public FetchJournalByIdentifierResponse(@JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                            @JsonProperty(NAME_FIELD) String name,
-                                            @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                            @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                            @JsonProperty(CURRENT_LEVEL_FIELD) DataportenLevel current,
-                                            @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+    public FetchJournalByIdentifierDto(@JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                       @JsonProperty(NAME_FIELD) String name,
+                                       @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                       @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                       @JsonProperty(CURRENT_LEVEL_FIELD) DataportenLevel current,
+                                       @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.identifier = identifier;
         this.name = name;
         this.onlineIssn = onlineIssn;

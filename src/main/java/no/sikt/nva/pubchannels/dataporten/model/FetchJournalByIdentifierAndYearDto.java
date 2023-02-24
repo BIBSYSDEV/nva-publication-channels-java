@@ -8,7 +8,7 @@ import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 
-public class FetchJournalByIdentifierAndYearResponse implements Immutable, ThirdPartyJournal {
+public class FetchJournalByIdentifierAndYearDto implements Immutable, ThirdPartyJournal {
     private static final String YEAR_FIELD = "year";
     private static final String ONLINE_ISSN_FIELD = "eissn";
     private static final String IDENTIFIER_FIELD = "pid";
@@ -33,13 +33,13 @@ public class FetchJournalByIdentifierAndYearResponse implements Immutable, Third
     private final transient URI homepage;
 
     @JsonCreator
-    public FetchJournalByIdentifierAndYearResponse(@JsonProperty(YEAR_FIELD) String year,
-                                                   @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                                   @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                                   @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
-                                                   @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                                   @JsonProperty(NAME_FIELD) String name,
-                                                   @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+    public FetchJournalByIdentifierAndYearDto(@JsonProperty(YEAR_FIELD) String year,
+                                              @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                              @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                              @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
+                                              @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                              @JsonProperty(NAME_FIELD) String name,
+                                              @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.year = year;
         this.onlineIssn = onlineIssn;
         this.identifier = identifier;

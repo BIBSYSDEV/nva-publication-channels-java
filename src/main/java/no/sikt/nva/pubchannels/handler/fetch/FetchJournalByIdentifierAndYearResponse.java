@@ -43,7 +43,8 @@ public class FetchJournalByIdentifierAndYearResponse {
                                                    @JsonProperty(NAME_FIELD) String name,
                                                    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
                                                    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                                   @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                                                   @JsonProperty(SCIENTIFIC_VALUE_FIELD)
+                                                               ScientificValue scientificValue,
                                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;

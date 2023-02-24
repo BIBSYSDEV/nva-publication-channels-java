@@ -2,8 +2,8 @@ package no.sikt.nva.pubchannels.dataporten;
 
 import no.sikt.nva.pubchannels.dataporten.model.CreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierResponse;
+import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierAndYearDto;
+import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdentifierDto;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -60,14 +60,14 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     @Override
     public ThirdPartyJournal getJournalByIdentifierAndYear(String identifier, String year) throws ApiGatewayException {
         var request = createFetchRequest(FETCH_JOURNAL_PATH, identifier, year);
-        return attempt(() -> executeRequest(request, FetchJournalByIdentifierAndYearResponse.class))
+        return attempt(() -> executeRequest(request, FetchJournalByIdentifierAndYearDto.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
-    public FetchJournalByIdentifierResponse getJournalByIdentifier(String identifier) {
+    public FetchJournalByIdentifierDto getJournalByIdentifier(String identifier) {
         var request = createFetchRequest(FETCH_JOURNAL_PATH, identifier);
-        return attempt(() -> executeRequest(request, FetchJournalByIdentifierResponse.class)).orElseThrow();
+        return attempt(() -> executeRequest(request, FetchJournalByIdentifierDto.class)).orElseThrow();
     }
 
     @Override
