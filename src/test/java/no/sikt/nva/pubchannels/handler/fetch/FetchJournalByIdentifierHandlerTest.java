@@ -21,7 +21,10 @@ import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import org.zalando.problem.Problem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +47,7 @@ import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
@@ -96,6 +100,25 @@ class FetchJournalByIdentifierHandlerTest {
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
+    @ParameterizedTest(name = "identifier \"{0}\" is invalid")
+    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
+    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
+            throws IOException {
+
+        var input = constructRequest(identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(containsString("Pid")));
+    }
+
     private FetchJournalByIdentifierResponse getExpectedJournal(String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
@@ -105,7 +128,14 @@ class FetchJournalByIdentifierHandlerTest {
         var year = String.valueOf(randomLocalDate().getYear());
         var expectedURI = getUri(identifier);
 
-        stubFetchJournal(identifier, name, electronicIssn, printIssn, year, scientificValue, landingPage);
+        stubFetchJournal(identifier,
+                name,
+                electronicIssn,
+                printIssn,
+                year,
+                scientificValue,
+                landingPage,
+                HttpURLConnection.HTTP_OK);
 
         return getExpectedJournal(name,
                 electronicIssn,
@@ -140,7 +170,7 @@ class FetchJournalByIdentifierHandlerTest {
                                   String eissn, String pissn,
                                   String year,
                                   ScientificValue scientificValue,
-                                  URI landingPage) {
+                                  URI landingPage, int status) {
         var level = scientificValueToLevel(scientificValue);
         var currentLevel = new DataportenLevel(year, level);
 
@@ -159,7 +189,7 @@ class FetchJournalByIdentifierHandlerTest {
                         .withHeader("Accept", WireMock.equalTo("application/json"))
                         .willReturn(
                                 aResponse()
-                                        .withStatus(HttpURLConnection.HTTP_OK)
+                                        .withStatus(status)
                                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                                         .withBody(body)));
     }

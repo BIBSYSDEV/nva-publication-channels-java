@@ -6,6 +6,7 @@ import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -13,6 +14,8 @@ import nva.commons.core.paths.UriWrapper;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateUuid;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
@@ -41,12 +44,23 @@ public class FetchJournalByIdentifierHandler extends ApiGatewayHandler<Void, Fet
                                                             RequestInfo requestInfo,
                                                             Context context) throws ApiGatewayException {
         var pid = attempt(
-                () -> requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim()).orElseThrow();
+                () -> validate(requestInfo))
+                .map(this::getIdentifier)
+                .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
         var journalIdBaseUri = constructJournalIdBaseUri();
 
         return FetchJournalByIdentifierResponse.create(journalIdBaseUri,
                 publicationChannelClient.getJournalByIdentifier(pid));
+    }
+
+    private String getIdentifier(RequestInfo req) {
+        return req.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim();
+    }
+
+    private RequestInfo validate(RequestInfo requestInfo) {
+        validateUuid(getIdentifier(requestInfo), "Pid");
+        return requestInfo;
     }
 
     @Override
