@@ -20,17 +20,17 @@ public class FetchJournalByIdentifierAndYearDto implements Immutable, ThirdParty
     @JsonProperty(YEAR_FIELD)
     private final String year;
     @JsonProperty(ONLINE_ISSN_FIELD)
-    private final transient String onlineIssn;
+    private final String onlineIssn;
     @JsonProperty(IDENTIFIER_FIELD)
-    private final transient String identifier;
+    private final String identifier;
     @JsonProperty(SCIENTIFIC_VALUE_FIELD)
-    private final transient String scientificValue;
+    private final String scientificValue;
     @JsonProperty(PRINT_ISSN_FIELD)
-    private final transient String printIssn;
+    private final String printIssn;
     @JsonProperty(NAME_FIELD)
     private final String name;
     @JsonProperty(HOMEPAGE_FIELD)
-    private final transient URI homepage;
+    private final URI homepage;
 
     @JsonCreator
     public FetchJournalByIdentifierAndYearDto(@JsonProperty(YEAR_FIELD) String year,
