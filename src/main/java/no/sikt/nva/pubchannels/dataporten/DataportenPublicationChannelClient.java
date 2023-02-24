@@ -65,9 +65,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public FetchJournalByIdentifierDto getJournalByIdentifier(String identifier) {
+    public FetchJournalByIdentifierDto getJournalByIdentifier(String identifier) throws ApiGatewayException {
         var request = createFetchRequest(FETCH_JOURNAL_PATH, identifier);
-        return attempt(() -> executeRequest(request, FetchJournalByIdentifierDto.class)).orElseThrow();
+        return attempt(() -> executeRequest(request, FetchJournalByIdentifierDto.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override

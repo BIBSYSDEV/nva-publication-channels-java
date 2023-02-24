@@ -119,6 +119,24 @@ class FetchJournalByIdentifierHandlerTest {
                 is(containsString("Pid")));
     }
 
+    @Test
+    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(identifier);
+
+        stubFetchJournal(identifier, null, HttpURLConnection.HTTP_NOT_FOUND);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(equalTo("Journal not found!")));
+    }
+
     private FetchJournalByIdentifierResponse getExpectedJournal(String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
@@ -128,29 +146,11 @@ class FetchJournalByIdentifierHandlerTest {
         var year = String.valueOf(randomLocalDate().getYear());
         var expectedURI = getUri(identifier);
 
-        stubFetchJournal(identifier,
-                name,
-                electronicIssn,
-                printIssn,
-                year,
-                scientificValue,
-                landingPage,
-                HttpURLConnection.HTTP_OK);
+        var level = scientificValueToLevel(scientificValue);
+        var currentLevel = new DataportenLevel(year, level);
 
-        return getExpectedJournal(name,
-                electronicIssn,
-                printIssn,
-                scientificValue,
-                landingPage,
-                expectedURI);
-    }
+        mockDataportenResponse(identifier, name, electronicIssn, printIssn, landingPage, currentLevel);
 
-    private FetchJournalByIdentifierResponse getExpectedJournal(String name,
-                                                                String electronicIssn,
-                                                                String printIssn,
-                                                                ScientificValue scientificValue,
-                                                                URI landingPage,
-                                                                URI expectedURI) {
         return new FetchJournalByIdentifierResponse(
                 expectedURI,
                 name,
@@ -160,30 +160,27 @@ class FetchJournalByIdentifierHandlerTest {
                 landingPage);
     }
 
+    private void mockDataportenResponse(String identifier, String name, String electronicIssn, String printIssn, URI landingPage, DataportenLevel currentLevel) {
+        var body = new DataportenBodyBuilder()
+                .withName(name)
+                .withEissn(electronicIssn)
+                .withPid(identifier)
+                .withPissn(printIssn)
+                .withCurrent(currentLevel)
+                .withLevels(List.of(currentLevel))
+                .withKurl(landingPage.toString())
+                .build();
+
+        stubFetchJournal(identifier, body, HttpURLConnection.HTTP_OK);
+    }
+
     private URI getUri(String identifier) {
         return new UriWrapper(HTTPS, API_DOMAIN)
                 .addChild(CUSTOM_DOMAIN_PATH, JOURNAL_PATH_ELEMENT, identifier)
                 .getUri();
     }
 
-    private void stubFetchJournal(String identifier, String name,
-                                  String eissn, String pissn,
-                                  String year,
-                                  ScientificValue scientificValue,
-                                  URI landingPage, int status) {
-        var level = scientificValueToLevel(scientificValue);
-        var currentLevel = new DataportenLevel(year, level);
-
-        var body = new DataportenBodyBuilder()
-                .withName(name)
-                .withEissn(eissn)
-                .withPid(identifier)
-                .withPissn(pissn)
-                .withCurrent(currentLevel)
-                .withLevels(List.of(currentLevel))
-                .withKurl(landingPage.toString())
-                .build();
-
+    private void stubFetchJournal(String identifier, String body, int status) {
         stubFor(
                 get("/findjournal/" + identifier)
                         .withHeader("Accept", WireMock.equalTo("application/json"))
@@ -203,7 +200,6 @@ class FetchJournalByIdentifierHandlerTest {
     }
 
     private String scientificValueToLevel(ScientificValue scientificValue) {
-
         return ScientificValueMapper.VALUES.entrySet()
                 .stream()
                 .filter(item -> item.getValue().equals(scientificValue))
