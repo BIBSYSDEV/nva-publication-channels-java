@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.model.JournalDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -76,12 +75,12 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, FetchJournalByIdentifierAndYearResponse.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(JournalDto.class);
+        var actualJournal = response.getBodyObject(FetchJournalByIdentifierAndYearResponse.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }

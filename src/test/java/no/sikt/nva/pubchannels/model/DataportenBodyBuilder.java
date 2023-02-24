@@ -1,11 +1,11 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.model;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import no.sikt.nva.pubchannels.dataporten.DataportenLevel;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 

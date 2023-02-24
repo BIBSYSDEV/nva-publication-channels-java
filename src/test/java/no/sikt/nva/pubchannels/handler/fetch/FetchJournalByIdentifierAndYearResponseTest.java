@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.model;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
@@ -11,9 +11,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.FetchJournalByIdentifierAndYearResponse;
 import org.junit.jupiter.api.Test;
 
-class JournalDtoTest {
+class FetchJournalByIdentifierAndYearResponseTest {
 
     @Test
     void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {
@@ -21,12 +22,14 @@ class JournalDtoTest {
 
         var serializedJournal = dtoObjectMapper.writeValueAsString(journal);
 
-        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, JournalDto.class);
+        var deserializedJournal = dtoObjectMapper.readValue(
+                serializedJournal,
+                FetchJournalByIdentifierAndYearResponse.class);
 
         assertThat(deserializedJournal, is(equalTo(journal)));
     }
 
-    private static JournalDto randomJournal() {
+    private static FetchJournalByIdentifierAndYearResponse randomJournal() {
         var journal = new ThirdPartyJournal() {
 
             @Override
@@ -64,6 +67,6 @@ class JournalDtoTest {
                 return randomUri();
             }
         };
-        return JournalDto.create(randomUri(), journal);
+        return FetchJournalByIdentifierAndYearResponse.create(randomUri(), journal);
     }
 }

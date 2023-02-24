@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import no.sikt.nva.pubchannels.dataporten.DataportenLevel;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.model.DataportenBodyBuilder;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -59,7 +59,7 @@ class FetchJournalByIdentifierHandlerTest {
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
 
-        Environment environment = Mockito.mock(Environment.class);
+        var environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
@@ -81,6 +81,22 @@ class FetchJournalByIdentifierHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(identifier);
 
+        var expectedJournal = getExpectedJournal(identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchJournalByIdentifierResponse.class);
+
+        var statusCode = response.getStatusCode();
+
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+
+        var actualJournal = response.getBodyObject(FetchJournalByIdentifierResponse.class);
+
+        assertThat(actualJournal, is(equalTo(expectedJournal)));
+    }
+
+    private FetchJournalByIdentifierResponse getExpectedJournal(String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var printIssn = randomIssn();
@@ -91,23 +107,12 @@ class FetchJournalByIdentifierHandlerTest {
 
         stubFetchJournal(identifier, name, electronicIssn, printIssn, year, scientificValue, landingPage);
 
-        var expectedJournal = getExpectedJournal(name,
+        return getExpectedJournal(name,
                 electronicIssn,
                 printIssn,
                 scientificValue,
                 landingPage,
                 expectedURI);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, FetchJournalByIdentifierResponse.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
-
-        var actualJournal = response.getBodyObject(FetchJournalByIdentifierResponse.class);
-
-        assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
     private FetchJournalByIdentifierResponse getExpectedJournal(String name,

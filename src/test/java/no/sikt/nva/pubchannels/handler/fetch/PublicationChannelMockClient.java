@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -15,12 +15,15 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.model.DataportenBodyBuilder;
+import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 
 public class PublicationChannelMockClient {
 
-    private final Map<String, JournalDto> journalsByIdentifier = new ConcurrentHashMap<>();
+    private final Map<String, FetchJournalByIdentifierAndYearResponse> journalsByIdentifier = new ConcurrentHashMap<>();
 
     public void notFoundJournal(String identifier, String year) {
         mockJournalNotFound(identifier, year);
@@ -30,7 +33,7 @@ public class PublicationChannelMockClient {
         mockJournalInternalServerError(identifier, year);
     }
 
-    public JournalDto getJournal(String identifier) {
+    public FetchJournalByIdentifierAndYearResponse getJournal(String identifier) {
         return journalsByIdentifier.get(identifier);
     }
 
@@ -57,7 +60,7 @@ public class PublicationChannelMockClient {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
-        var scientificValue = randomElement(ScientificValue.values());
+        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
 
         mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
@@ -100,7 +103,7 @@ public class PublicationChannelMockClient {
             }
         };
 
-        var journalDto = JournalDto.create(selfUriBase, journal);
+        var journalDto = FetchJournalByIdentifierAndYearResponse.create(selfUriBase, journal);
 
         journalsByIdentifier.put(identifier, journalDto);
 

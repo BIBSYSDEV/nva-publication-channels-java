@@ -1,16 +1,16 @@
-package no.sikt.nva.pubchannels.dataporten;
+package no.sikt.nva.pubchannels.dataporten.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TokenBody {
+public class FetchTokenResponse {
     @JsonProperty("access_token")
     private final String accessToken;
     @JsonProperty("token_type")
     private final String tokenType;
 
     @JsonCreator
-    public TokenBody(
+    public FetchTokenResponse(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("token_type") String tokenType
     ) {
