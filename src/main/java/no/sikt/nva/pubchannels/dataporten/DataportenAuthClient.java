@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.dataporten;
 
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
@@ -63,19 +64,19 @@ public class DataportenAuthClient implements AuthClient {
                 .getUri();
     }
 
-    private TokenBody fetchToken(HttpRequest request) throws ApiGatewayException {
+    private TokenBodyResponse fetchToken(HttpRequest request) throws ApiGatewayException {
         return attempt(() -> executeRequest(request))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
-    private TokenBody executeRequest(HttpRequest request)
+    private TokenBodyResponse executeRequest(HttpRequest request)
             throws IOException, InterruptedException, BadGatewayException {
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             reportFailingRequest(request, response);
         }
-        return attempt(() -> dtoObjectMapper.readValue(response.body(), TokenBody.class)).orElseThrow();
+        return attempt(() -> dtoObjectMapper.readValue(response.body(), TokenBodyResponse.class)).orElseThrow();
     }
 
     private static void reportFailingRequest(HttpRequest request, HttpResponse<String> response)

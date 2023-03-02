@@ -1,4 +1,6 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.fetch;
+
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 
 import java.net.URI;
 

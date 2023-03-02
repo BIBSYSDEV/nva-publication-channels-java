@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.create;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,9 +8,10 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.TokenBody;
+import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
-import no.sikt.nva.pubchannels.model.CreateJournalRequest;
+import no.sikt.nva.pubchannels.handler.create.CreateJournalHandler;
+import no.sikt.nva.pubchannels.handler.create.CreateJournalRequest;
 import no.sikt.nva.pubchannels.model.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -52,7 +53,7 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest {
 
-    private static final TokenBody TOKEN_BODY = new TokenBody("token1", "Bearer");
+    private static final TokenBodyResponse TOKEN_BODY = new TokenBodyResponse("token1", "Bearer");
     private static final String PASSWORD = "";
     private static final String USERNAME = "";
     private static final String VALID_NAME = "Valid Name";
