@@ -176,7 +176,7 @@ components:
           nullable: true
           description: The electronic publication ISSN
           pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
-        url:
+        homepage:
           type: string
           format: uri
           nullable: true
@@ -228,8 +228,8 @@ components:
     CreateJournalExample:
       value:
         name: 'The journal of eternal fury'
-        eIssn: '1234-1234'
-        pIssn: '4321-4321'
-        url: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
+        homepage: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample create journal
 
