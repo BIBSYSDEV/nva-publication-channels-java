@@ -44,7 +44,8 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
+            throws ApiGatewayException {
 
         var request = attempt(() -> validate(requestInfo))
                 .map(FetchByIdAndYearRequest::new)

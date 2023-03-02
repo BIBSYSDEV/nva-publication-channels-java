@@ -8,7 +8,7 @@ import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 
-final public class FetchJournalByIdAndYearResponse implements Immutable, ThirdPartyJournal {
+public final class FetchJournalByIdAndYearResponse implements Immutable, ThirdPartyJournal {
     private static final String YEAR_FIELD = "year";
     private static final String ONLINE_ISSN_FIELD = "eissn";
     private static final String IDENTIFIER_FIELD = "pid";
