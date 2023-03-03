@@ -6,7 +6,7 @@ public class CreateJournalRequestBuilder {
     private String name;
     private String printIssn = null;
     private String onlineIssn = null;
-    private String url = null;
+    private String homepage = null;
 
     public CreateJournalRequestBuilder withName(String name) {
         this.name = name;
@@ -23,12 +23,12 @@ public class CreateJournalRequestBuilder {
         return this;
     }
 
-    public CreateJournalRequestBuilder withUrl(String url) {
-        this.url = url;
+    public CreateJournalRequestBuilder withHomepage(String homepage) {
+        this.homepage = homepage;
         return this;
     }
 
     public CreateJournalRequest build() {
-        return new CreateJournalRequest(name, printIssn, onlineIssn, url);
+        return new CreateJournalRequest(name, printIssn, onlineIssn, homepage);
     }
 }

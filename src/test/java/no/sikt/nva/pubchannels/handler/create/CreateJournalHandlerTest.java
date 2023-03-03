@@ -92,7 +92,7 @@ class CreateJournalHandlerTest {
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED,
-                new DataportenCreateJournalRequest(VALID_NAME, null, null));
+                new DataportenCreateJournalRequest(VALID_NAME, null, null, null));
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -114,7 +114,7 @@ class CreateJournalHandlerTest {
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_UNAUTHORIZED,
-                new DataportenCreateJournalRequest(VALID_NAME,null, null));
+                new DataportenCreateJournalRequest(VALID_NAME,null, null, null));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -135,7 +135,7 @@ class CreateJournalHandlerTest {
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_FORBIDDEN,
-                new DataportenCreateJournalRequest(VALID_NAME, null, null));
+                new DataportenCreateJournalRequest(VALID_NAME, null, null, null));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -156,7 +156,7 @@ class CreateJournalHandlerTest {
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(null, HttpURLConnection.HTTP_INTERNAL_ERROR,
-                new DataportenCreateJournalRequest(VALID_NAME, null, null));
+                new DataportenCreateJournalRequest(VALID_NAME, null, null, null));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -249,7 +249,7 @@ class CreateJournalHandlerTest {
 
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(expectedPid, HttpURLConnection.HTTP_OK,
-                new DataportenCreateJournalRequest(VALID_NAME, issn, null));
+                new DataportenCreateJournalRequest(VALID_NAME, issn, null, null));
 
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
@@ -288,7 +288,7 @@ class CreateJournalHandlerTest {
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
-                .withUrl(url)
+                .withHomepage(url)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -306,7 +306,7 @@ class CreateJournalHandlerTest {
         var printIssn = validIssn().findAny().get();
 
         stubAuth(HttpURLConnection.HTTP_OK);
-        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, printIssn, null);
+        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, printIssn, null, null);
         stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED, clientRequest);
 
         var testJournal = new CreateJournalRequestBuilder()
@@ -331,12 +331,37 @@ class CreateJournalHandlerTest {
         var onlineIssn = validIssn().findAny().get();
 
         stubAuth(HttpURLConnection.HTTP_OK);
-        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, onlineIssn);
+        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, onlineIssn, null);
         stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED, clientRequest);
 
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
                 .withOnlineIssn(onlineIssn)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Void.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
+
+
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+    }
+
+    @Test
+    void shouldCreateJournalWithNameAndHomepage() throws IOException {
+        var expectedPid = UUID.randomUUID().toString();
+        var homepage = "https://a.valid.url.com";
+
+        stubAuth(HttpURLConnection.HTTP_OK);
+        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null,null, homepage);
+        stubResponse(expectedPid, HttpURLConnection.HTTP_CREATED, clientRequest);
+
+        var testJournal = new CreateJournalRequestBuilder()
+                .withName(VALID_NAME)
+                .withHomepage(homepage)
                 .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
