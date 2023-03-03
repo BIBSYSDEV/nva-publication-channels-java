@@ -3,13 +3,13 @@ package no.sikt.nva.pubchannels.dataporten.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CreateJournalResponse {
+public class DataportenCreateJournalResponse {
     private static final String PID_FIELD = "pid";
     @JsonProperty(PID_FIELD)
     private final String pid;
 
     @JsonCreator
-    public CreateJournalResponse(@JsonProperty(PID_FIELD) String pid) {
+    public DataportenCreateJournalResponse(@JsonProperty(PID_FIELD) String pid) {
         this.pid = pid;
     }
 

@@ -3,11 +3,11 @@ package no.sikt.nva.pubchannels.handler.create;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CreateJournalRequest {
+class CreateJournalRequest {
     private static final String NAME_FIELD = "name";
     private static final String PRINT_ISSN_FIELD = "printIssn";
     private static final String ONLINE_ISSN_FIELD = "onlineIssn";
-    private static final String URL_FIELD = "url";
+    private static final String HOMEPAGE_FIELD = "homepage";
 
     @JsonProperty(NAME_FIELD)
     private final String name;
@@ -15,20 +15,20 @@ public class CreateJournalRequest {
     private final String printIssn;
     @JsonProperty(ONLINE_ISSN_FIELD)
     private final String onlineIssn;
-    @JsonProperty(URL_FIELD)
-    private final String url;
+    @JsonProperty(HOMEPAGE_FIELD)
+    private final String homepage;
 
     @JsonCreator
     public CreateJournalRequest(
             @JsonProperty(NAME_FIELD) String name,
             @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
             @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-            @JsonProperty(URL_FIELD)String url
+            @JsonProperty(HOMEPAGE_FIELD)String homepage
     ) {
         this.name = name;
         this.printIssn = printIssn;
         this.onlineIssn = onlineIssn;
-        this.url = url;
+        this.homepage = homepage;
     }
 
     public String getName() {
@@ -43,7 +43,7 @@ public class CreateJournalRequest {
         return onlineIssn;
     }
 
-    public String getUrl() {
-        return url;
+    public String getHomepage() {
+        return homepage;
     }
 }

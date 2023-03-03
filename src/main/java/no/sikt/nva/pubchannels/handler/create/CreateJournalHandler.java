@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -56,19 +57,28 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     protected Void processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
         var validInput = attempt(() -> validate(input))
+                .map(CreateJournalHandler::getClientRequest)
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
 
-        var journalPid = publicationChannelClient.createJournal(validInput.getName());
+        var journalPid = publicationChannelClient.createJournal(validInput);
         var createdUri = constructJournalIdUri(journalPid.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
+    }
+
+    private static DataportenCreateJournalRequest getClientRequest(CreateJournalRequest request) {
+        return new DataportenCreateJournalRequest(
+                request.getName(),
+                request.getPrintIssn(),
+                request.getOnlineIssn(),
+                request.getHomepage());
     }
 
     private CreateJournalRequest validate(CreateJournalRequest input) {
         validateString(input.getName(), 5, 300, "Name");
         validateOptionalIssn(input.getPrintIssn(), "PrintIssn");
         validateOptionalIssn(input.getOnlineIssn(), "OnlineIssn");
-        validateOptionalUrl(input.getUrl(), "Url");
+        validateOptionalUrl(input.getHomepage(), "Homepage");
         return input;
     }
 

@@ -212,7 +212,6 @@ components:
           type: string
           description: The requested path associated with the error
 
-
   examples:
     JournalExample:
       value:

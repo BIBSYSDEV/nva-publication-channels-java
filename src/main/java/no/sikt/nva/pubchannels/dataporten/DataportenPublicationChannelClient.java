@@ -1,7 +1,7 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import no.sikt.nva.pubchannels.dataporten.model.CreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -63,10 +63,11 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public CreateJournalResponse createJournal(String name) throws ApiGatewayException {
+    public DataportenCreateJournalResponse createJournal(DataportenCreateJournalRequest body)
+            throws ApiGatewayException {
         var token = authClient.getToken();
-        var request = createCreateJournalRequest(token, name);
-        return attempt(() -> executeRequest(request, CreateJournalResponse.class))
+        var request = createCreateJournalRequest(token, body);
+        return attempt(() -> executeRequest(request, DataportenCreateJournalResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
@@ -107,10 +108,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                 .build();
     }
 
-    private HttpRequest createCreateJournalRequest(String token, String name) {
+    private HttpRequest createCreateJournalRequest(String token, DataportenCreateJournalRequest body) {
 
         var journalRequestBodyAsString =
-                attempt(() -> dtoObjectMapper.writeValueAsString(new CreateJournalRequest(name)))
+                attempt(() -> dtoObjectMapper.writeValueAsString(body))
                         .orElseThrow();
 
         return HttpRequest.newBuilder()
