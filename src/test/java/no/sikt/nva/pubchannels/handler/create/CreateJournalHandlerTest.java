@@ -105,7 +105,12 @@ class CreateJournalHandlerTest {
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
 
-    private void setup(String expectedPid, DataportenCreateJournalRequest request, int clientAuthResponseHttpCode, int clientResponseHttpCode) throws JsonProcessingException {
+    private void setup(
+            String expectedPid,
+            DataportenCreateJournalRequest request,
+            int clientAuthResponseHttpCode,
+            int clientResponseHttpCode)
+            throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(expectedPid, clientResponseHttpCode, request);
     }
@@ -135,7 +140,8 @@ class CreateJournalHandlerTest {
     void shoudReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
-        setup(null, new DataportenCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+        setup(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -154,7 +160,8 @@ class CreateJournalHandlerTest {
     void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
-        setup(null, new DataportenCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        setup(null, new DataportenCreateJournalRequest(VALID_NAME, null, null, null),
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -245,7 +252,8 @@ class CreateJournalHandlerTest {
     void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setup(expectedPid, new DataportenCreateJournalRequest(VALID_NAME, issn, null, null), HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
+        setup(expectedPid, new DataportenCreateJournalRequest(VALID_NAME, issn, null, null),
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
@@ -326,7 +334,7 @@ class CreateJournalHandlerTest {
         var onlineIssn = validIssn().findAny().get();
         var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, onlineIssn, null);
 
-        setup(expectedPid,clientRequest,HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setup(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
@@ -350,7 +358,7 @@ class CreateJournalHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, null, homepage);
 
-        setup(expectedPid,clientRequest,HttpURLConnection.HTTP_OK,HttpURLConnection.HTTP_CREATED);
+        setup(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder()
                 .withName(VALID_NAME)
