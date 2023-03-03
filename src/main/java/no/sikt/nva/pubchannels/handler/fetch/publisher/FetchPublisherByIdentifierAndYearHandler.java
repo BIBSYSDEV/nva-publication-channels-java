@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -28,16 +29,16 @@ public class FetchPublisherByIdentifierAndYearHandler extends ApiGatewayHandler<
     private static final String YEAR_PATH_PARAM_NAME = "year";
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
 
-    private final DataportenPublicationChannelClient publicationChannelClient;
+    private final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
-    public FetchPublisherByIdentifierAndYearHandler(DataportenPublicationChannelClient publicationChannelClient) {
+    public FetchPublisherByIdentifierAndYearHandler() {
         super(Void.class, new Environment());
-        this.publicationChannelClient = publicationChannelClient;
+        this.publicationChannelClient = DataportenPublicationChannelClient.defaultInstance();
     }
 
     public FetchPublisherByIdentifierAndYearHandler(Environment environment,
-                                                    DataportenPublicationChannelClient publicationChannelClient) {
+                                                    PublicationChannelClient publicationChannelClient) {
         super(Void.class, environment);
         this.publicationChannelClient = publicationChannelClient;
     }
