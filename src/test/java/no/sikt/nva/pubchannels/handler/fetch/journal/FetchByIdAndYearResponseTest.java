@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.model;
+package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
@@ -10,8 +10,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearResponse;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import org.junit.jupiter.api.Test;
 
 class FetchByIdAndYearResponseTest {
@@ -28,7 +28,7 @@ class FetchByIdAndYearResponseTest {
     }
 
     private static FetchByIdAndYearResponse randomJournal() {
-        var journal = new ThirdPartyJournal() {
+        var journal = new ThirdPartyPublicationChannel() {
 
             @Override
             public String getIdentifier() {

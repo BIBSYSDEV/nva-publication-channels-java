@@ -3,9 +3,10 @@ package no.sikt.nva.pubchannels.dataporten;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.model.FetchPublisherByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.apigateway.exceptions.NotFoundException;
@@ -38,6 +39,8 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+    public static final String FIND_JOURNAL_PATH_ELEMENT = "findjournal";
+    public static final String FIND_PUBLISHER_PATH_ELEMENT = "findpublisher";
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -56,9 +59,16 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
-        var request = createFetchJournalRequest(identifier, year);
+    public ThirdPartyPublicationChannel getJournal(String identifier, String year) throws ApiGatewayException {
+        var request = createFetchPublicationChannelRequest(FIND_JOURNAL_PATH_ELEMENT, identifier, year);
         return attempt(() -> executeRequest(request, FetchJournalByIdAndYearResponse.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    }
+
+    @Override
+    public ThirdPartyPublicationChannel getPublisher(String identifier, String year) throws ApiGatewayException {
+        var request = createFetchPublicationChannelRequest(FIND_PUBLISHER_PATH_ELEMENT, identifier, year);
+        return attempt(() -> executeRequest(request, FetchPublisherByIdAndYearResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
@@ -84,9 +94,9 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private void handleError(HttpResponse<String> response) throws ApiGatewayException {
         if (HTTP_NOT_FOUND == response.statusCode()) {
-            throw new NotFoundException("Journal not found!");
+            throw new NotFoundException("Publication channel not found!");
         }
-        LOGGER.error("Error fetching journal: {} {}", response.statusCode(), response.body());
+        LOGGER.error("Error fetching publication channel: {} {}", response.statusCode(), response.body());
         throw new BadGatewayException("Unexpected response from upstream!");
     }
 
@@ -100,10 +110,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
         return new BadGatewayException("Unable to reach upstream!");
     }
 
-    private HttpRequest createFetchJournalRequest(String identifier, String year) {
+    private HttpRequest createFetchPublicationChannelRequest(String pathElement, String identifier, String year) {
         return HttpRequest.newBuilder()
                 .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                .uri(constructUri("findjournal", identifier, year))
+                .uri(constructUri(pathElement, identifier, year))
                 .GET()
                 .build();
     }

@@ -1,18 +1,18 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.net.URI;
-import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.model.Contexts;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
+
+import java.net.URI;
+import java.util.Objects;
 
 public class FetchByIdAndYearResponse {
 
     private static final String TYPE_FIELD = "type";
-    private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
     private static final String ONLINE_ISSN_FIELD = "onlineIssn";
@@ -21,9 +21,7 @@ public class FetchByIdAndYearResponse {
     private static final String SAME_AS_FIELD = "sameAs";
 
     @JsonProperty(TYPE_FIELD)
-    private static final String type = "Journal";
-    @JsonProperty(CONTEXT_FIELD)
-    private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
+    private static final String TYPE = "Publisher";
     @JsonProperty(ID_FIELD)
     private final URI id;
     @JsonProperty(NAME_FIELD)
@@ -52,24 +50,20 @@ public class FetchByIdAndYearResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal) {
+    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublicationChannel journal) {
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(journal.getIdentifier(), journal.getYear())
-                     .getUri();
+                .addChild(journal.getIdentifier(), journal.getYear())
+                .getUri();
         return new FetchByIdAndYearResponse(id,
-                              journal.getName(),
-                              journal.getOnlineIssn(),
-                              journal.getPrintIssn(),
-                              journal.getScientificValue(),
-                              journal.getHomepage());
+                journal.getName(),
+                journal.getOnlineIssn(),
+                journal.getPrintIssn(),
+                journal.getScientificValue(),
+                journal.getHomepage());
     }
 
     public String getType() {
-        return type;
-    }
-
-    public URI getContext() {
-        return context;
+        return TYPE;
     }
 
     public URI getId() {
@@ -107,40 +101,38 @@ public class FetchByIdAndYearResponse {
         }
         FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
         return Objects.equals(getType(), that.getType())
-               && Objects.equals(getContext(), that.getContext())
-               && Objects.equals(getId(), that.getId())
-               && Objects.equals(getName(), that.getName())
-               && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
-               && Objects.equals(getPrintIssn(), that.getPrintIssn())
-               && Objects.equals(getScientificValue(), that.getScientificValue())
-               && Objects.equals(getSameAs(), that.getSameAs());
+                && Objects.equals(getId(), that.getId())
+                && Objects.equals(getName(), that.getName())
+                && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
+                && Objects.equals(getPrintIssn(), that.getPrintIssn())
+                && Objects.equals(getScientificValue(), that.getScientificValue())
+                && Objects.equals(getSameAs(), that.getSameAs());
     }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(getType(),
-                            getContext(),
-                            getId(),
-                            getName(),
-                            getOnlineIssn(),
-                            getPrintIssn(),
-                            getScientificValue(),
-                            getSameAs());
+                getId(),
+                getName(),
+                getOnlineIssn(),
+                getPrintIssn(),
+                getScientificValue(),
+                getSameAs());
     }
 
     @JacocoGenerated
     @Override
     public String toString() {
-        return "JournalDto{"
-               + "type='" + type + '\''
-               + ", context=" + context
-               + ", id=" + id
-               + ", name='" + name + '\''
-               + ", onlineIssn='" + onlineIssn + '\''
-               + ", printIssn='" + printIssn + '\''
-               + ", scientificValue='" + scientificValue + '\''
-               + ", sameAs=" + sameAs
-               + '}';
+        return "FetchByIdAndYearResponse{"
+                + "type='" + TYPE + '\''
+                + ", id=" + id
+                + ", name='" + name + '\''
+                + ", onlineIssn='" + onlineIssn + '\''
+                + ", printIssn='" + printIssn + '\''
+                + ", scientificValue='" + scientificValue + '\''
+                + ", sameAs=" + sameAs
+                + '}';
     }
 }
+
