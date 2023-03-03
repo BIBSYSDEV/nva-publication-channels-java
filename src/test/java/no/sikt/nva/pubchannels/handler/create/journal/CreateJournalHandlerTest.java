@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.create;
+package no.sikt.nva.pubchannels.handler.create.journal;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
