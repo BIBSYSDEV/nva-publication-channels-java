@@ -11,7 +11,6 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.model.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;

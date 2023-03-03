@@ -3,7 +3,7 @@ package no.sikt.nva.pubchannels.handler.create;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CreateJournalRequest {
+class CreateJournalRequest {
     private static final String NAME_FIELD = "name";
     private static final String PRINT_ISSN_FIELD = "printIssn";
     private static final String ONLINE_ISSN_FIELD = "onlineIssn";
