@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.create;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.HttpHeaders;
