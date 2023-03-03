@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import java.util.Map;
 import java.util.Objects;

@@ -115,5 +115,27 @@ Resources:
       RestApiId: !Ref PublicationChannelsApi
       Stage: !Ref PublicationChannelsApi.Stage
 
+  CreateJournalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.CreateJournalHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+          CreateJournalEvent:
+            Type: Api
+            Properties:
+              RestApiId: !Ref PublicationChannelsApi
+              Path: /journal
+              Method: post
+
+  CreateJournalFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateJournalFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
 
 

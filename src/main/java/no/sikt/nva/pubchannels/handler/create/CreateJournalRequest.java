@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.model;
+package no.sikt.nva.pubchannels.handler.create;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

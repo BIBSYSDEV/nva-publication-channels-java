@@ -1,15 +1,15 @@
-package no.sikt.nva.pubchannels.model;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public class JournalDto {
+public class FetchByIdAndYearResponse {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
@@ -38,12 +38,12 @@ public class JournalDto {
     private final URI sameAs;
 
     @JsonCreator
-    public JournalDto(@JsonProperty(ID_FIELD) URI id,
-                      @JsonProperty(NAME_FIELD) String name,
-                      @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                      @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                      @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                      @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
+                                    @JsonProperty(NAME_FIELD) String name,
+                                    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                    @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.onlineIssn = onlineIssn;
@@ -52,11 +52,11 @@ public class JournalDto {
         this.sameAs = sameAs;
     }
 
-    public static JournalDto create(URI selfUriBase, ThirdPartyJournal journal) {
+    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal) {
         var id = UriWrapper.fromUri(selfUriBase)
                      .addChild(journal.getIdentifier(), journal.getYear())
                      .getUri();
-        return new JournalDto(id,
+        return new FetchByIdAndYearResponse(id,
                               journal.getName(),
                               journal.getOnlineIssn(),
                               journal.getPrintIssn(),
@@ -105,7 +105,7 @@ public class JournalDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        JournalDto that = (JournalDto) o;
+        FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
         return Objects.equals(getType(), that.getType())
                && Objects.equals(getContext(), that.getContext())
                && Objects.equals(getId(), that.getId())

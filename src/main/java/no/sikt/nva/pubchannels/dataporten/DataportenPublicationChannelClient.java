@@ -2,9 +2,10 @@ package no.sikt.nva.pubchannels.dataporten;
 
 import no.sikt.nva.pubchannels.dataporten.model.CreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.CreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.apigateway.exceptions.NotFoundException;
@@ -57,7 +58,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     @Override
     public ThirdPartyJournal getJournal(String identifier, String year) throws ApiGatewayException {
         var request = createFetchJournalRequest(identifier, year);
-        return attempt(() -> executeRequest(request, DataportenJournal.class))
+        return attempt(() -> executeRequest(request, FetchJournalByIdAndYearResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 

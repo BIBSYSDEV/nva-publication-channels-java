@@ -1,9 +1,8 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.request.FetchJournalRequest;
-import no.sikt.nva.pubchannels.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -21,7 +20,7 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
-public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Void, JournalDto> {
+public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Void, FetchByIdAndYearResponse> {
 
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
@@ -45,15 +44,16 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     }
 
     @Override
-    protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
+            throws ApiGatewayException {
 
         var request = attempt(() -> validate(requestInfo))
-                .map(FetchJournalRequest::new)
+                .map(FetchByIdAndYearRequest::new)
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
         var journalIdBaseUri = constructJournalIdBaseUri();
 
-        return JournalDto.create(journalIdBaseUri,
+        return FetchByIdAndYearResponse.create(journalIdBaseUri,
                 publicationChannelClient.getJournal(request.getIdentifier(), request.getYear()));
     }
 
@@ -73,7 +73,7 @@ public class FetchJournalByIdentifierAndYearHandler extends ApiGatewayHandler<Vo
     }
 
     @Override
-    protected Integer getSuccessStatusCode(Void input, JournalDto output) {
+    protected Integer getSuccessStatusCode(Void input, FetchByIdAndYearResponse output) {
         return HttpURLConnection.HTTP_OK;
     }
 

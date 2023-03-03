@@ -10,10 +10,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearResponse;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import org.junit.jupiter.api.Test;
 
-class JournalDtoTest {
+class FetchByIdAndYearResponseTest {
 
     @Test
     void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {
@@ -21,12 +22,12 @@ class JournalDtoTest {
 
         var serializedJournal = dtoObjectMapper.writeValueAsString(journal);
 
-        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, JournalDto.class);
+        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, FetchByIdAndYearResponse.class);
 
         assertThat(deserializedJournal, is(equalTo(journal)));
     }
 
-    private static JournalDto randomJournal() {
+    private static FetchByIdAndYearResponse randomJournal() {
         var journal = new ThirdPartyJournal() {
 
             @Override
@@ -64,6 +65,6 @@ class JournalDtoTest {
                 return randomUri();
             }
         };
-        return JournalDto.create(randomUri(), journal);
+        return FetchByIdAndYearResponse.create(randomUri(), journal);
     }
 }

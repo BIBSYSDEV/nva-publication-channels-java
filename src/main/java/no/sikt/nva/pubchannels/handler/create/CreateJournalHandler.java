@@ -1,10 +1,10 @@
-package no.sikt.nva.pubchannels.handler;
+package no.sikt.nva.pubchannels.handler.create;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.model.CreateJournalRequest;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
