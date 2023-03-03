@@ -57,7 +57,7 @@ public class CreateJournalHandler extends ApiGatewayHandler<CreateJournalRequest
     protected Void processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
         var validInput = attempt(() -> validate(input))
-                .map(i -> new DataportenCreateJournalRequest(i.getName(),input.getPrintIssn()))
+                .map(i -> new DataportenCreateJournalRequest(i.getName(),input.getPrintIssn(), input.getOnlineIssn()))
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
 
         var journalPid = publicationChannelClient.createJournal(validInput);
