@@ -18,6 +18,7 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.SingletonCollector;
 import nva.commons.logutils.LogUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -48,6 +50,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
@@ -59,10 +63,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     private ByteArrayOutputStream output;
 
     private static final Context context = new FakeContext();
+    private Environment environment;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
-        Environment environment = Mockito.mock(Environment.class);
+        environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
         when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
@@ -72,6 +77,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
+    }
+
+    @AfterEach
+    void tearDown() throws IOException {
+        output.flush();
     }
 
     @Test
@@ -154,7 +164,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    void shouldLogAndReturnBadGatewayWhenChannelRegistryReturnsUnhandledResponseCode() throws IOException {
+    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
@@ -177,6 +187,37 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                 is(equalTo("Unexpected response from upstream!")));
     }
 
+    @Test
+    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
+        DataportenPublicationChannelClient publicationChannelClient = setupInterruptedClient();
+
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
+
+        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
+        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+    }
+
+    private DataportenPublicationChannelClient setupInterruptedClient() throws IOException, InterruptedException {
+        var httpClient = mock(HttpClient.class);
+        when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
+        var dataportenBaseUri = URI.create("https://localhost:9898");
+
+        return new DataportenPublicationChannelClient(httpClient,
+                dataportenBaseUri, null);
+    }
+
     private void mockResponseWithHttpStatus(String identifier, String year, int httpStatus) {
         stubFor(
                 get("/findpublisher/" + identifier + "/" + year)
@@ -194,8 +235,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var level = scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var type = "Publisher";
-
-        String body = getExpectedResponseBody(year, identifier, name, electronicIssn, issn, level, landingPage, type);
+        var body = getResponseBody(year, identifier, name, electronicIssn, issn, level, landingPage, type);
 
         mockDataportenResponse(year, identifier, body);
 
@@ -213,7 +253,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                                         .withBody(responseBody)));
     }
 
-    private String getExpectedResponseBody(
+    private String getResponseBody(
             String year,
             String identifier,
             String name,
