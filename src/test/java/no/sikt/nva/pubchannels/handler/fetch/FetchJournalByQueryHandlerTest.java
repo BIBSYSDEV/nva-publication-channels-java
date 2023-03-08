@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
@@ -19,10 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -82,6 +85,45 @@ class FetchJournalByQueryHandlerTest {
                 is(containsString("year")));
     }
 
+    @ParameterizedTest(name = "string {0} is invalid")
+    @ValueSource(strings = {" ", "abcd", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
+            "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer " +
+            "took a galley of type and scrambled it to make a type specimen book. It has survived not only five " +
+            "centuries, but also the l"})
+    void shouldReturnBadRequestWhenNameIsInvalid(String string) throws IOException {
+        var queryParameters = Map.of("year", randomValidYear(),"name", string);
+        var input = constructRequest(queryParameters);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(containsString("Name")));
+    }
+
+    @ParameterizedTest(name = "issn {0} is invalid")
+    @MethodSource("invalidIssn")
+    void shouldReturnBadRequestWhenIssnIsInvalid(String issn) throws IOException {
+        var queryParameters = Map.of("year", randomValidYear(),"issn", issn);
+        var input = constructRequest(queryParameters);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(),
+                is(containsString("Issn")));
+    }
+
     private static InputStream constructRequest(Map<String, String> queryParameters) throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
                 .withQueryParameters(queryParameters)
@@ -91,6 +133,15 @@ class FetchJournalByQueryHandlerTest {
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    }
+
+    private String randomValidYear() {
+        var bound = (LocalDate.now().getYear() + 1) - Year.of(Year.MIN_VALUE).getValue();
+        return Integer.toString(Year.of(Year.MIN_VALUE).getValue() + randomInteger(bound));
+    }
+
+    protected static Stream<String> invalidIssn() {
+        return Stream.of("123456789", "1234-12XX", "1", "kdsnf0392ujrkijdf");
     }
 
 }
