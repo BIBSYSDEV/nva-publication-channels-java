@@ -1,8 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -10,15 +8,13 @@ import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
-import no.unit.nva.stubs.FakeContext;
+import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,41 +22,26 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.util.UUID;
-import java.util.stream.Stream;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
-class CreateJournalHandlerTest {
+class CreateJournalHandlerTest extends CreateHandlerTest {
 
-    private static final TokenBodyResponse TOKEN_BODY = new TokenBodyResponse("token1", "Bearer");
-    private static final String PASSWORD = "";
-    private static final String USERNAME = "";
-    private static final String VALID_NAME = "Valid Name";
     private transient CreateJournalHandler handlerUnderTest;
 
-    private static final Context context = new FakeContext();
-
-    private final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
     private Environment environment;
 
@@ -78,11 +59,6 @@ class CreateJournalHandlerTest {
                 new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
         handlerUnderTest = new CreateJournalHandler(environment, publicationChannelSource);
-    }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        output.flush();
     }
 
     @Test
@@ -112,7 +88,10 @@ class CreateJournalHandlerTest {
             int clientResponseHttpCode)
             throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
-        stubResponse(expectedPid, clientResponseHttpCode, request);
+        stubResponse(clientResponseHttpCode, "/createjournal/createpid",
+                dtoObjectMapper.writeValueAsString(new DataportenCreateJournalResponse(expectedPid)),
+                dtoObjectMapper.writeValueAsString(request)
+        );
     }
 
 
@@ -376,35 +355,6 @@ class CreateJournalHandlerTest {
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
 
-    static Stream<String> invalidNames() {
-        return Stream.of("name", "abcdefghi ".repeat(31));
-    }
-
-    static Stream<String> invalidIssn() {
-        return Stream.of("123456789", "1234-12XX", "1", "kdsnf0392ujrkijdf");
-    }
-
-    static Stream<String> validIssn() {
-        return Stream.of("0317-8471", "1050-124X");
-    }
-
-    static Stream<String> invalidUri() {
-        return Stream.of("httpss://whatever", "htp://", "fttp://");
-    }
-
-    private static DataportenPublicationChannelClient setupIntteruptedClient()
-            throws IOException, InterruptedException {
-        var httpAuthClient = mock(HttpClient.class);
-        when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
-        var dataportenAuthBaseUri = URI.create("https://localhost:9898");
-        var dataportenAuthClient =
-                new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
-        var httpPublicationChannelClient = mock(HttpClient.class);
-        return new DataportenPublicationChannelClient(httpPublicationChannelClient,
-                dataportenAuthBaseUri,
-                dataportenAuthClient);
-    }
-
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
                 .addChild("publication-channels", "journal", pid)
@@ -415,39 +365,5 @@ class CreateJournalHandlerTest {
         return new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper)
                 .withBody(body)
                 .build();
-    }
-
-    private static void stubResponse(String expectedPid, int statusCode, DataportenCreateJournalRequest request)
-            throws JsonProcessingException {
-        var body = new DataportenCreateJournalResponse(expectedPid);
-        stubFor(
-                post("/createjournal/createpid")
-                        .withHeader(HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(HttpHeaders.CONTENT_TYPE,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(HttpHeaders.AUTHORIZATION,
-                                WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
-                        .withRequestBody(equalToJson(dtoObjectMapper.writeValueAsString(request)))
-                        .willReturn(
-                                aResponse()
-                                        .withBody(dtoObjectMapper.writeValueAsString(body))
-                                        .withStatus(statusCode)
-
-                        )
-        );
-    }
-
-    private static void stubAuth(int statusCode) throws JsonProcessingException {
-        stubFor(
-                post("/oauth/token")
-                        .withBasicAuth(USERNAME, PASSWORD)
-                        .withHeader(HttpHeaders.CONTENT_TYPE,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
-                        .willReturn(
-                                aResponse()
-                                        .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))
-                                        .withStatus(statusCode)
-                        )
-        );
     }
 }
