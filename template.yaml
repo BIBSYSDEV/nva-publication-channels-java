@@ -117,11 +117,11 @@ Resources:
         ApplyOn: PublishedVersions
       Events:
         FetchPublisherByIdentifierAndYearEvent:
-        Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-        Properties:
-        RestApiId: !Ref PublicationChannelsApi
-        Path: /publisher/{identifier}/{year}
-        Method: get
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher/{identifier}/{year}
+            Method: get
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
