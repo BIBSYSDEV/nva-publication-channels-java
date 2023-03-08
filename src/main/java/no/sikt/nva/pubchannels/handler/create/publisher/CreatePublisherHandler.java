@@ -20,6 +20,8 @@ import static nva.commons.core.attempt.Try.attempt;
 
 public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest, Void> {
 
+    private static final String PUBLISHER_PATH_ELEMENT = "publisher";
+
     @JacocoGenerated
     public CreatePublisherHandler() {
         super(CreatePublisherRequest.class, new Environment());
@@ -36,7 +38,7 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
                 .map(CreatePublisherHandler::getClientRequest)
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
         var pid = publicationChannelClient.createPublisher(validInput);
-        var createdUri = constructIdUri("publisher", pid.getPid());
+        var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, pid.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return null;
     }

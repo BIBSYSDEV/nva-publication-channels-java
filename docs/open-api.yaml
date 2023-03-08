@@ -218,7 +218,7 @@ components:
       properties:
         name:
           type: string
-          description: Name of the journal
+          description: Name of the publisher
         printIssn:
           type: string
           nullable: true
@@ -233,7 +233,7 @@ components:
           type: string
           format: uri
           nullable: true
-          description: The url to the journal
+          description: The url to the publisher
     Context:
       type: string
       pattern: 'https:\/\/.*$'
