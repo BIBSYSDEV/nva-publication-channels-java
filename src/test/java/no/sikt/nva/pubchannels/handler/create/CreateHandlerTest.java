@@ -7,7 +7,6 @@ import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
-import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequest;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import org.junit.jupiter.api.AfterEach;
@@ -57,7 +56,7 @@ public abstract class CreateHandlerTest {
         return Stream.of("httpss://whatever", "htp://", "fttp://");
     }
 
-    protected static DataportenPublicationChannelClient setupIntteruptedClient()
+    protected static DataportenPublicationChannelClient setupInteruptedClient()
             throws IOException, InterruptedException {
         var httpAuthClient = mock(HttpClient.class);
         when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
@@ -70,8 +69,8 @@ public abstract class CreateHandlerTest {
                 dataportenAuthClient);
     }
 
-    protected static InputStream constructRequest(CreatePublisherRequest body) throws JsonProcessingException {
-        return new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper)
+    protected static <T> InputStream constructRequest(T body) throws JsonProcessingException {
+        return new HandlerRequestBuilder<T>(dtoObjectMapper)
                 .withBody(body)
                 .build();
     }

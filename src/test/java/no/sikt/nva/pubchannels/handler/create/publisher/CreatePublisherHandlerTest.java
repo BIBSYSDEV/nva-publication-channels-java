@@ -65,7 +65,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
         var testJournal = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
-        setup(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
@@ -79,25 +79,13 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
     }
 
-    private void setup(
-            String expectedPid,
-            DataportenCreatePublisherRequest request,
-            int clientAuthResponseHttpCode,
-            int clientResponseHttpCode)
-            throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
-                dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
-                dtoObjectMapper.writeValueAsString(request));
-    }
-
 
     @Test
     void shoudReturnBadGatewayWhenUnautorized() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
 
-        setup(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
+        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -117,7 +105,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
-        setup(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -136,7 +124,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
-        setup(null, new DataportenCreatePublisherRequest(VALID_NAME, null, null, null),
+        setupStub(null, new DataportenCreatePublisherRequest(VALID_NAME, null, null, null),
                 HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -175,7 +163,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
-        this.handlerUnderTest = new CreatePublisherHandler(environment, setupIntteruptedClient());
+        this.handlerUnderTest = new CreatePublisherHandler(environment, setupInteruptedClient());
 
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
@@ -228,7 +216,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setup(expectedPid, new DataportenCreatePublisherRequest(VALID_NAME, issn, null, null),
+        setupStub(expectedPid, new DataportenCreatePublisherRequest(VALID_NAME, issn, null, null),
                 HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreatePublisherRequestBuilder()
@@ -285,7 +273,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
         var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, printIssn, null, null);
-        setup(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
 
         var testJournal = new CreatePublisherRequestBuilder()
@@ -310,7 +298,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var onlineIssn = validIssn().findAny().get();
         var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, null, onlineIssn, null);
 
-        setup(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreatePublisherRequestBuilder()
                 .withName(VALID_NAME)
@@ -334,7 +322,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, null, null, homepage);
 
-        setup(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreatePublisherRequestBuilder()
                 .withName(VALID_NAME)
@@ -350,6 +338,18 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+    }
+
+    private void setupStub(
+            String expectedPid,
+            DataportenCreatePublisherRequest request,
+            int clientAuthResponseHttpCode,
+            int clientResponseHttpCode)
+            throws JsonProcessingException {
+        stubAuth(clientAuthResponseHttpCode);
+        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
+                dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
+                dtoObjectMapper.writeValueAsString(request));
     }
 
     private URI createExpectedUri(String pid) {
