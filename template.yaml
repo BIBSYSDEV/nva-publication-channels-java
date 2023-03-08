@@ -138,4 +138,27 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  CreatePublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.CreatePublisherHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        CreatePublisherEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher
+            Method: post
+
+  CreatePublisherFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreatePublisherFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
 

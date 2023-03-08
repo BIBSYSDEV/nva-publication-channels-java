@@ -1,30 +1,28 @@
-package no.sikt.nva.pubchannels.handler.create;
+package no.sikt.nva.pubchannels.dataporten.create;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class CreateJournalRequest {
+public class DataportenCreatePublisherRequest {
     private static final String NAME_FIELD = "name";
-    private static final String PRINT_ISSN_FIELD = "printIssn";
-    private static final String ONLINE_ISSN_FIELD = "onlineIssn";
-    private static final String HOMEPAGE_FIELD = "homepage";
-
+    private static final String PRINTISSN_FIELD = "pissn";
+    private static final String ONLINE_ISSN_FIELD = "eissn";
+    private static final String URL_FIELD = "url";
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(PRINT_ISSN_FIELD)
+    @JsonProperty(PRINTISSN_FIELD)
     private final String printIssn;
     @JsonProperty(ONLINE_ISSN_FIELD)
     private final String onlineIssn;
-    @JsonProperty(HOMEPAGE_FIELD)
+    @JsonProperty(URL_FIELD)
     private final String homepage;
 
     @JsonCreator
-    public CreateJournalRequest(
+    public DataportenCreatePublisherRequest(
             @JsonProperty(NAME_FIELD) String name,
-            @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+            @JsonProperty(PRINTISSN_FIELD) String printIssn,
             @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-            @JsonProperty(HOMEPAGE_FIELD)String homepage
-    ) {
+            @JsonProperty(URL_FIELD) String homepage) {
         this.name = name;
         this.printIssn = printIssn;
         this.onlineIssn = onlineIssn;

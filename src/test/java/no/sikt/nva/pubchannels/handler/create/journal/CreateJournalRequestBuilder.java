@@ -1,6 +1,5 @@
-package no.sikt.nva.pubchannels.handler.create;
+package no.sikt.nva.pubchannels.handler.create.journal;
 
-import no.sikt.nva.pubchannels.handler.create.CreateJournalRequest;
 
 public class CreateJournalRequestBuilder {
     private String name;

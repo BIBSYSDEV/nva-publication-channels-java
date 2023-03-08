@@ -1,5 +1,7 @@
 package no.sikt.nva.pubchannels.dataporten;
 
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
@@ -81,6 +83,16 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
+    @Override
+    public DataportenCreatePublisherResponse createPublisher(DataportenCreatePublisherRequest body)
+            throws ApiGatewayException {
+        var token = authClient.getToken();
+        var request = createCreatePublisherRequest(token, body);
+        return attempt(() -> executeRequest(request, DataportenCreatePublisherResponse.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    }
+
+
     private <T> T executeRequest(HttpRequest request, Class<T> clazz)
             throws ApiGatewayException, IOException, InterruptedException {
         var response = httpClient.send(request, BodyHandlers.ofString());
@@ -120,15 +132,28 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private HttpRequest createCreateJournalRequest(String token, DataportenCreateJournalRequest body) {
 
-        var journalRequestBodyAsString =
+        var bodyAsJsonString =
                 attempt(() -> dtoObjectMapper.writeValueAsString(body))
                         .orElseThrow();
 
+        return getHttpRequest(token, bodyAsJsonString, "createjournal");
+    }
+
+
+    private HttpRequest createCreatePublisherRequest(String token, DataportenCreatePublisherRequest request) {
+        var bodyAsJsonString =
+                attempt(() -> dtoObjectMapper.writeValueAsString(request))
+                        .orElseThrow();
+
+        return getHttpRequest(token, bodyAsJsonString, "createpublisher");
+    }
+
+    private HttpRequest getHttpRequest(String token, String journalRequestBodyAsString, String path) {
         return HttpRequest.newBuilder()
                 .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
                 .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
                 .header(AUTHORIZATION, "Bearer " + token)
-                .uri(constructUri("createjournal", "createpid"))
+                .uri(constructUri(path, "createpid"))
                 .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
                 .build();
     }
