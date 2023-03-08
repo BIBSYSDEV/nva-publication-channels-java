@@ -34,6 +34,7 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
     @Override
     protected Void processInput(CreatePublisherRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
+        userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                 .map(CreatePublisherHandler::getClientRequest)
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
