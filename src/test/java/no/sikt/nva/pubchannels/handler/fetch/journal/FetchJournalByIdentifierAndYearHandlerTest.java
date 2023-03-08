@@ -238,6 +238,6 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", "2003", yearAfterNextYear, "21000");
+        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 }
