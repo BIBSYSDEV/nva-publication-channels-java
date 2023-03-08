@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
@@ -13,6 +14,7 @@ import java.util.Objects;
 public class FetchByIdAndYearResponse {
 
     private static final String TYPE_FIELD = "type";
+    private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
     private static final String ONLINE_ISSN_FIELD = "onlineIssn";
@@ -22,6 +24,8 @@ public class FetchByIdAndYearResponse {
 
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Publisher";
+    @JsonProperty(CONTEXT_FIELD)
+    private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
     private final URI id;
     @JsonProperty(NAME_FIELD)
@@ -66,6 +70,10 @@ public class FetchByIdAndYearResponse {
         return TYPE;
     }
 
+    public URI getContext() {
+        return context;
+    }
+
     public URI getId() {
         return id;
     }
@@ -101,6 +109,7 @@ public class FetchByIdAndYearResponse {
         }
         FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
         return Objects.equals(getType(), that.getType())
+                && Objects.equals(getContext(), that.getContext())
                 && Objects.equals(getId(), that.getId())
                 && Objects.equals(getName(), that.getName())
                 && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
@@ -113,6 +122,7 @@ public class FetchByIdAndYearResponse {
     @Override
     public int hashCode() {
         return Objects.hash(getType(),
+                getContext(),
                 getId(),
                 getName(),
                 getOnlineIssn(),
@@ -126,6 +136,7 @@ public class FetchByIdAndYearResponse {
     public String toString() {
         return "FetchByIdAndYearResponse{"
                 + "type='" + TYPE + '\''
+                + ", context=" + context
                 + ", id=" + id
                 + ", name='" + name + '\''
                 + ", onlineIssn='" + onlineIssn + '\''
