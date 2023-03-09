@@ -170,7 +170,7 @@ Resources:
       SnapStart:
         ApplyOn: PublishedVersions
       Events:
-        CreatePublisherEvent:
+        CreateSeriesEvent:
           Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi
