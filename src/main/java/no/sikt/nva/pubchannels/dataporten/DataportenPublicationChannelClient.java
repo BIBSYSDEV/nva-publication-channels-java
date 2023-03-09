@@ -2,6 +2,8 @@ package no.sikt.nva.pubchannels.dataporten;
 
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
@@ -82,6 +84,16 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
+    @Override
+    public DataportenCreateSeriesResponse createSeries(DataportenCreateSeriesRequest body) throws ApiGatewayException {
+        var token = authClient.getToken();
+        var request = createCreateSeriesRequest(token, body);
+        return attempt(() -> executeRequest(request, DataportenCreateSeriesResponse.class))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+
+    }
+
+
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz)
             throws ApiGatewayException, IOException, InterruptedException {
@@ -136,6 +148,15 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                         .orElseThrow();
 
         return getHttpRequest(token, bodyAsJsonString, "createpublisher");
+    }
+
+    private HttpRequest createCreateSeriesRequest(String token, DataportenCreateSeriesRequest body) {
+
+        var bodyAsJsonString =
+                attempt(() -> dtoObjectMapper.writeValueAsString(body))
+                        .orElseThrow();
+
+        return getHttpRequest(token, bodyAsJsonString, "createseries");
     }
 
     private HttpRequest getHttpRequest(String token, String journalRequestBodyAsString, String path) {
