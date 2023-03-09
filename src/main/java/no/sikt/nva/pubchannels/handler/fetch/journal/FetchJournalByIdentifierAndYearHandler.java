@@ -10,8 +10,8 @@ import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import static nva.commons.core.attempt.Try.attempt;
 
-public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void,
-        FetchByIdAndYearResponse> {
+public class FetchJournalByIdentifierAndYearHandler extends
+        FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
     public static final String JOURNAL_PATH_ELEMENT = "journal";
 

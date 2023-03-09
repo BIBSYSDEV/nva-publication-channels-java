@@ -11,8 +11,8 @@ import nva.commons.core.JacocoGenerated;
 
 import static nva.commons.core.attempt.Try.attempt;
 
-public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void,
-        FetchByIdAndYearResponse> {
+public class FetchPublisherByIdentifierAndYearHandler extends
+        FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
