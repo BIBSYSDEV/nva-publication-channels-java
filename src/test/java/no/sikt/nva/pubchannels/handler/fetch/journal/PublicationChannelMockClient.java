@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 
@@ -64,7 +65,7 @@ public class PublicationChannelMockClient {
         mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
 
         URI selfUriBase = URI.create("https://localhost/publication-channels/journal");
-        ThirdPartyJournal journal = new ThirdPartyJournal() {
+        ThirdPartyPublicationChannel journal = new ThirdPartyPublicationChannel() {
             @Override
             public String getIdentifier() {
                 return identifier;
@@ -118,6 +119,7 @@ public class PublicationChannelMockClient {
 
         var level = scientificValueToLevel(scientificValue);
         var body = new DataportenBodyBuilder()
+                       .withType("Journal")
                        .withYear(year)
                        .withPid(identifier)
                        .withName(name)

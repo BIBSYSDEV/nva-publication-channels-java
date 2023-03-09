@@ -4,7 +4,7 @@ import no.sikt.nva.pubchannels.handler.ScientificValue;
 
 import java.net.URI;
 
-public interface ThirdPartyJournal {
+public interface ThirdPartyPublicationChannel {
 
     String getIdentifier();
 

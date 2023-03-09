@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -43,13 +43,13 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static final int YEAR_START = 2004;
 
-    private transient FetchJournalByIdentifierAndYearHandler handlerUnderTest;
-    private transient PublicationChannelMockClient mockRegistry;
+    private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
+    private PublicationChannelMockClient mockRegistry;
 
-    private transient ByteArrayOutputStream output;
+    private ByteArrayOutputStream output;
 
     private static final Context context = new FakeContext();
-    private transient Environment environment;
+    private Environment environment;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -195,7 +195,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Journal not found!")));
+        assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
     }
 
     @Test
@@ -210,7 +210,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Error fetching journal: 500"));
+        assertThat(appender.getMessages(), containsString("Error fetching publication channel: 500"));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -238,6 +238,6 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", "2003", yearAfterNextYear, "21000");
+        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 }

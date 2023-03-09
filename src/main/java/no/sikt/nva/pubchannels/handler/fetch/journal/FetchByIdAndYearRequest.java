@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import nva.commons.apigateway.RequestInfo;
 
