@@ -27,12 +27,13 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Vo
     }
 
     public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
-        super(CreateJournalRequest.class, environment,publicationChannelClient);
+        super(CreateJournalRequest.class, environment, publicationChannelClient);
     }
 
     @Override
     protected Void processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
+        userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                 .map(CreateJournalHandler::getClientRequest)
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));

@@ -3,7 +3,10 @@ package no.sikt.nva.pubchannels.handler.create;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import nva.commons.apigateway.AccessRight;
 import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.UnauthorizedException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -53,4 +56,11 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
                 .addChild(customDomainBasePath, path, pid)
                 .getUri();
     }
+
+    protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
+        if (!requestInfo.userIsAuthorized(AccessRight.USER.toString())) {
+            throw new UnauthorizedException();
+        }
+    }
+
 }
