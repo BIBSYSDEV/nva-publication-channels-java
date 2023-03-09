@@ -13,8 +13,8 @@ public class CreateSeriesRequestBuilder {
         return this;
     }
 
-    public CreatePublisherRequest build() {
-        return new CreatePublisherRequest(name,printIssn,onlineIssn,homepage);
+    public CreateSeriesRequest build() {
+        return new CreateSeriesRequest(name,printIssn,onlineIssn,homepage);
     }
 
     public CreateSeriesRequestBuilder withPrintIssn(String issn) {

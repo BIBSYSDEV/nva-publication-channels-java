@@ -34,6 +34,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Void
     @Override
     protected Void processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
+        userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                 .map(CreateSeriesHandler::getClientRequest)
                 .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));

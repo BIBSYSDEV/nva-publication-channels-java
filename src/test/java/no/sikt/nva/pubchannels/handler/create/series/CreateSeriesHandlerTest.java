@@ -9,7 +9,10 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequest;
+import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
+import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -338,6 +341,23 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+    }
+
+    @Test
+    void shouldThrowUnauthorizedIfNotUser() throws IOException {
+        var testJournal = new CreateSeriesRequestBuilder()
+                .withName(VALID_NAME)
+                .build();
+        var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper)
+                .withBody(testJournal)
+                .build();
+        handlerUnderTest.handleRequest(request, output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
     private void setupStub(
