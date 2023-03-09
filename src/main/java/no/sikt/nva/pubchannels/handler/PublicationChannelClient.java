@@ -6,6 +6,11 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRespon
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public interface PublicationChannelClient {
@@ -17,4 +22,6 @@ public interface PublicationChannelClient {
 
     DataportenCreatePublisherResponse createPublisher(DataportenCreatePublisherRequest request)
             throws ApiGatewayException;
+
+    DataportenCreateSeriesResponse createSeries(DataportenCreateSeriesRequest request) throws ApiGatewayException;
 }
