@@ -138,6 +138,38 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
+  /series:
+    post:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - Series
+      summary: Create series
+      description: Returns a Location with uri for the created Series
+      operationId: CreateSeries
+      requestBody:
+        content:
+          'application/ld+json':
+            schema:
+              $ref: '#/components/schemas/CreateSeries'
+            examples:
+              objectExample:
+                $ref: '#/components/examples/CreateSeriesExample'
+      responses:
+        201:
+          description: successful operation
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
+        400:
+          $ref: '#/components/responses/400'
+        502:
+          $ref: '#/components/responses/502'
 
 components:
   responses:
@@ -234,6 +266,27 @@ components:
           format: uri
           nullable: true
           description: The url to the publisher
+    CreateSeries:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the series
+        printIssn:
+          type: string
+          nullable: true
+          description: The print publication ISSN
+          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
+        onlineIssn:
+          type: string
+          nullable: true
+          description: The electronic publication ISSN
+          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
+        homepage:
+          type: string
+          format: uri
+          nullable: true
+          description: The url to the series
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -291,4 +344,10 @@ components:
         printIssn: '4321-4321'
         homepage: 'https://publisher-of-eternal.fury.no'
       summary: A sample create publisher
-
+    CreateSeriesExample:
+      value:
+        name: 'The series of eternal fury'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
+        homepage: 'https://series-of-eternal.fury.no'
+      summary: A sample create series
