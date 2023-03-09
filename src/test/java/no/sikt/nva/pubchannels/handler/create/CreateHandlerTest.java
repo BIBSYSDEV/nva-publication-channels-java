@@ -9,6 +9,7 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.apigateway.AccessRight;
 import org.junit.jupiter.api.AfterEach;
 
 import java.io.ByteArrayOutputStream;
@@ -23,6 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -70,7 +72,10 @@ public abstract class CreateHandlerTest {
     }
 
     protected static <T> InputStream constructRequest(T body) throws JsonProcessingException {
+        var customerId = randomUri();
         return new HandlerRequestBuilder<T>(dtoObjectMapper)
+                .withCurrentCustomer(customerId)
+                .withAccessRights(customerId, AccessRight.USER.toString())
                 .withBody(body)
                 .build();
     }

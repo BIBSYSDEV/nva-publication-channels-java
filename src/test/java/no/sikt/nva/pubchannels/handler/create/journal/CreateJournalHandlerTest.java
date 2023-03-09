@@ -10,6 +10,7 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
+import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -22,11 +23,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.UUID;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -337,6 +340,23 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+    }
+
+    @Test
+    void shouldThrowUnauthorizedIfNotUser() throws IOException {
+        var testJournal = new CreateJournalRequestBuilder()
+                .withName(VALID_NAME)
+                .build();
+        var request = new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper)
+                .withBody(testJournal)
+                .build();
+        handlerUnderTest.handleRequest(request, output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
     private void setupStub(
