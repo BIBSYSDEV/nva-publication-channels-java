@@ -28,7 +28,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYearFunction.Arn}/invocations
-        httpMethod: GET
+        httpMethod: POST
         type: "AWS_PROXY"
       tags:
         - Journal
@@ -110,7 +110,7 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublisherByIdentifierAndYearFunction.Arn}/invocations
-        httpMethod: GET
+        httpMethod: POST
         type: "AWS_PROXY"
       tags:
         - Publisher
