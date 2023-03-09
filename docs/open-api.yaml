@@ -275,7 +275,7 @@ components:
         printIssn:
           type: string
           nullable: true
-          description: The print series ISSN
+          description: The print publication ISSN
           pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
         onlineIssn:
           type: string
