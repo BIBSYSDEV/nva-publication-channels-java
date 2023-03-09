@@ -4,9 +4,8 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherReques
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
@@ -39,7 +38,6 @@ import static nva.commons.core.attempt.Try.attempt;
 public class DataportenPublicationChannelClient implements PublicationChannelClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelClient.class);
-
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private final HttpClient httpClient;
@@ -93,8 +91,6 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
 
     }
-
-
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz)
             throws ApiGatewayException, IOException, InterruptedException {
