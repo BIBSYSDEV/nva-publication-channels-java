@@ -81,18 +81,16 @@ class FetchJournalByQueryHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                is(containsString("year")));
+        assertThat(problem.getDetail(), is(containsString("year")));
     }
 
-    @ParameterizedTest(name = "string {0} is invalid")
-    @ValueSource(strings = {" ", "abcd", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
-            "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer " +
-            "took a galley of type and scrambled it to make a type specimen book. It has survived not only five " +
-            "centuries, but also the l"})
-    void shouldReturnBadRequestWhenNameIsInvalid(String string) throws IOException {
-        var queryParameters = Map.of("year", randomValidYear(),"name", string);
-        var input = constructRequest(queryParameters);
+    @Test
+    void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
+        var input = constructRequest(Map.of("year", randomValidYear(),
+                "query", "Lorem Ipsum is simply dummy text of the " +
+                        "printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text" +
+                        " ever since the 1500s, when an unknown printer took a galley of type and scrambled it to " +
+                        "make a type specimen book. It has survived not only five centuries, but also the l"));
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -103,25 +101,7 @@ class FetchJournalByQueryHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                is(containsString("Name")));
-    }
-
-    @ParameterizedTest(name = "issn {0} is invalid")
-    @MethodSource("invalidIssn")
-    void shouldReturnBadRequestWhenIssnIsInvalid(String issn) throws IOException {
-        var queryParameters = Map.of("year", randomValidYear(),"issn", issn);
-        var input = constructRequest(queryParameters);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                is(containsString("Issn")));
+                is(containsString("Query")));
     }
 
     private static InputStream constructRequest(Map<String, String> queryParameters) throws JsonProcessingException {
