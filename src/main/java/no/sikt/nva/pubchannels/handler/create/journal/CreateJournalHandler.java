@@ -2,7 +2,7 @@ package no.sikt.nva.pubchannels.handler.create.journal;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import nva.commons.apigateway.RequestInfo;
