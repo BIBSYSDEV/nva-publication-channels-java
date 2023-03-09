@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -36,7 +37,7 @@ public class FetchJournalByIdentifierAndYearHandler extends
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
         return FetchByIdAndYearResponse.create(journalIdBaseUri,
-                publicationChannelClient.getJournal(request.getIdentifier(), request.getYear()));
+                publicationChannelClient.getChannel(ChannelType.JOURNAL, request.getIdentifier(), request.getYear()));
     }
 
 }

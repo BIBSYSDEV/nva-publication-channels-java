@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -37,7 +38,7 @@ public class FetchPublisherByIdentifierAndYearHandler extends
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
 
         return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                publicationChannelClient.getPublisher(request.getIdentifier(), request.getYear()));
+                publicationChannelClient.getChannel(ChannelType.PUBLISHER, request.getIdentifier(), request.getYear()));
 
     }
 }

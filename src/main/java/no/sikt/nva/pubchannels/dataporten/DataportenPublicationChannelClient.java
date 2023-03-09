@@ -4,8 +4,6 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherReques
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchPublisherByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
@@ -41,8 +39,6 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
-    public static final String FIND_JOURNAL_PATH_ELEMENT = "findjournal";
-    public static final String FIND_PUBLISHER_PATH_ELEMENT = "findpublisher";
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -61,16 +57,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public ThirdPartyPublicationChannel getJournal(String identifier, String year) throws ApiGatewayException {
-        var request = createFetchPublicationChannelRequest(FIND_JOURNAL_PATH_ELEMENT, identifier, year);
-        return attempt(() -> executeRequest(request, FetchJournalByIdAndYearResponse.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
-    }
-
-    @Override
-    public ThirdPartyPublicationChannel getPublisher(String identifier, String year) throws ApiGatewayException {
-        var request = createFetchPublicationChannelRequest(FIND_PUBLISHER_PATH_ELEMENT, identifier, year);
-        return attempt(() -> executeRequest(request, FetchPublisherByIdAndYearResponse.class))
+    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+            throws ApiGatewayException {
+        var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
+        return attempt(() -> executeRequest(request, type.responseClass))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 

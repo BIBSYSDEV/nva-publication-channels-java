@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler;
 
+import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenCreateJournalRequest;
@@ -9,9 +10,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public interface PublicationChannelClient {
 
-    ThirdPartyPublicationChannel getJournal(String identifier, String year) throws ApiGatewayException;
-
-    ThirdPartyPublicationChannel getPublisher(String identifier, String year) throws ApiGatewayException;
+    ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+            throws ApiGatewayException;
 
     DataportenCreateJournalResponse createJournal(DataportenCreateJournalRequest request) throws ApiGatewayException;
 

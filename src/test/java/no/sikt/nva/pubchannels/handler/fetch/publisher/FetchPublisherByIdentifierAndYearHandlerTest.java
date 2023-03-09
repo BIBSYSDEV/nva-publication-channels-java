@@ -100,8 +100,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
-        assertThat(actualJournal, is(equalTo(expectedJournal)));
+        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualPublisher, is(equalTo(expectedJournal)));
 
     }
 
