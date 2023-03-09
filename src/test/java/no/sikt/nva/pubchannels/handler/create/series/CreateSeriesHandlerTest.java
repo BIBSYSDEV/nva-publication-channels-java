@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.create.publisher;
+package no.sikt.nva.pubchannels.handler.create.series;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -6,9 +6,11 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequest;
+import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -37,9 +39,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
-class CreatePublisherHandlerTest extends CreateHandlerTest {
+class CreateSeriesHandlerTest extends CreateHandlerTest {
 
-    private transient CreatePublisherHandler handlerUnderTest;
+    private transient CreateSeriesHandler handlerUnderTest;
 
 
     private Environment environment;
@@ -57,14 +59,14 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var publicationChannelSource =
                 new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
-        handlerUnderTest = new CreatePublisherHandler(environment, publicationChannelSource);
+        handlerUnderTest = new CreateSeriesHandler(environment, publicationChannelSource);
     }
 
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
-        var testJournal = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
+        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
 
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -83,8 +85,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shoudReturnBadGatewayWhenUnautorized() throws IOException {
-        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
+        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
 
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
 
@@ -103,9 +105,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shoudReturnBadGatewayWhenForbidden() throws IOException {
-        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null, null);
+        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -123,9 +125,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
-        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new DataportenCreatePublisherRequest(VALID_NAME, null, null, null),
+        setupStub(null, new DataportenCreateSeriesRequest(VALID_NAME, null, null, null),
                 HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -145,7 +147,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
             HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
-        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         stubAuth(httpStatusCode);
 
@@ -164,9 +166,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
-        this.handlerUnderTest = new CreatePublisherHandler(environment, setupInteruptedClient());
+        this.handlerUnderTest = new CreateSeriesHandler(environment, setupInteruptedClient());
 
-        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -187,7 +189,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
-        var testJournal = new CreatePublisherRequestBuilder().withName(name).build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(name).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -200,7 +202,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var testJournal = new CreatePublisherRequestBuilder().withName(VALID_NAME)
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME)
                 .withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -217,10 +219,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setupStub(expectedPid, new DataportenCreatePublisherRequest(VALID_NAME, issn, null, null),
+        setupStub(expectedPid, new DataportenCreateSeriesRequest(VALID_NAME, issn, null, null),
                 HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
 
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withPrintIssn(issn)
                 .build();
@@ -238,7 +240,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withOnlineIssn(issn)
                 .build();
@@ -255,7 +257,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withHomepage(url)
                 .build();
@@ -273,11 +275,11 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndPrintIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, printIssn, null, null);
+        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, printIssn, null, null);
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
 
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withPrintIssn(printIssn)
                 .build();
@@ -297,11 +299,11 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndOnlineIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var onlineIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, null, onlineIssn, null);
+        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, null, onlineIssn, null);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withOnlineIssn(onlineIssn)
                 .build();
@@ -321,11 +323,11 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndHomepage() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var homepage = "https://a.valid.url.com";
-        var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, null, null, homepage);
+        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, null, null, homepage);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .withHomepage(homepage)
                 .build();
@@ -343,10 +345,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var testJournal = new CreatePublisherRequestBuilder()
+        var testJournal = new CreateSeriesRequestBuilder()
                 .withName(VALID_NAME)
                 .build();
-        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper)
+        var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper)
                 .withBody(testJournal)
                 .build();
         handlerUnderTest.handleRequest(request, output, context);
@@ -360,19 +362,19 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private void setupStub(
             String expectedPid,
-            DataportenCreatePublisherRequest request,
+            DataportenCreateSeriesRequest request,
             int clientAuthResponseHttpCode,
             int clientResponseHttpCode)
             throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
-                dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
+        stubResponse(clientResponseHttpCode, "/createseries/createpid",
+                dtoObjectMapper.writeValueAsString(new DataportenCreateSeriesResponse(expectedPid)),
                 dtoObjectMapper.writeValueAsString(request));
     }
 
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
-                .addChild("publication-channels", "publisher", pid)
+                .addChild("publication-channels", "series", pid)
                 .getUri();
     }
 

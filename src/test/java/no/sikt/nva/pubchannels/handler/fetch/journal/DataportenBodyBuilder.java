@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import java.util.Map;
 import java.util.Objects;
@@ -10,7 +10,11 @@ public class DataportenBodyBuilder {
     private final Map<String, Object> bodyMap = new ConcurrentHashMap<>();
 
     public DataportenBodyBuilder() {
-        bodyMap.put("type", "Journal");
+    }
+
+    public DataportenBodyBuilder withType(String type) {
+        bodyMap.put("type", type);
+        return this;
     }
 
     public DataportenBodyBuilder withPid(String pid) {

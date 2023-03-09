@@ -87,7 +87,7 @@ Resources:
   FetchJournalByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      Handler: no.sikt.nva.pubchannels.handler.FetchJournalByIdentifierAndYearHandler::handleRequest
+      Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       SnapStart:
@@ -107,6 +107,29 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  FetchPublisherByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        FetchPublisherByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher/{identifier}/{year}
+            Method: get
+
+  FetchPublisherByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   PublicationChannelsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
@@ -118,7 +141,7 @@ Resources:
   CreateJournalFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: no.sikt.nva.pubchannels.handler.CreateJournalHandler::handleRequest
+      Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       SnapStart:
@@ -141,7 +164,7 @@ Resources:
   CreatePublisherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: no.sikt.nva.pubchannels.handler.CreatePublisherHandler::handleRequest
+      Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       SnapStart:
@@ -161,4 +184,26 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  CreateSeriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        CreateSeriesEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series
+            Method: post
+
+  CreateSeriesFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateSeriesFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
 
