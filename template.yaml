@@ -194,8 +194,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
+      SnapStart:
+        ApplyOn: PublishedVersions
       Events:
         CreateSeriesEvent:
           Type: Api
