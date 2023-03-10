@@ -3,278 +3,210 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   This template creates lambdas and apis for publication channels
 
-#
-## More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-#Globals:
-#  Function:
-#    Timeout: 40
-#    MemorySize: 1798
-#    Runtime: java11
-#    Architectures:
-#      - x86_64
-#    Environment:
-#      Variables:
-#        ALLOWED_ORIGIN: '*'
-#        API_DOMAIN: !Ref ApiDomain
-#        CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
-#        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
-#
-#  Api:
-#    Cors:
-#      AllowOrigin: "'*'"
-#      AllowMethods: "'OPTIONS,GET'"
-#      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin'"
-#
-#Parameters:
-#  ApiDomain:
-#    Type: AWS::SSM::Parameter::Value<String>
-#    Default: /NVA/ApiDomain
-#    Description: Domain-name for the backend
-#  DataportenChannelRegistryBaseUrl:
-#    Type: String
-#    Description: Base url for Dataporten Channel Registry API
-#    Default: https://kar-test.dataporten-api.no
-#    AllowedValues:
-#      - https://kar-test.dataporten-api.no
-#  CustomDomainBasePath:
-#    Type: String
-#    Description: Base path mapping in CustomDomain
-#    Default: publication-channels-v2
-#  CognitoAuthorizerArn:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Description: Reference to Cognito UserPool for the stage
-#    Default: CognitoAuthorizerArn
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 40
+    MemorySize: 1798
+    Runtime: java11
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ALLOWED_ORIGIN: '*'
+        API_DOMAIN: !Ref ApiDomain
+        CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
+        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
+
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowMethods: "'OPTIONS,GET'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin'"
+
+Parameters:
+  ApiDomain:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NVA/ApiDomain
+    Description: Domain-name for the backend
+  DataportenChannelRegistryBaseUrl:
+    Type: String
+    Description: Base url for Dataporten Channel Registry API
+    Default: https://kar-test.dataporten-api.no
+    AllowedValues:
+      - https://kar-test.dataporten-api.no
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+    Default: publication-channels-v2
+  CognitoAuthorizerArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
 
 Resources:
 
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
-#
-#  PublicationChannelsApi:
-#    Type: AWS::Serverless::Api
-#    Properties:
-#      DefinitionBody:
-#        'Fn::Transform':
-#          Name: AWS::Include
-#          Parameters:
-#            Location: ./docs/open-api.yaml
-#      AccessLogSetting:
-#        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
-#        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
-#      StageName: Prod
-#      Auth:
-#        DefaultAuthorizer: NONE
-#      EndpointConfiguration: Regional
-#
-#  LambdaRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Version: 2012-10-17
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: [lambda.amazonaws.com]
-#            Action: ['sts:AssumeRole']
-#      Policies:
-#        - PolicyName: writeLog
-#          PolicyDocument:
-#            Version: 2012-10-17
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - logs:CreateLogGroup
-#                  - logs:CreateLogStream
-#                  - logs:PutLogEvents
-#                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
-#
-#  #============================ Deploy API ============================================================================#
-#  # This solves the problem described here:
-#  # https://stackoverflow.com/questions/Ba1423439/cloudformation-doesnt-deploy-to-api-gateway-stages-on-update
-#  #====================================================================================================================#
-#
-#  ApiGatewayCreateDeploymentLambdaRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: lambda.amazonaws.com
-#            Action: sts:AssumeRole
-#      Path: /
-#      ManagedPolicyArns:
-#        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
-#      Policies:
-#        - PolicyName: ApiGatewayAdmin
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - apigateway:POST
-#                Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${PublicationChannelsApi}/deployments'
-#
-#  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
-#  ApiGatewayCreateDeploymentLambda:
-#    Type: AWS::Lambda::Function
-#    Properties:
-#      Handler: index.lambda_handler
-#      Timeout: 30
-#      Role: !GetAtt ApiGatewayCreateDeploymentLambdaRole.Arn
-#      Runtime: python3.8
-#      Code:
-#        ZipFile: |
-#          import json, boto3
-#          import cfnresponse
-#          client = boto3.client('apigateway')
-#
-#          def lambda_handler(event, context):
-#            responseData = {}
-#            responseStatus = cfnresponse.SUCCESS
-#            if event['RequestType'] == 'Update':
-#              try:
-#                properties = event['ResourceProperties']
-#                response = client.create_deployment(
-#                  restApiId=properties['RestApiId'],
-#                  stageName=properties['StageName'],
-#                  description='Deployed from Custom Resource'
-#                )
-#              except:
-#                responseStatus = cfnresponse.FAILED
-#
-#            cfnresponse.send(event, context, responseStatus, responseData)
-#
-#  ApiGatewayCreateDeploymentCustomResource:
-#    Type: AWS::CloudFormation::CustomResource
-#    Properties:
-#      ServiceToken: !GetAtt ApiGatewayCreateDeploymentLambda.Arn
-#      RestApiId: !Ref PublicationChannelsApi
-#      StageName: !Ref PublicationChannelsApi.Stage
-#      Timestamp: '${BUILD_TIMESTAMP}'
-#      AuthorizerArn: !Ref CognitoAuthorizerArn
-#
-#
-#  FetchJournalByIdentifierAndYearFunction:
-#    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      Events:
-#        FetchJournalByIdentifierAndYearEvent:
-#          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /journal/{identifier}/{year}
-#            Method: get
-#
-#  FetchJournalByIdentifierAndYearFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  FetchPublisherByIdentifierAndYearFunction:
-#    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      Events:
-#        FetchPublisherByIdentifierAndYearEvent:
-#          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /publisher/{identifier}/{year}
-#            Method: get
-#
-#  FetchPublisherByIdentifierAndYearFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  PublicationChannelsBasePathMapping:
-#    Type: AWS::ApiGateway::BasePathMapping
-#    Properties:
-#      BasePath: !Ref CustomDomainBasePath
-#      DomainName: !Ref ApiDomain
-#      RestApiId: !Ref PublicationChannelsApi
-#      Stage: !Ref PublicationChannelsApi.Stage
-#
-#  CreateJournalFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      Events:
-#          CreateJournalEvent:
-#            Type: Api
-#            Properties:
-#              RestApiId: !Ref PublicationChannelsApi
-#              Path: /journal
-#              Method: post
-#
-#  CreateJournalFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreateJournalFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  CreatePublisherFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      Events:
-#        CreatePublisherEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /publisher
-#            Method: post
-#
-#  CreatePublisherFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreatePublisherFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  CreateSeriesFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      Events:
-#        CreateSeriesEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /series
-#            Method: post
-#
-#  CreateSeriesFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreateSeriesFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
+
+  PublicationChannelsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      DefinitionBody:
+        'Fn::Transform':
+          Name: AWS::Include
+          Parameters:
+            Location: ./docs/open-api.yaml
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
+        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: NONE
+      EndpointConfiguration: Regional
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Policies:
+        - PolicyName: writeLog
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
+
+  FetchJournalByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        FetchJournalByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /journal/{identifier}/{year}
+            Method: get
+
+  FetchJournalByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  FetchPublisherByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        FetchPublisherByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher/{identifier}/{year}
+            Method: get
+
+  FetchPublisherByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  PublicationChannelsBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref CustomDomainBasePath
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref PublicationChannelsApi
+      Stage: !Ref PublicationChannelsApi.Stage
+
+  CreateJournalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+          CreateJournalEvent:
+            Type: Api
+            Properties:
+              RestApiId: !Ref PublicationChannelsApi
+              Path: /journal
+              Method: post
+
+  CreateJournalFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateJournalFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  CreatePublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        CreatePublisherEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher
+            Method: post
+
+  CreatePublisherFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreatePublisherFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  CreateSeriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Events:
+        CreateSeriesEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series
+            Method: post
+
+  CreateSeriesFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateSeriesFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
