@@ -62,11 +62,12 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest {
 
-    public static final String YEAR_QUERY_PARAM = "year";
-    public static final String ISSN_QUERY_PARAM = "issn";
+    public static final String LOCALHOST = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String JOURNAL_PATH_ELEMENT = "journal";
-    public static final String LOCALHOST = "localhost";
+    public static final String YEAR_QUERY_PARAM = "year";
+    public static final String ISSN_QUERY_PARAM = "issn";
+    public static final String PID_QUERY_PARAM = "pid";
     public static final int MAX_LEVEL = 2;
     public static final double MIN_LEVEL = 0;
     public static final String DEFAULT_OFFSET = "0";
@@ -103,7 +104,7 @@ class SearchJournalByQueryHandlerTest {
     void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException {
         var year = randomValidYear();
         var issn = randomIssn();
-        var expectedSearchResult = getExpectedPagedSearchResult(year, issn);
+        var expectedSearchResult = getExpectedPagedSearchResultIssnSearch(year, issn);
 
         var input = constructRequest(Map.of("year", year, "query", issn));
 
@@ -111,7 +112,27 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PagedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PagedSearchResult<JournalResult>>() {});
+                new TypeReference<PagedSearchResult<JournalResult>>() {
+                });
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithSuccessWhenQueryIsPid() throws IOException {
+        var year = randomValidYear();
+        var pid = UUID.randomUUID().toString();
+        var expectedSearchResult = getExpectedPagedSearchResultPidSearch(year, pid);
+
+        var input = constructRequest(Map.of("year", year, "query", pid));
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PagedSearchResult.class);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(),
+                new TypeReference<PagedSearchResult<JournalResult>>() {
+                });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -183,53 +204,82 @@ class SearchJournalByQueryHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Query")));
     }
 
-    private PagedSearchResult<JournalResult> getExpectedPagedSearchResult(String year, String issn) {
-        var identifier = UUID.randomUUID().toString();
+    private PagedSearchResult<JournalResult> getExpectedPagedSearchResultIssnSearch(String year, String printIssn) {
+        var pid = UUID.randomUUID().toString();
         var name = randomString();
         var electronicIssn = randomIssn();
-        var landingPage = randomUri();
         var level = randomLevel();
+        var landingPage = randomUri();
 
-        var expectedHits = List.of(new JournalResult(constructPublicationChannelUri(null, identifier, year),
+        var responseBody = getDataportenResponseBody(year, printIssn, pid, name, electronicIssn, landingPage, level);
+        stubDataportenSearchResponse(responseBody, ISSN_QUERY_PARAM, printIssn, YEAR_QUERY_PARAM, year);
+
+        return getPagesSearchResultOneHit(
+                year,
+                printIssn,
+                pid,
                 name,
                 electronicIssn,
-                issn,
+                level,
+                landingPage
+        );
+    }
+
+    private PagedSearchResult<JournalResult> getExpectedPagedSearchResultPidSearch(String year, String pid) {
+        var printIssn = randomIssn();
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var level = randomLevel();
+        var landingPage = randomUri();
+        var responseBody = getDataportenResponseBody(year, printIssn, pid, name, electronicIssn, landingPage, level);
+        stubDataportenSearchResponse(responseBody, YEAR_QUERY_PARAM, year, PID_QUERY_PARAM, pid);
+
+        return getPagesSearchResultOneHit(
+                year,
+                printIssn,
+                pid,
+                name,
+                electronicIssn,
+                level,
+                landingPage
+        );
+    }
+
+    private PagedSearchResult<JournalResult> getPagesSearchResultOneHit(
+            String year,
+            String printIssn,
+            String pid,
+            String name,
+            String electronicIssn,
+            String level,
+            URI landingPage) {
+
+        var expectedHits = List.of(new JournalResult(constructPublicationChannelUri(null, pid, year),
+                name,
+                electronicIssn,
+                printIssn,
                 new ScientificValueMapper().map(level),
                 landingPage));
 
-        var expectedSearchResultResponse = new PagedSearchResult<>(
+        return new PagedSearchResult<>(
                 URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT),
                 constructPublicationChannelUri(
-                        Map.of("year", year, "query", issn, "offset", DEFAULT_OFFSET, "size", DEFAULT_SIZE)),
+                        Map.of("year", year, "query", printIssn, "offset", DEFAULT_OFFSET, "size", DEFAULT_SIZE)),
                 expectedHits.size(),
                 null,
                 null,
                 expectedHits);
-
-        mockDataportenIssnSearch(year, issn, identifier, name, electronicIssn, landingPage, level);
-        return expectedSearchResultResponse;
-    }
-
-    private void mockDataportenIssnSearch(String year,
-                                          String issn,
-                                          String identifier,
-                                          String name,
-                                          String electronicIssn,
-                                          URI landingPage,
-                                          String level) {
-        var body = getDataportenResponseBody(year, issn, identifier, name, electronicIssn, landingPage, level);
-        stubDataportenSearchResponse(body, ISSN_QUERY_PARAM, issn, YEAR_QUERY_PARAM, year);
     }
 
     private String getDataportenResponseBody(String year,
                                              String issn,
-                                             String identifier,
+                                             String pid,
                                              String name,
                                              String electronicIssn,
                                              URI landingPage,
                                              String level) {
 
-        List<DataportenJournalResult> results = List.of(new DataportenJournalResult(identifier,
+        List<DataportenJournalResult> results = List.of(new DataportenJournalResult(pid,
                 name,
                 issn,
                 electronicIssn,

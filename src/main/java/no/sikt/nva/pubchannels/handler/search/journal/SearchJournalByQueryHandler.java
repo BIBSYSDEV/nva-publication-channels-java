@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
@@ -33,6 +34,7 @@ import static nva.commons.core.paths.UriWrapper.HTTPS;
 public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSearchResult<JournalResult>> {
 
 
+    public static final String PID_QUERY_PARAM = "pid";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String JOURNAL_PATH_ELEMENT = "journal";
@@ -91,10 +93,10 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSe
     }
 
     private List<JournalResult> getJournalHits(URI baseUri, DataportenFindJournalResponse searchResult) {
-        List<JournalResult> searchResultResponse = new ArrayList<>();
+        List<JournalResult> journalHits = new ArrayList<>();
         searchResult.getResultSet().getPageResult().forEach(result ->
-                searchResultResponse.add(JournalResult.create(baseUri, result)));
-        return searchResultResponse;
+                journalHits.add(JournalResult.create(baseUri, result)));
+        return journalHits;
     }
 
     private Map<String, String> getQueryParams(String year, String query) {
@@ -102,10 +104,20 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSe
         queryParams.put(YEAR_QUERY_PARAM, year);
 
         if (isQueryParameterIssn(query)) {
-            String trimmedIssn = query.trim();
-            queryParams.put(ISSN_QUERY_PARAM, trimmedIssn);
+            queryParams.put(ISSN_QUERY_PARAM, query.trim());
+        } else if (isQueryParameterUuid(query)) {
+            queryParams.put(PID_QUERY_PARAM, query.trim());
         }
         return queryParams;
+    }
+
+    private boolean isQueryParameterUuid(String query) {
+        try {
+            UUID.fromString(query.trim());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private boolean isQueryParameterIssn(String query) {
