@@ -1,8 +1,11 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
@@ -51,6 +54,16 @@ public class DataportenBodyBuilder {
 
     public DataportenBodyBuilder withKurl(String kurl) {
         bodyMap.put("kURL", kurl);
+        return this;
+    }
+
+    public DataportenBodyBuilder withEntityPageInformation(DataPortenEntityPageInformation pageInformation) {
+        bodyMap.put("entityPageInformation", pageInformation);
+        return this;
+    }
+
+    public DataportenBodyBuilder withEntityResultSet(DataportenEntityResultSet resultSet) {
+        bodyMap.put("entityResultSet", resultSet);
         return this;
     }
 

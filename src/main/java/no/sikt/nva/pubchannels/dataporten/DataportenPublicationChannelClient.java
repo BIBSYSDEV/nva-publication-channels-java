@@ -6,6 +6,7 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenFindJournalResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
@@ -25,6 +26,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Map;
 import java.util.Set;
 
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -40,6 +42,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelClient.class);
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+    private static final String SEARCH_PATH_ELEMENT = "channels";
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -62,6 +65,14 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
             throws ApiGatewayException {
         var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
         return attempt(() -> executeRequest(request, type.responseClass))
+                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    }
+
+    @Override
+    public DataportenFindJournalResponse getChannel(ChannelType type, Map<String, String> queryParameters)
+            throws ApiGatewayException {
+        var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
+        return attempt(() -> executeRequest(request, DataportenFindJournalResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
@@ -129,6 +140,15 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                 .build();
     }
 
+    private HttpRequest createFindPublicationChannelRequest(String pathElement, Map<String, String> queryParams) {
+        return HttpRequest.newBuilder()
+                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                .uri(addQueryParamameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
+                .GET()
+                .build();
+    }
+
+
     private HttpRequest createCreateJournalRequest(String token, DataportenCreateJournalRequest body) {
 
         var bodyAsJsonString =
@@ -169,6 +189,12 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private URI constructUri(String... children) {
         return UriWrapper.fromUri(dataportenBaseUri)
                 .addChild(children)
+                .getUri();
+    }
+
+    private URI addQueryParamameters(URI uri, Map<String, String> queryParameters) {
+        return UriWrapper.fromUri(uri)
+                .addQueryParameters(queryParameters)
                 .getUri();
     }
 }
