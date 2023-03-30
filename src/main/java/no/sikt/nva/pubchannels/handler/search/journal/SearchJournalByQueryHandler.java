@@ -19,11 +19,11 @@ import org.apache.commons.validator.routines.ISSNValidator;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
@@ -45,6 +45,7 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSe
     private static final int DEFAULT_OFFSET_SIZE = 0;
     private static final String YEAR_QUERY_PARAM = "year";
     private static final String QUERY_PARAM = "query";
+    private static final String NAME_QUERY_PARAM = "name";
     private final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
@@ -93,10 +94,11 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSe
     }
 
     private List<JournalResult> getJournalHits(URI baseUri, DataportenFindJournalResponse searchResult) {
-        List<JournalResult> journalHits = new ArrayList<>();
-        searchResult.getResultSet().getPageResult().forEach(result ->
-                journalHits.add(JournalResult.create(baseUri, result)));
-        return journalHits;
+        return searchResult.getResultSet()
+                .getPageResult()
+                .stream()
+                .map(result -> JournalResult.create(baseUri, result))
+                .collect(Collectors.toList());
     }
 
     private Map<String, String> getQueryParams(String year, String query) {
@@ -107,6 +109,8 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PagedSe
             queryParams.put(ISSN_QUERY_PARAM, query.trim());
         } else if (isQueryParameterUuid(query)) {
             queryParams.put(PID_QUERY_PARAM, query.trim());
+        }else {
+            queryParams.put(NAME_QUERY_PARAM, query.trim());
         }
         return queryParams;
     }

@@ -36,11 +36,13 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -65,6 +67,7 @@ class SearchJournalByQueryHandlerTest {
     public static final String LOCALHOST = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String JOURNAL_PATH_ELEMENT = "journal";
+    public static final String NAME_QUERY_PARAM = "name";
     public static final String YEAR_QUERY_PARAM = "year";
     public static final String ISSN_QUERY_PARAM = "issn";
     public static final String PID_QUERY_PARAM = "pid";
@@ -136,6 +139,74 @@ class SearchJournalByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException {
+        var year = randomValidYear();
+        var name = randomString();
+        var dataportenSearchResult = getDataportenSearchResult(year, name);
+        var responseBody = getDataportenResponseBody(dataportenSearchResult.stream().limit(10)
+                .collect(Collectors.toList()), dataportenSearchResult.size());
+        stubDataportenSearchResponse(responseBody, YEAR_QUERY_PARAM, year, NAME_QUERY_PARAM, name);
+        var expectedSearchresult = getExpectedPagedSearchResultNameSearch(dataportenSearchResult, year, name);
+        var input = constructRequest(Map.of("year", year, "query", name));
+        handlerUnderTest.handleRequest(input, output, context);
+        var response = GatewayResponse.fromOutputStream(output, PagedSearchResult.class);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(),
+                new TypeReference<PagedSearchResult<JournalResult>>() {
+                });
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithSuccessWhenQueryIsNameAndOffsetIs10() {
+
+    }
+
+    private List<DataportenJournalResult> getDataportenSearchResult(String year, String name) {
+        return IntStream.range(0, 100)
+                .mapToObj(i ->
+                        new DataportenJournalResult(
+                                UUID.randomUUID().toString(),
+                                name + randomString(),
+                                null,
+                                randomIssn(),
+                                new DataPortenLevel(Integer.parseInt(year), randomLevel()),
+                                randomUri()))
+                .collect(Collectors.toList());
+    }
+
+    private PagedSearchResult<JournalResult> getExpectedPagedSearchResultNameSearch(
+            List<DataportenJournalResult> dataportenResults,
+            String year,
+            String name) {
+        var expectedHits = dataportenResults
+                .stream()
+                .map(this::toJournal)
+                .collect(Collectors.toList());
+
+        int queryOffset = 0;
+        int querySize = 10;
+
+        return PagedSearchResult.create(
+                URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT),
+                constructPublicationChannelUri(Map.of("year", year, "query", name)),
+                queryOffset,
+                querySize,
+                expectedHits.size(),
+                expectedHits.stream().limit(querySize).collect(Collectors.toList()),
+                Map.of("year", year, "query", name,
+                        "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
+    }
+
+    private JournalResult toJournal(DataportenJournalResult journal) {
+
+        URI baseUri = constructPublicationChannelUri(null);
+
+        return JournalResult.create(baseUri, journal);
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
@@ -211,7 +282,10 @@ class SearchJournalByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
 
-        var responseBody = getDataportenResponseBody(year, printIssn, pid, name, electronicIssn, landingPage, level);
+        List<DataportenJournalResult> dataportenJournalResult = List.of(
+                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+        );
+        var responseBody = getDataportenResponseBody(dataportenJournalResult, dataportenJournalResult.size());
         stubDataportenSearchResponse(responseBody, ISSN_QUERY_PARAM, printIssn, YEAR_QUERY_PARAM, year);
 
         return getPagesSearchResultOneHit(
@@ -231,7 +305,10 @@ class SearchJournalByQueryHandlerTest {
         var electronicIssn = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
-        var responseBody = getDataportenResponseBody(year, printIssn, pid, name, electronicIssn, landingPage, level);
+        List<DataportenJournalResult> dataportenJournalResult = List.of(
+                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+        );
+        var responseBody = getDataportenResponseBody(dataportenJournalResult, dataportenJournalResult.size());
         stubDataportenSearchResponse(responseBody, YEAR_QUERY_PARAM, year, PID_QUERY_PARAM, pid);
 
         return getPagesSearchResultOneHit(
@@ -271,24 +348,20 @@ class SearchJournalByQueryHandlerTest {
                 expectedHits);
     }
 
-    private String getDataportenResponseBody(String year,
-                                             String issn,
-                                             String pid,
-                                             String name,
-                                             String electronicIssn,
-                                             URI landingPage,
-                                             String level) {
+    private String getDataportenResponseBody(List<DataportenJournalResult> results, int totalSize) {
 
-        List<DataportenJournalResult> results = List.of(new DataportenJournalResult(pid,
+        return new DataportenBodyBuilder()
+                .withEntityPageInformation(new DataPortenEntityPageInformation(totalSize))
+                .withEntityResultSet(new DataportenEntityResultSet(results))
+                .build();
+    }
+
+    private static DataportenJournalResult createDataportenJournalResult(String year, String issn, String pid, String name, String electronicIssn, URI landingPage, String level) {
+        return new DataportenJournalResult(pid,
                 name,
                 issn,
                 electronicIssn,
-                new DataPortenLevel(Integer.parseInt(year), level), landingPage)
-        );
-        return new DataportenBodyBuilder()
-                .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
-                .withEntityResultSet(new DataportenEntityResultSet(results))
-                .build();
+                new DataPortenLevel(Integer.parseInt(year), level), landingPage);
     }
 
     private String randomLevel() {
@@ -311,7 +384,7 @@ class SearchJournalByQueryHandlerTest {
         );
     }
 
-    private HashMap<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
+    private Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
         var queryParams = new HashMap<String, StringValuePattern>();
         for (int i = 0; i < queryValue.length; i = i + 2) {
             queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
@@ -322,11 +395,7 @@ class SearchJournalByQueryHandlerTest {
     private StringBuilder getDataPortenRequestUrl(String... queryValue) {
         var url = new StringBuilder("/findjournal/channels");
         for (int i = 0; i < queryValue.length; i = i + 2) {
-            if (i == 0) {
-                url.append("?");
-            } else {
-                url.append("&");
-            }
+            url.append(i == 0 ? "?" : "&");
             url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
         }
         return url;
