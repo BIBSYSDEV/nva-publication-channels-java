@@ -40,6 +40,10 @@ Parameters:
     Type: String
     Description: Base path mapping in CustomDomain
     Default: publication-channels-v2
+  CognitoAuthorizerArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
 
 Resources:
 
@@ -90,8 +94,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
+#      SnapStart:
+#        ApplyOn: PublishedVersions
       Events:
         FetchJournalByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -113,8 +117,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
+#      SnapStart:
+#        ApplyOn: PublishedVersions
       Events:
         FetchPublisherByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -144,8 +148,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
+#      SnapStart:
+#        ApplyOn: PublishedVersions
       Events:
           CreateJournalEvent:
             Type: Api
@@ -167,8 +171,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
+#      SnapStart:
+#        ApplyOn: PublishedVersions
       Events:
         CreatePublisherEvent:
           Type: Api
@@ -190,8 +194,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
-      SnapStart:
-        ApplyOn: PublishedVersions
+#      SnapStart:
+#        ApplyOn: PublishedVersions
       Events:
         CreateSeriesEvent:
           Type: Api
@@ -206,4 +210,3 @@ Resources:
       FunctionName: !GetAtt CreateSeriesFunction.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
-

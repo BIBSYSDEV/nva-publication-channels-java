@@ -27,7 +27,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYearFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -77,7 +77,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -109,7 +109,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublisherByIdentifierAndYearFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublisherByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -159,7 +159,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -191,7 +191,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
