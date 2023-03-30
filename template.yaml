@@ -134,6 +134,27 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  SearchJournalByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishArn: live
+      Events:
+        SearchJournalByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelApi
+            Path: /journal
+            Method: get
+
+  SearchJournalByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   PublicationChannelsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
