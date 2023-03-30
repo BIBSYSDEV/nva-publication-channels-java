@@ -18,6 +18,8 @@ Globals:
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
+        ENV_DATAPORTEN_AUTH_CLIENT_ID: " "
+        ENV_DATAPORTEN_AUTH_CLIENT_SECRET: " "
 
   Api:
     Cors:
