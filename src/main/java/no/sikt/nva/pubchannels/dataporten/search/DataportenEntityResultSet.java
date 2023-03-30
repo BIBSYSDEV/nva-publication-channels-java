@@ -6,17 +6,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class DataportenEntityResultSet {
-    public static final String PAGERESULT_FIELD = "pageresult";
+    private static final String PAGERESULT_FIELD = "pageresult";
 
     @JsonProperty(PAGERESULT_FIELD)
-    private final List<DataportenJournalResult> pageResult;
+    private final List<DataportenEntityResult> pageResult;
 
     @JsonCreator
-    public DataportenEntityResultSet(@JsonProperty(PAGERESULT_FIELD) List<DataportenJournalResult> pageResult) {
+    public DataportenEntityResultSet(@JsonProperty(PAGERESULT_FIELD) List<DataportenEntityResult> pageResult) {
         this.pageResult = pageResult;
     }
 
-    public List<DataportenJournalResult> getPageResult() {
+    public List<DataportenEntityResult> getPageResult() {
         return pageResult;
     }
 }

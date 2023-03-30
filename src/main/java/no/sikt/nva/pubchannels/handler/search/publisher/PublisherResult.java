@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.search.journal;
+package no.sikt.nva.pubchannels.handler.search.publisher;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import nva.commons.core.paths.UriWrapper;
 import java.net.URI;
 import java.util.Objects;
 
-public class JournalResult {
+public class PublisherResult {
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
@@ -40,12 +40,12 @@ public class JournalResult {
     private final URI sameAs;
 
     @JsonCreator
-    public JournalResult(@JsonProperty(ID_FIELD) URI id,
-                         @JsonProperty(NAME_FIELD) String name,
-                         @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                         @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                         @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                         @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    public PublisherResult(@JsonProperty(ID_FIELD) URI id,
+                           @JsonProperty(NAME_FIELD) String name,
+                           @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                           @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                           @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                           @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.onlineIssn = onlineIssn;
@@ -54,11 +54,11 @@ public class JournalResult {
         this.sameAs = sameAs;
     }
 
-    public static JournalResult create(URI selfUriBase, DataportenEntityResult journal) {
+    public static PublisherResult create(URI selfUriBase, DataportenEntityResult journal) {
         var id = UriWrapper.fromUri(selfUriBase)
                 .addChild(journal.getIdentifier(), String.valueOf(journal.getCurrentLevel().getYear()))
                 .getUri();
-        return new JournalResult(id,
+        return new PublisherResult(id,
                 journal.getName(),
                 journal.getOnlineIssn(),
                 journal.getPrintIssn(),
@@ -107,7 +107,7 @@ public class JournalResult {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        JournalResult that = (JournalResult) o;
+        PublisherResult that = (PublisherResult) o;
         return Objects.equals(getType(), that.getType())
                 && Objects.equals(getContext(), that.getContext())
                 && Objects.equals(getId(), that.getId())

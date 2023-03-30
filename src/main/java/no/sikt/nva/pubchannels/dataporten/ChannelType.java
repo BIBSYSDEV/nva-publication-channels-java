@@ -8,7 +8,8 @@ import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 public enum ChannelType {
 
     JOURNAL("findjournal", FetchJournalByIdAndYearResponse.class),
-    PUBLISHER("findpublisher", FetchPublisherByIdAndYearResponse.class);
+    PUBLISHER("findpublisher", FetchPublisherByIdAndYearResponse.class),
+    SERIES("findseries", FetchPublisherByIdAndYearResponse.class);
 
     public final String pathElement;
     public final Class<? extends ThirdPartyPublicationChannel> responseClass;

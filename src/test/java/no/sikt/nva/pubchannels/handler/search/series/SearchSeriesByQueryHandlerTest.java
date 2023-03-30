@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.search.journal;
+package no.sikt.nva.pubchannels.handler.search.series;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,8 +11,8 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -35,24 +35,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
-import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+import static no.unit.nva.testutils.RandomDataGenerator.*;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -62,11 +52,11 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
-class SearchJournalByQueryHandlerTest {
+class SearchSeriesByQueryHandlerTest {
 
     public static final String LOCALHOST = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
-    public static final String JOURNAL_PATH_ELEMENT = "journal";
+    public static final String PATH_ELEMENT = "series";
     public static final String NAME_QUERY_PARAM = "name";
     public static final String YEAR_QUERY_PARAM = "year";
     public static final String ISSN_QUERY_PARAM = "issn";
@@ -78,7 +68,7 @@ class SearchJournalByQueryHandlerTest {
     private static final Context context = new FakeContext();
     private static final String DATAPORTEN_PAGE_NO_PARAM = "pageno";
     private static final String DATAPORTEN_PAGE_COUNT_PARAM = "pagecount";
-    private SearchJournalByQueryHandler handlerUnderTest;
+    private SearchSeriesByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
     private static InputStream constructRequest(Map<String, String> queryParameters) throws JsonProcessingException {
@@ -101,7 +91,7 @@ class SearchJournalByQueryHandlerTest {
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
 
-        this.handlerUnderTest = new SearchJournalByQueryHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new SearchSeriesByQueryHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
 
@@ -117,7 +107,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
+                new TypeReference<PaginatedSearchResult<SeriesResult>>() {
                 });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -136,7 +126,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
+                new TypeReference<PaginatedSearchResult<SeriesResult>>() {
                 });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -163,7 +153,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
+                new TypeReference<PaginatedSearchResult<SeriesResult>>() {
                 });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -196,7 +186,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
+                new TypeReference<PaginatedSearchResult<SeriesResult>>() {
                 });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -319,7 +309,7 @@ class SearchJournalByQueryHandlerTest {
                 is(equalTo("Unexpected response from upstream!")));
     }
 
-    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultIssnSearch(
+    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultIssnSearch(
             String year,
             String printIssn)
             throws UnprocessableContentException {
@@ -350,7 +340,7 @@ class SearchJournalByQueryHandlerTest {
         );
     }
 
-    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultPidSearch(String year, String pid)
+    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultPidSearch(String year, String pid)
             throws UnprocessableContentException {
         var printIssn = randomIssn();
         var name = randomString();
@@ -377,7 +367,7 @@ class SearchJournalByQueryHandlerTest {
         );
     }
 
-    private PaginatedSearchResult<JournalResult> getPagesSearchResultOneHit(
+    private PaginatedSearchResult<SeriesResult> getPagesSearchResultOneHit(
             String year,
             String printIssn,
             String pid,
@@ -386,7 +376,7 @@ class SearchJournalByQueryHandlerTest {
             String level,
             URI landingPage) throws UnprocessableContentException {
 
-        var expectedHits = List.of(new JournalResult(constructPublicationChannelUri(null, pid, year),
+        var expectedHits = List.of(new SeriesResult(constructPublicationChannelUri(null, pid, year),
                 name,
                 electronicIssn,
                 printIssn,
@@ -454,7 +444,7 @@ class SearchJournalByQueryHandlerTest {
     }
 
     private StringBuilder getDataPortenRequestUrl(String... queryValue) {
-        var url = new StringBuilder("/findjournal/channels");
+        var url = new StringBuilder("/findseries/channels");
         for (int i = 0; i < queryValue.length; i = i + 2) {
             url.append(i == 0 ? "?" : "&");
             url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
@@ -469,7 +459,7 @@ class SearchJournalByQueryHandlerTest {
 
     private URI constructPublicationChannelUri(Map<String, String> queryParams, String... pathElements) {
         var uri = new UriWrapper(HTTPS, LOCALHOST)
-                .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH_ELEMENT)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH, PATH_ELEMENT)
                 .addChild(pathElements)
                 .getUri();
         if (Objects.nonNull(queryParams)) {
@@ -491,7 +481,7 @@ class SearchJournalByQueryHandlerTest {
                 .collect(Collectors.toList());
     }
 
-    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultNameSearch(
+    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultNameSearch(
             List<DataportenEntityResult> dataportenResults,
             String year,
             String name, int queryOffset, int querySize) throws UnprocessableContentException {
@@ -510,10 +500,10 @@ class SearchJournalByQueryHandlerTest {
                         "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private JournalResult toJournal(DataportenEntityResult journal) {
+    private SeriesResult toJournal(DataportenEntityResult entityResult) {
 
         URI baseUri = constructPublicationChannelUri(null);
 
-        return JournalResult.create(baseUri, journal);
+        return SeriesResult.create(baseUri, entityResult);
     }
 }
