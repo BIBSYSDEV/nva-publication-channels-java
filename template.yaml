@@ -146,7 +146,7 @@ Resources:
         SearchJournalByQueryEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref PublicationChannelApi
+            RestApiId: !Ref PublicationChannelsApi
             Path: /journal
             Method: get
 
