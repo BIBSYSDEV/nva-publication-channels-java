@@ -141,7 +141,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      AutoPublishArn: live
+      AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
           Type: Api
