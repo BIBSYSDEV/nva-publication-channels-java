@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
 
-public class DataportenJournalResult {
+public class DataportenEntityResult {
 
     private static final String IDENTIFIER_FIELD = "pid";
     private static final String NAME_FIELD = "name";
@@ -28,12 +28,12 @@ public class DataportenJournalResult {
     private final URI homepage;
 
     @JsonCreator
-    public DataportenJournalResult(@JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                   @JsonProperty(NAME_FIELD) String name,
-                                   @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                   @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                   @JsonProperty(CURRENT_LEVEL_FIELD) DataPortenLevel currentLevel,
-                                   @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+    public DataportenEntityResult(@JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                  @JsonProperty(NAME_FIELD) String name,
+                                  @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                  @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                  @JsonProperty(CURRENT_LEVEL_FIELD) DataPortenLevel currentLevel,
+                                  @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.currentLevel = currentLevel;
         this.onlineIssn = onlineIssn;
         this.identifier = identifier;

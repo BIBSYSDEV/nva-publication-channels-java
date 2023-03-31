@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.search.journal;
+package no.sikt.nva.pubchannels.handler.search.series;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import nva.commons.core.paths.UriWrapper;
 import java.net.URI;
 import java.util.Objects;
 
-public final class JournalResult {
+public final class SeriesResult {
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
@@ -23,7 +23,7 @@ public final class JournalResult {
     private static final String SAME_AS_FIELD = "sameAs";
 
     @JsonProperty(TYPE_FIELD)
-    private static final String type = "Journal";
+    private static final String type = "Series";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
@@ -40,12 +40,12 @@ public final class JournalResult {
     private final URI sameAs;
 
     @JsonCreator
-    private JournalResult(@JsonProperty(ID_FIELD) URI id,
-                          @JsonProperty(NAME_FIELD) String name,
-                          @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                          @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                          @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                          @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    private SeriesResult(@JsonProperty(ID_FIELD) URI id,
+                         @JsonProperty(NAME_FIELD) String name,
+                         @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                         @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                         @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                         @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.onlineIssn = onlineIssn;
@@ -54,11 +54,11 @@ public final class JournalResult {
         this.sameAs = sameAs;
     }
 
-    public static JournalResult create(URI selfUriBase, DataportenEntityResult journal) {
+    public static SeriesResult create(URI selfUriBase, DataportenEntityResult journal) {
         var id = UriWrapper.fromUri(selfUriBase)
                 .addChild(journal.getIdentifier(), String.valueOf(journal.getCurrentLevel().getYear()))
                 .getUri();
-        return new JournalResult(id,
+        return new SeriesResult(id,
                 journal.getName(),
                 journal.getOnlineIssn(),
                 journal.getPrintIssn(),
@@ -107,7 +107,7 @@ public final class JournalResult {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        JournalResult that = (JournalResult) o;
+        SeriesResult that = (SeriesResult) o;
         return Objects.equals(getType(), that.getType())
                 && Objects.equals(getContext(), that.getContext())
                 && Objects.equals(getId(), that.getId())
@@ -134,7 +134,7 @@ public final class JournalResult {
     @JacocoGenerated
     @Override
     public String toString() {
-        return "JournalResult{"
+        return "PublisherResult{"
                 + "type='" + type + '\''
                 + ", context=" + context
                 + ", id=" + id

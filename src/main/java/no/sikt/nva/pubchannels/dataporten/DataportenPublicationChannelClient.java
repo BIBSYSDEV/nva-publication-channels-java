@@ -6,7 +6,7 @@ import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
@@ -69,10 +69,10 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public DataportenSearchJournalResponse getChannel(ChannelType type, Map<String, String> queryParameters)
+    public DataportenSearchResponse getChannel(ChannelType type, Map<String, String> queryParameters)
             throws ApiGatewayException {
         var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
-        return attempt(() -> executeRequest(request, DataportenSearchJournalResponse.class))
+        return attempt(() -> executeRequest(request, DataportenSearchResponse.class))
                 .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
