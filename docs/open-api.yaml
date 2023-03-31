@@ -116,16 +116,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedJournal'
+                $ref: '#/components/schemas/PaginatedJournals'
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedJournalExample'
+                  $ref: '#/components/examples/PaginatedJournalsExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedJournal'
+                $ref: '#/components/schemas/PaginatedJournals'
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedJournalExample'
+                  $ref: '#/components/examples/PaginatedJournalsExample'
         400:
           $ref: '#/components/responses/400'
         404:
@@ -314,7 +314,7 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
-    PaginatedJournal:
+    PaginatedJournals:
       type: object
       properties:
         '@context':
@@ -480,7 +480,7 @@ components:
           description: The requested path associated with the error
 
   examples:
-    PaginatedJournalExample:
+    PaginatedJournalsExample:
       value:
         '@context': 'https://example.org/context.json'
         id: 'https://example.org/journal?year=2023&query=nature&offset=10&size=1'
