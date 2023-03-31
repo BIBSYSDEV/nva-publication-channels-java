@@ -327,7 +327,7 @@ class SearchPublisherByQueryHandlerTest {
         var landingPage = randomUri();
 
         List<DataportenEntityResult> dataportenEntityResult = List.of(
-                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+                createDataportenResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -347,10 +347,10 @@ class SearchPublisherByQueryHandlerTest {
         var electronicIssn = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
-        var dataportenJournalResult = List.of(
-                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+        var dataportenResult = List.of(
+                createDataportenResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
+        var responseBody = getDataportenResponseBody(dataportenResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
@@ -398,7 +398,7 @@ class SearchPublisherByQueryHandlerTest {
                 .build();
     }
 
-    private DataportenEntityResult createDataportenJournalResult(
+    private DataportenEntityResult createDataportenResult(
             String year,
             String issn,
             String pid,
