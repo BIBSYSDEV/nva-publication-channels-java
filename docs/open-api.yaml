@@ -247,6 +247,56 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
+  /series/{identifier}/{year}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchSeriesByIdentifierAndYearFunction.Arn}:live/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - Series
+      summary: Fetch series by identifier and year
+      description: Returns a single Series with information for a specific year
+      operationId: FetchSeriesByIdentifierAndYear
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of series to return
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        - name: year
+          in: path
+          description: year for series data
+          required: true
+          schema:
+            type: integer
+            description: can maximum be set to next year
+          example: '1910'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/SeriesExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Series'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/SeriesExample'
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
   /series:
     post:
       x-amazon-apigateway-integration:
@@ -406,6 +456,31 @@ components:
         sameAs:
           type: string
           nullable: true
+    Series:
+      type: object
+      properties:
+        '@context':
+          $ref: '#/components/schemas/Context'
+        type:
+          type: string
+          pattern: 'Series'
+          description: The type of the returned object, always Series
+        name:
+          $ref: '#/components/schemas/Name'
+        onlineIssn:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{4}$'
+          description: The ISSN of the online edition of the Series
+        printIssn:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{4}$'
+          nullable: true
+          description: The ISSN of the print edition of the Series
+        scientificValue:
+          $ref: '#/components/schemas/ScientificValue'
+        sameAs:
+          type: string
+          nullable: true
     CreatePublisher:
       type: object
       properties:
@@ -531,6 +606,16 @@ components:
         scientificValue: 'LEVEL_1'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample publisher
+    SeriesExample:
+      value:
+        id: 'https://example.org/series/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
+        type: 'Series'
+        name: 'The series of eternal fury'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
+        scientificValue: 'LEVEL_1'
+        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+      summary: A sample series
     CreateSeriesExample:
       value:
         name: 'The series of eternal fury'

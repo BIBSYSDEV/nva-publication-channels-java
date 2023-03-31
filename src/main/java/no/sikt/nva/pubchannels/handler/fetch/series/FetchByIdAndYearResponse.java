@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.publisher;
+package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,7 +23,7 @@ public class FetchByIdAndYearResponse {
     private static final String SAME_AS_FIELD = "sameAs";
 
     @JsonProperty(TYPE_FIELD)
-    private static final String TYPE = "Publisher";
+    private static final String TYPE = "Series";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
@@ -107,7 +107,7 @@ public class FetchByIdAndYearResponse {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
+        var that = (FetchByIdAndYearResponse) o;
         return Objects.equals(getType(), that.getType())
                 && Objects.equals(getContext(), that.getContext())
                 && Objects.equals(getId(), that.getId())
@@ -146,4 +146,5 @@ public class FetchByIdAndYearResponse {
                 + '}';
     }
 }
+
 

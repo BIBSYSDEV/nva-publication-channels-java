@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
@@ -9,35 +9,34 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+
 import static nva.commons.core.attempt.Try.attempt;
 
-public class FetchJournalByIdentifierAndYearHandler extends
+public class FetchSeriesByIdentifierAndYearHandler extends
         FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
-    private static final String JOURNAL_PATH_ELEMENT = "journal";
+    private static final String SERIES_PATH_ELEMENT = "series";
 
     @JacocoGenerated
-    public FetchJournalByIdentifierAndYearHandler() {
+    public FetchSeriesByIdentifierAndYearHandler() {
         super(Void.class, new Environment());
     }
 
-    public FetchJournalByIdentifierAndYearHandler(Environment environment,
-                                                  PublicationChannelClient publicationChannelClient) {
+    public FetchSeriesByIdentifierAndYearHandler(Environment environment,
+                                                 PublicationChannelClient publicationChannelClient) {
         super(Void.class, environment, publicationChannelClient);
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
-            throws ApiGatewayException {
-
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws
+            ApiGatewayException {
         var request = attempt(() -> validate(requestInfo))
                 .map(FetchByIdAndYearRequest::new)
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
-        var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
+        var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
 
-        return FetchByIdAndYearResponse.create(journalIdBaseUri,
-                publicationChannelClient.getChannel(ChannelType.JOURNAL, request.getIdentifier(), request.getYear()));
+        return FetchByIdAndYearResponse.create(publisherIdBaseUri,
+                publicationChannelClient.getChannel(ChannelType.SERIES, request.getIdentifier(), request.getYear()));
     }
-
 }
