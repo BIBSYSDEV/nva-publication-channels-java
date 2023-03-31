@@ -18,6 +18,8 @@ Globals:
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
+        ENV_DATAPORTEN_AUTH_CLIENT_ID: " "
+        ENV_DATAPORTEN_AUTH_CLIENT_SECRET: " "
 
   Api:
     Cors:
@@ -131,6 +133,27 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  SearchJournalByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      Events:
+        SearchJournalByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /journal
+            Method: get
+
+  SearchJournalByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
