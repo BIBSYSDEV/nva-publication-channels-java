@@ -18,9 +18,9 @@ Globals:
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
-        DATAPORTEN_AUTH_CLIENT_ID: ''
-        DATAPORTEN_AUTH_CLIENT_SECRET: ''
-        DATAPORTEN_AUTH_BASE_URL: ''
+        DATAPORTEN_AUTH_CLIENT_ID: !Ref DataportenAuthClientId
+        DATAPORTEN_AUTH_CLIENT_SECRET: !Ref DataportenAuthClientSecret
+        DATAPORTEN_AUTH_BASE_URL: !Ref DataportenAuthUrl
 
   Api:
     Cors:
@@ -39,6 +39,18 @@ Parameters:
     Default: https://kar-test.dataporten-api.no
     AllowedValues:
       - https://kar-test.dataporten-api.no
+  DataportenAuthUrl:
+    Type: String
+    Description: Base url for Dataporten Auth API
+    Default: ''
+  DataportenAuthClientId:
+    Type: String
+    Description: The client id to use Dataporten Auth API
+    Default: ''
+  DataportenAuthClientSecret:
+    Type: String
+    Description: The client secret to use Dataporten Auth API
+    Default: ''
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
