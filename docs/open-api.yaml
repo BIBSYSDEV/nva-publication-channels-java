@@ -441,6 +441,7 @@ components:
           $ref: '#/components/schemas/Context'
         id:
           type: string
+          description: The url to the journal search result
         totalHits:
           type: integer
         nextResults:
@@ -507,6 +508,7 @@ components:
           $ref: '#/components/schemas/Context'
         id:
           type: string
+          description: The url to the publisher search result
         totalHits:
           type: integer
         nextResults:
@@ -521,7 +523,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Publisher'
-          description: The url to the publisher
     Publisher:
       type: object
       properties:
@@ -575,6 +576,7 @@ components:
           $ref: '#/components/schemas/Context'
         id:
           type: string
+          description: The url to the series search result
         totalHits:
           type: integer
         nextResults:
@@ -589,7 +591,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Series'
-          description: The url to the publisher
     Series:
       type: object
       properties:

@@ -12,7 +12,7 @@ import nva.commons.core.paths.UriWrapper;
 import java.net.URI;
 import java.util.Objects;
 
-public class JournalResult {
+public final class JournalResult {
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
@@ -40,12 +40,12 @@ public class JournalResult {
     private final URI sameAs;
 
     @JsonCreator
-    public JournalResult(@JsonProperty(ID_FIELD) URI id,
-                         @JsonProperty(NAME_FIELD) String name,
-                         @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                         @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                         @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                         @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    private JournalResult(@JsonProperty(ID_FIELD) URI id,
+                          @JsonProperty(NAME_FIELD) String name,
+                          @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                          @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                          @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                          @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.onlineIssn = onlineIssn;

@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
@@ -78,7 +77,7 @@ class SearchJournalByQueryHandlerTest {
 
     public static final String JOURNAL_PATH_ELEMENT = "journal";
     private static final Context context = new FakeContext();
-    public static final TypeReference<PaginatedSearchResult<JournalResult>> TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<PaginatedSearchResult<JournalResult>> TYPE_REF = new TypeReference<>() {
     };
     private SearchJournalByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
@@ -369,12 +368,16 @@ class SearchJournalByQueryHandlerTest {
             String level,
             URI landingPage) throws UnprocessableContentException {
 
-        var expectedHits = List.of(new JournalResult(constructPublicationChannelUri(null, pid, year),
-                name,
-                electronicIssn,
-                printIssn,
-                new ScientificValueMapper().map(level),
-                landingPage));
+        var expectedHits = List.of(
+                JournalResult.create(
+                        constructPublicationChannelUri(null),
+                        new DataportenEntityResult(pid,
+                                name,
+                                printIssn,
+                                electronicIssn,
+                                new DataPortenLevel(Integer.parseInt(year), level),
+                                landingPage)
+                ));
 
         return PaginatedSearchResult.create(
                 constructPublicationChannelUri(
@@ -481,7 +484,7 @@ class SearchJournalByQueryHandlerTest {
             String name, int queryOffset, int querySize) throws UnprocessableContentException {
         var expectedHits = dataportenResults
                 .stream()
-                .map(this::toJournal)
+                .map(this::toResult)
                 .collect(Collectors.toList());
 
         return PaginatedSearchResult.create(
@@ -494,10 +497,7 @@ class SearchJournalByQueryHandlerTest {
                         "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private JournalResult toJournal(DataportenEntityResult journal) {
-
-        URI baseUri = constructPublicationChannelUri(null);
-
-        return JournalResult.create(baseUri, journal);
+    private JournalResult toResult(DataportenEntityResult journal) {
+        return JournalResult.create(constructPublicationChannelUri(null), journal);
     }
 }

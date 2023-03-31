@@ -191,7 +191,7 @@ Resources:
   SearchPublisherByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchPublisherByQueryHandler::handleRequest
+      Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       Events:
@@ -235,7 +235,7 @@ Resources:
   SearchSeriesByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchSeriesByQueryHandler::handleRequest
+      Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       AutoPublishAlias: live
       Events:

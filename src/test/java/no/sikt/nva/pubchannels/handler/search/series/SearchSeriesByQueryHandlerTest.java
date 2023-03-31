@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
@@ -323,8 +322,8 @@ class SearchSeriesByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
 
-        List<DataportenEntityResult> dataportenEntityResult = List.of(
-                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+        var dataportenEntityResult = List.of(
+                createDataportenResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -344,10 +343,10 @@ class SearchSeriesByQueryHandlerTest {
         var electronicIssn = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
-        var dataportenJournalResult = List.of(
-                createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
+        var dataportenResult = List.of(
+                createDataportenResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
+        var responseBody = getDataportenResponseBody(dataportenResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
@@ -366,12 +365,17 @@ class SearchSeriesByQueryHandlerTest {
             String level,
             URI landingPage) throws UnprocessableContentException {
 
-        var expectedHits = List.of(new SeriesResult(constructPublicationChannelUri(null, pid, year),
-                name,
-                electronicIssn,
-                printIssn,
-                new ScientificValueMapper().map(level),
-                landingPage));
+        var expectedHits = List.of(
+                SeriesResult.create(
+                        constructPublicationChannelUri(null),
+                        new DataportenEntityResult(
+                                pid,
+                                name,
+                                printIssn,
+                                electronicIssn,
+                                new DataPortenLevel(Integer.parseInt(year), level),
+                                landingPage)
+                ));
 
         return PaginatedSearchResult.create(
                 constructPublicationChannelUri(
@@ -391,7 +395,7 @@ class SearchSeriesByQueryHandlerTest {
                 .build();
     }
 
-    private DataportenEntityResult createDataportenJournalResult(
+    private DataportenEntityResult createDataportenResult(
             String year,
             String issn,
             String pid,
@@ -478,7 +482,7 @@ class SearchSeriesByQueryHandlerTest {
             String name, int queryOffset, int querySize) throws UnprocessableContentException {
         var expectedHits = dataportenResults
                 .stream()
-                .map(this::toJournal)
+                .map(this::toResult)
                 .collect(Collectors.toList());
 
         return PaginatedSearchResult.create(
@@ -491,10 +495,7 @@ class SearchSeriesByQueryHandlerTest {
                         "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private SeriesResult toJournal(DataportenEntityResult entityResult) {
-
-        URI baseUri = constructPublicationChannelUri(null);
-
-        return SeriesResult.create(baseUri, entityResult);
+    private SeriesResult toResult(DataportenEntityResult entityResult) {
+        return SeriesResult.create(constructPublicationChannelUri(null), entityResult);
     }
 }
