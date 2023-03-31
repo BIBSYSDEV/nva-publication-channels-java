@@ -1,21 +1,31 @@
 package no.sikt.nva.pubchannels.handler.search.journal;
 
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class SearchJournalByQueryHandler extends SearchByQueryHandler {
+import java.net.URI;
 
-    private static final String JOURNAL_PATH_ELEMENT = "journal";
+public class SearchJournalByQueryHandler extends SearchByQueryHandler<JournalResult> {
+
+    private static final String PATH_ELEMENT = "journal";
+    private static final ChannelType CHANNEL_TYPE = ChannelType.JOURNAL;
 
     @JacocoGenerated
     public SearchJournalByQueryHandler() {
-        super(JOURNAL_PATH_ELEMENT, ChannelType.JOURNAL);
+        super(PATH_ELEMENT, CHANNEL_TYPE);
     }
 
     public SearchJournalByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
-        super(environment, publicationChannelClient, JOURNAL_PATH_ELEMENT, ChannelType.JOURNAL);
+        super(environment, publicationChannelClient, PATH_ELEMENT, CHANNEL_TYPE);
     }
+
+    @Override
+    protected JournalResult createResult(URI baseUri, DataportenEntityResult entityResult) {
+        return JournalResult.create(baseUri, entityResult);
+    }
+
 }

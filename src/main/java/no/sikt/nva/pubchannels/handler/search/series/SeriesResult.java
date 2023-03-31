@@ -23,7 +23,7 @@ public class SeriesResult {
     private static final String SAME_AS_FIELD = "sameAs";
 
     @JsonProperty(TYPE_FIELD)
-    private static final String type = "Journal";
+    private static final String type = "Series";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
@@ -134,7 +134,7 @@ public class SeriesResult {
     @JacocoGenerated
     @Override
     public String toString() {
-        return "SearchJournalResponse{"
+        return "PublisherResult{"
                 + "type='" + type + '\''
                 + ", context=" + context
                 + ", id=" + id

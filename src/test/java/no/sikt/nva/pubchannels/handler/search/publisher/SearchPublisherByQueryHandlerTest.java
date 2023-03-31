@@ -11,8 +11,8 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -35,14 +35,36 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_COUNT_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
+import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
+import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.LOCALHOST;
+import static no.sikt.nva.pubchannels.TestCommons.MAX_LEVEL;
+import static no.sikt.nva.pubchannels.TestCommons.MIN_LEVEL;
+import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.*;
+import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
+import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -54,20 +76,10 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class SearchPublisherByQueryHandlerTest {
 
-    public static final String LOCALHOST = "localhost";
-    public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
-    public static final String NAME_QUERY_PARAM = "name";
-    public static final String YEAR_QUERY_PARAM = "year";
-    public static final String ISSN_QUERY_PARAM = "issn";
-    public static final String PID_QUERY_PARAM = "pid";
-    public static final int MAX_LEVEL = 2;
-    public static final double MIN_LEVEL = 0;
-    public static final String DEFAULT_OFFSET = "0";
-    public static final String DEFAULT_SIZE = "10";
     private static final Context context = new FakeContext();
-    private static final String DATAPORTEN_PAGE_NO_PARAM = "pageno";
-    private static final String DATAPORTEN_PAGE_COUNT_PARAM = "pagecount";
+    public static final TypeReference<PaginatedSearchResult<PublisherResult>> TYPE_REF = new TypeReference<>() {
+    };
     private SearchPublisherByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
@@ -107,8 +119,7 @@ class SearchPublisherByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<PublisherResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -126,8 +137,7 @@ class SearchPublisherByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<PublisherResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -137,10 +147,11 @@ class SearchPublisherByQueryHandlerTest {
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
         var year = randomValidYear();
         var name = randomString();
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(
-                dataportenSearchResult.stream().limit(10).collect(Collectors.toList()),
-                dataportenSearchResult.size());
+        int maxNr = 30;
+        int offset = 0;
+        int size = 10;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        var responseBody = getDataportenResponseBody(dataportenSearchResult, offset, size);
         stubDataportenSearchResponse(
                 responseBody, HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
@@ -153,13 +164,12 @@ class SearchPublisherByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<PublisherResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
         var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(
-                dataportenSearchResult, year, name, 0, 10);
+                dataportenSearchResult, year, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
@@ -169,25 +179,24 @@ class SearchPublisherByQueryHandlerTest {
         var name = randomString();
         int offset = 10;
         int size = 10;
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(dataportenSearchResult.stream().skip(offset).limit(size)
-                .collect(Collectors.toList()), dataportenSearchResult.size());
-        var pageNo = String.valueOf(offset / size);
-        var pageCount = String.valueOf(size);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+        int maxNr = 30;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        stubDataportenSearchResponse(
+                getDataportenResponseBody(dataportenSearchResult, offset, size),
+                HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
-                DATAPORTEN_PAGE_COUNT_PARAM, pageCount,
-                DATAPORTEN_PAGE_NO_PARAM, pageNo,
+                DATAPORTEN_PAGE_COUNT_PARAM, String.valueOf(size),
+                DATAPORTEN_PAGE_NO_PARAM, String.valueOf(offset / size),
                 NAME_QUERY_PARAM, name);
         var input = constructRequest(
-                Map.of("year", year, "query", name, "offset", "10", "size", "10"));
+                Map.of("year", year, "query", name,
+                        "offset", String.valueOf(offset), "size", String.valueOf(size)));
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<PublisherResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
@@ -285,10 +294,9 @@ class SearchPublisherByQueryHandlerTest {
 
         var year = randomValidYear();
         var name = randomString();
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(
-                dataportenSearchResult.stream().limit(10).collect(Collectors.toList()),
-                dataportenSearchResult.size());
+        int maxNr = 30;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        var responseBody = getDataportenResponseBody(dataportenSearchResult, 0, 10);
         stubDataportenSearchResponse(
                 responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
                 YEAR_QUERY_PARAM, year,
@@ -322,22 +330,15 @@ class SearchPublisherByQueryHandlerTest {
         List<DataportenEntityResult> dataportenEntityResult = List.of(
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenEntityResult, dataportenEntityResult.size());
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, ISSN_QUERY_PARAM, printIssn,
+        var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
+        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+                ISSN_QUERY_PARAM, printIssn,
                 YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
 
-        return getPagesSearchResultOneHit(
-                year,
-                printIssn,
-                pid,
-                name,
-                electronicIssn,
-                level,
-                landingPage
-        );
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
     private PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchResultPidSearch(String year, String pid)
@@ -350,24 +351,17 @@ class SearchPublisherByQueryHandlerTest {
         var dataportenJournalResult = List.of(
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, dataportenJournalResult.size());
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, YEAR_QUERY_PARAM, year,
+        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
+        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+                YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
                 PID_QUERY_PARAM, pid);
 
-        return getPagesSearchResultOneHit(
-                year,
-                printIssn,
-                pid,
-                name,
-                electronicIssn,
-                level,
-                landingPage
-        );
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
-    private PaginatedSearchResult<PublisherResult> getPagesSearchResultOneHit(
+    private PaginatedSearchResult<PublisherResult> getSingleHit(
             String year,
             String printIssn,
             String pid,
@@ -392,11 +386,12 @@ class SearchPublisherByQueryHandlerTest {
                 expectedHits);
     }
 
-    private String getDataportenResponseBody(List<DataportenEntityResult> results, int totalSize) {
+    private String getDataportenResponseBody(List<DataportenEntityResult> results, int offset, int size) {
 
         return new DataportenBodyBuilder()
-                .withEntityPageInformation(new DataPortenEntityPageInformation(totalSize))
-                .withEntityResultSet(new DataportenEntityResultSet(results))
+                .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
+                .withEntityResultSet(new DataportenEntityResultSet(
+                        results.stream().skip(offset).limit(size).collect(Collectors.toList())))
                 .build();
     }
 
@@ -468,8 +463,8 @@ class SearchPublisherByQueryHandlerTest {
         return uri;
     }
 
-    private List<DataportenEntityResult> getDataportenSearchResult(String year, String name) {
-        return IntStream.range(0, 100)
+    private List<DataportenEntityResult> getDataportenSearchResult(String year, String name, int maxNr) {
+        return IntStream.range(0, maxNr)
                 .mapToObj(i ->
                         new DataportenEntityResult(
                                 UUID.randomUUID().toString(),

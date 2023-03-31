@@ -11,8 +11,8 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -47,6 +47,18 @@ import java.util.stream.Stream;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_COUNT_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
+import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
+import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.LOCALHOST;
+import static no.sikt.nva.pubchannels.TestCommons.MAX_LEVEL;
+import static no.sikt.nva.pubchannels.TestCommons.MIN_LEVEL;
+import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -64,20 +76,10 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest {
 
-    public static final String LOCALHOST = "localhost";
-    public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String JOURNAL_PATH_ELEMENT = "journal";
-    public static final String NAME_QUERY_PARAM = "name";
-    public static final String YEAR_QUERY_PARAM = "year";
-    public static final String ISSN_QUERY_PARAM = "issn";
-    public static final String PID_QUERY_PARAM = "pid";
-    public static final int MAX_LEVEL = 2;
-    public static final double MIN_LEVEL = 0;
-    public static final String DEFAULT_OFFSET = "0";
-    public static final String DEFAULT_SIZE = "10";
     private static final Context context = new FakeContext();
-    private static final String DATAPORTEN_PAGE_NO_PARAM = "pageno";
-    private static final String DATAPORTEN_PAGE_COUNT_PARAM = "pagecount";
+    public static final TypeReference<PaginatedSearchResult<JournalResult>> TYPE_REF = new TypeReference<>() {
+    };
     private SearchJournalByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
@@ -117,8 +119,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -136,8 +137,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -164,8 +164,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
@@ -197,8 +196,7 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                new TypeReference<PaginatedSearchResult<JournalResult>>() {
-                });
+                TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
@@ -332,8 +330,9 @@ class SearchJournalByQueryHandlerTest {
         List<DataportenEntityResult> dataportenEntityResult = List.of(
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, ISSN_QUERY_PARAM, printIssn,
+        var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
+        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+                ISSN_QUERY_PARAM, printIssn,
                 YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
@@ -353,7 +352,8 @@ class SearchJournalByQueryHandlerTest {
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, YEAR_QUERY_PARAM, year,
+        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+                YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
                 PID_QUERY_PARAM, pid);

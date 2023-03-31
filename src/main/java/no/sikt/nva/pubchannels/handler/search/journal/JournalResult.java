@@ -134,7 +134,7 @@ public class JournalResult {
     @JacocoGenerated
     @Override
     public String toString() {
-        return "SearchJournalResponse{"
+        return "JournalResult{"
                 + "type='" + type + '\''
                 + ", context=" + context
                 + ", id=" + id

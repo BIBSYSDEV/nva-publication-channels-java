@@ -3,15 +3,16 @@ package no.sikt.nva.pubchannels.handler.search;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchResponse;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.search.publisher.PublisherResult;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.apache.commons.validator.routines.ISSNValidator;
 
@@ -24,12 +25,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static no.sikt.nva.pubchannels.handler.validator.Validator.*;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validatePagination;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
-public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, PaginatedSearchResult<PublisherResult>> {
-
+public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, PaginatedSearchResult<T>> {
 
     private static final String PID_QUERY_PARAM = "pid";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
@@ -44,11 +46,11 @@ public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, Pagin
     private static final String NAME_QUERY_PARAM = "name";
     private static final String PAGENO_QUERY_PARAM = "pageno";
     private static final String PAGECOUNT_QUERY_PARAM = "pagecount";
-    //    private static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private final String pathElement;
     private final PublicationChannelClient publicationChannelClient;
     private final ChannelType channelType;
 
+    @JacocoGenerated
     protected SearchByQueryHandler(String pathElement, ChannelType channelType) {
         super(Void.class, new Environment());
         this.publicationChannelClient = DataportenPublicationChannelClient.defaultInstance();
@@ -56,8 +58,8 @@ public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, Pagin
         this.channelType = channelType;
     }
 
-    public SearchByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient,
-                                String pathElement, ChannelType channelType) {
+    protected SearchByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient,
+                                   String pathElement, ChannelType channelType) {
         super(Void.class, environment);
         this.publicationChannelClient = publicationChannelClient;
         this.pathElement = pathElement;
@@ -65,7 +67,7 @@ public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, Pagin
     }
 
     @Override
-    protected PaginatedSearchResult<PublisherResult> processInput(Void input, RequestInfo requestInfo,
+    protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo,
                                                                   Context context) throws ApiGatewayException {
         var year = requestInfo.getQueryParameter(YEAR_QUERY_PARAM);
         var query = requestInfo.getQueryParameter(QUERY_PARAM);
@@ -99,7 +101,7 @@ public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, Pagin
     }
 
     @Override
-    protected Integer getSuccessStatusCode(Void input, PaginatedSearchResult<PublisherResult> output) {
+    protected Integer getSuccessStatusCode(Void input, PaginatedSearchResult<T> output) {
         return HttpURLConnection.HTTP_OK;
     }
 
@@ -109,13 +111,15 @@ public abstract class SearchByQueryHandler extends ApiGatewayHandler<Void, Pagin
         return publicationChannelClient.getChannel(channelType, queryParams);
     }
 
-    private List<PublisherResult> getJournalHits(URI baseUri, DataportenSearchResponse searchResult) {
+    private List<T> getJournalHits(URI baseUri, DataportenSearchResponse searchResult) {
         return searchResult.getResultSet()
                 .getPageResult()
                 .stream()
-                .map(result -> PublisherResult.create(baseUri, result))
+                .map(result -> createResult(baseUri, result))
                 .collect(Collectors.toList());
     }
+
+    protected abstract T createResult(URI baseUri, DataportenEntityResult entityResult);
 
     private Map<String, String> getQueryParams(String year, String query, int offset, int size) {
         var queryParams = new HashMap<String, String>();
