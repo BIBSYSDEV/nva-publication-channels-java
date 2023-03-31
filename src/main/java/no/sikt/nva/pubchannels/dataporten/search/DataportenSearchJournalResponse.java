@@ -3,7 +3,7 @@ package no.sikt.nva.pubchannels.dataporten.search;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DataportenFindJournalResponse {
+public class DataportenSearchJournalResponse {
     @JsonProperty("entityPageInformation")
     private final DataPortenEntityPageInformation pageInformation;
 
@@ -11,7 +11,7 @@ public class DataportenFindJournalResponse {
     private final DataportenEntityResultSet resultSet;
 
     @JsonCreator
-    public DataportenFindJournalResponse(
+    public DataportenSearchJournalResponse(
             @JsonProperty("entityPageInformation") DataPortenEntityPageInformation pageInformation,
             @JsonProperty("entityResultSet") DataportenEntityResultSet resultSet
     ) {
