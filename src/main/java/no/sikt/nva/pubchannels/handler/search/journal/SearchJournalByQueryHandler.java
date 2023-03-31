@@ -33,7 +33,7 @@ import static nva.commons.core.paths.UriWrapper.HTTPS;
 public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, PaginatedSearchResult<JournalResult>> {
 
 
-    public static final String PID_QUERY_PARAM = "pid";
+    private static final String PID_QUERY_PARAM = "pid";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String JOURNAL_PATH_ELEMENT = "journal";
