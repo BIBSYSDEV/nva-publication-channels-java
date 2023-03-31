@@ -6,11 +6,17 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.journal.DataportenBodyBuilder;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
+import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.SingletonCollector;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +43,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
+import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -48,6 +57,7 @@ import static org.mockito.Mockito.when;
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest {
     private static final int YEAR_START = 1900;
+    private static final String SELF_URI_BASE = "https://localhost/publication-channels/series";
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
@@ -71,6 +81,27 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     @AfterEach
     void tearDown() throws IOException {
         output.flush();
+    }
+
+    @Test
+    void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+
+        var input = constructRequest(year, identifier);
+
+        var expectedSeries = mockSeriesFound(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+
+        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualSeries, is(equalTo(expectedSeries)));
+
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
@@ -212,5 +243,131 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    }
+
+    private FetchByIdAndYearResponse mockSeriesFound(String year, String identifier) {
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var issn = randomIssn();
+        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
+        var level = scientificValueToLevel(scientificValue);
+        var landingPage = randomUri();
+        var type = "Series";
+        var body = getResponseBody(year, identifier, name, electronicIssn, issn, level, landingPage, type);
+
+        mockDataportenResponse(year, identifier, body);
+
+        return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+    }
+
+    private void mockDataportenResponse(String year, String identifier, String responseBody) {
+        stubFor(
+                get("/findseries/" + identifier + "/" + year)
+                        .withHeader("Accept", WireMock.equalTo("application/json"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpURLConnection.HTTP_OK)
+                                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                                        .withBody(responseBody)));
+    }
+
+    private String getResponseBody(
+            String year,
+            String identifier,
+            String name,
+            String electronicIssn,
+            String issn,
+            String level,
+            URI landingPage,
+            String type) {
+
+        return new DataportenBodyBuilder()
+                .withType(type)
+                .withYear(year)
+                .withPid(identifier)
+                .withName(name)
+                .withEissn(electronicIssn)
+                .withPissn(issn)
+                .withLevel(level)
+                .withKurl(landingPage.toString())
+                .build();
+    }
+
+    private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
+            String year,
+            String identifier,
+            String name,
+            String electronicIssn,
+            String issn,
+            ScientificValue scientificValue,
+            URI landingPage) {
+
+        URI selfUriBase = URI.create(SELF_URI_BASE);
+        ThirdPartyPublicationChannel series = getSeries(
+                year,
+                identifier,
+                name,
+                electronicIssn,
+                issn,
+                scientificValue,
+                landingPage);
+
+        return FetchByIdAndYearResponse.create(selfUriBase, series);
+    }
+
+    private ThirdPartyPublicationChannel getSeries(
+            String year,
+            String identifier,
+            String name,
+            String electronicIssn,
+            String issn,
+            ScientificValue scientificValue,
+            URI landingPage) {
+
+        return new ThirdPartyPublicationChannel() {
+            @Override
+            public String getIdentifier() {
+                return identifier;
+            }
+
+            @Override
+            public String getYear() {
+                return year;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
+            }
+
+            @Override
+            public ScientificValue getScientificValue() {
+                return scientificValue;
+            }
+
+            @Override
+            public URI getHomepage() {
+                return landingPage;
+            }
+        };
+    }
+
+    private String scientificValueToLevel(ScientificValue scientificValue) {
+
+        return ScientificValueMapper.VALUES.entrySet()
+                .stream()
+                .filter(item -> item.getValue().equals(scientificValue))
+                .map(Map.Entry::getKey)
+                .collect(SingletonCollector.collectOrElse(null));
     }
 }

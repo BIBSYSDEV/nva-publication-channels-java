@@ -12,7 +12,8 @@ import nva.commons.core.JacocoGenerated;
 
 import static nva.commons.core.attempt.Try.attempt;
 
-public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
+public class FetchSeriesByIdentifierAndYearHandler extends
+        FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -27,7 +28,8 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws
+            ApiGatewayException {
         var request = attempt(() -> validate(requestInfo))
                 .map(FetchByIdAndYearRequest::new)
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
