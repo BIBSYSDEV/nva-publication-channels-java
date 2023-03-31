@@ -118,8 +118,7 @@ class SearchJournalByQueryHandlerTest {
         this.handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                TYPE_REF);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
