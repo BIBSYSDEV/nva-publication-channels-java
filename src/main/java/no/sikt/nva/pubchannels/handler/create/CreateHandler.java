@@ -18,13 +18,13 @@ import java.net.http.HttpClient;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
 public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
-    private static final String ENV_DATAPORTEN_AUTH_BASE_URI = "ENV_DATAPORTEN_AUTH_BASE_URI";
+    private static final String ENV_DATAPORTEN_AUTH_BASE_URI = "DATAPORTEN_AUTH_BASE_URL";
     private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI =
-            "ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI";
+            "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
-    private static final String ENV_DATAPORTEN_AUTH_CLIENT_ID = "ENV_DATAPORTEN_AUTH_CLIENT_ID";
-    private static final String ENV_DATAPORTEN_AUTH_CLIENT_SECRET = "ENV_DATAPORTEN_AUTH_CLIENT_SECRET";
+    private static final String ENV_DATAPORTEN_AUTH_CLIENT_ID = "DATAPORTEN_AUTH_CLIENT_ID";
+    private static final String ENV_DATAPORTEN_AUTH_CLIENT_SECRET = "DATAPORTEN_AUTH_CLIENT_SECRET";
     protected PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
