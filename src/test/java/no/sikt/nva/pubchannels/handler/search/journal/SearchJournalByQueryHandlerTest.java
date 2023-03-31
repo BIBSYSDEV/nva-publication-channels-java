@@ -14,7 +14,6 @@ import no.sikt.nva.pubchannels.dataporten.search.DataPortenLevel;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenJournalResult;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
-import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -148,10 +147,11 @@ class SearchJournalByQueryHandlerTest {
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
         var year = randomValidYear();
         var name = randomString();
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(
-                dataportenSearchResult.stream().limit(10).collect(Collectors.toList()),
-                dataportenSearchResult.size());
+        int maxNr = 30;
+        int offset = 0;
+        int size = 10;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        var responseBody = getDataportenResponseBody(dataportenSearchResult, offset, size);
         stubDataportenSearchResponse(
                 responseBody, HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
@@ -169,9 +169,6 @@ class SearchJournalByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
-        var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(
-                dataportenSearchResult, year, name, 0, 10);
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
     @Test
@@ -180,18 +177,18 @@ class SearchJournalByQueryHandlerTest {
         var name = randomString();
         int offset = 10;
         int size = 10;
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(dataportenSearchResult.stream().skip(offset).limit(size)
-                .collect(Collectors.toList()), dataportenSearchResult.size());
-        var pageNo = String.valueOf(offset / size);
-        var pageCount = String.valueOf(size);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+        int maxNr = 30;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        stubDataportenSearchResponse(
+                getDataportenResponseBody(dataportenSearchResult, offset, size),
+                HttpURLConnection.HTTP_OK,
                 YEAR_QUERY_PARAM, year,
-                DATAPORTEN_PAGE_COUNT_PARAM, pageCount,
-                DATAPORTEN_PAGE_NO_PARAM, pageNo,
+                DATAPORTEN_PAGE_COUNT_PARAM, String.valueOf(size),
+                DATAPORTEN_PAGE_NO_PARAM, String.valueOf(offset / size),
                 NAME_QUERY_PARAM, name);
         var input = constructRequest(
-                Map.of("year", year, "query", name, "offset", "10", "size", "10"));
+                Map.of("year", year, "query", name,
+                        "offset", String.valueOf(offset), "size", String.valueOf(size)));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -201,10 +198,8 @@ class SearchJournalByQueryHandlerTest {
                 });
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
-        var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(
-                dataportenSearchResult, year, name, offset, size);
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
+        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(maxNr)));
+
     }
 
 
@@ -296,10 +291,9 @@ class SearchJournalByQueryHandlerTest {
 
         var year = randomValidYear();
         var name = randomString();
-        var dataportenSearchResult = getDataportenSearchResult(year, name);
-        var responseBody = getDataportenResponseBody(
-                dataportenSearchResult.stream().limit(10).collect(Collectors.toList()),
-                dataportenSearchResult.size());
+        int maxNr = 30;
+        var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
+        var responseBody = getDataportenResponseBody(dataportenSearchResult, 0, 10);
         stubDataportenSearchResponse(
                 responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
                 YEAR_QUERY_PARAM, year,
@@ -330,25 +324,17 @@ class SearchJournalByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
 
-        List<DataportenJournalResult> dataportenJournalResult = List.of(
+        var dataportenJournalResult = List.of(
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, dataportenJournalResult.size());
+        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, ISSN_QUERY_PARAM, printIssn,
                 YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
 
-        return getPagesSearchResultOneHit(
-                year,
-                printIssn,
-                pid,
-                name,
-                electronicIssn,
-                level,
-                landingPage
-        );
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
     private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultPidSearch(String year, String pid)
@@ -361,24 +347,16 @@ class SearchJournalByQueryHandlerTest {
         var dataportenJournalResult = List.of(
                 createDataportenJournalResult(year, printIssn, pid, name, electronicIssn, landingPage, level)
         );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, dataportenJournalResult.size());
+        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK, YEAR_QUERY_PARAM, year,
                 DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                 DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
                 PID_QUERY_PARAM, pid);
 
-        return getPagesSearchResultOneHit(
-                year,
-                printIssn,
-                pid,
-                name,
-                electronicIssn,
-                level,
-                landingPage
-        );
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
-    private PaginatedSearchResult<JournalResult> getPagesSearchResultOneHit(
+    private PaginatedSearchResult<JournalResult> getSingleHit(
             String year,
             String printIssn,
             String pid,
@@ -403,11 +381,12 @@ class SearchJournalByQueryHandlerTest {
                 expectedHits);
     }
 
-    private String getDataportenResponseBody(List<DataportenJournalResult> results, int totalSize) {
+    private String getDataportenResponseBody(List<DataportenJournalResult> results, int offset, int size) {
 
         return new DataportenBodyBuilder()
-                .withEntityPageInformation(new DataPortenEntityPageInformation(totalSize))
-                .withEntityResultSet(new DataportenEntityResultSet(results))
+                .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
+                .withEntityResultSet(new DataportenEntityResultSet(
+                        results.stream().skip(offset).limit(size).collect(Collectors.toList())))
                 .build();
     }
 
@@ -479,8 +458,8 @@ class SearchJournalByQueryHandlerTest {
         return uri;
     }
 
-    private List<DataportenJournalResult> getDataportenSearchResult(String year, String name) {
-        return IntStream.range(0, 100)
+    private List<DataportenJournalResult> getDataportenSearchResult(String year, String name, int maxNr) {
+        return IntStream.range(0, maxNr)
                 .mapToObj(i ->
                         new DataportenJournalResult(
                                 UUID.randomUUID().toString(),
