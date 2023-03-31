@@ -113,6 +113,29 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  FetchSeriesByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Events:
+        FetchSeriesByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series/{identifier}/{year}
+            Method: get
+
+    FetchSeriesByIdentifierAndYearFunctionPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
+        Action: lambda:InvokeFunction
+        Principal: 'apigateway.amazonaws.com'
+
   FetchPublisherByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:

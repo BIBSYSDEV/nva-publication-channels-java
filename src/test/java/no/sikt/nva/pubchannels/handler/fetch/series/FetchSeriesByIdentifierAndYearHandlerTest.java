@@ -1,10 +1,11 @@
-package no.sikt.nva.pubchannels.handler.fetch.publisher;
+package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -31,11 +32,7 @@ import java.util.stream.Stream;
 
 import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.constructRequest;
 import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.getChannel;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.getResponseBody;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.mockDataportenResponse;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.randomYear;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.scientificValueToLevel;
 import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.setupInterruptedClient;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -47,11 +44,10 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.when;
 
 @WireMockTest(httpsEnabled = true)
-class FetchPublisherByIdentifierAndYearHandlerTest {
-
-    public static final String SELF_URI_BASE = "https://localhost/publication-channels/publisher";
-    private FetchPublisherByIdentifierAndYearHandler handlerUnderTest;
-    private static final String DATAPORTEN_PATH_ELEMENT = "/findpublisher/";
+class FetchSeriesByIdentifierAndYearHandlerTest {
+    private static final String SELF_URI_BASE = "https://localhost/publication-channels/series";
+    private static final String DATAPORTEN_PATH_ELEMENT = "/findseries/";
+    private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
     private static final Context context = new FakeContext();
@@ -67,7 +63,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
 
@@ -83,7 +79,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var input = constructRequest(year, identifier);
 
-        var expectedJournal = mockPublisherFound(year, identifier);
+        var expectedSeries = mockSeriesFound(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -92,8 +88,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
-        assertThat(actualPublisher, is(equalTo(expectedJournal)));
+        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualSeries, is(equalTo(expectedSeries)));
 
     }
 
@@ -140,7 +136,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
+        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
+                HttpURLConnection.HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier);
 
@@ -160,7 +157,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
+                HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier);
 
@@ -183,7 +181,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
         DataportenPublicationChannelClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
 
         var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
@@ -201,17 +199,23 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
-    private FetchByIdAndYearResponse mockPublisherFound(String year, String identifier) {
+    private static Stream<String> invalidYearsProvider() {
+        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
+        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    }
+
+    private FetchByIdAndYearResponse mockSeriesFound(String year, String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = scientificValueToLevel(scientificValue);
+        var level = FetchByIdAndYearTestUtil.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
-        var type = "Publisher";
-        var body = getResponseBody(year, identifier, name, electronicIssn, issn, level, landingPage, type);
+        var type = "Series";
+        var body = FetchByIdAndYearTestUtil.getResponseBody(year, identifier, name, electronicIssn, issn, level,
+                landingPage, type);
 
-        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        FetchByIdAndYearTestUtil.mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
 
         return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
     }
@@ -226,7 +230,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
             URI landingPage) {
 
         URI selfUriBase = URI.create(SELF_URI_BASE);
-        ThirdPartyPublicationChannel publisher = getChannel(
+        ThirdPartyPublicationChannel series = getChannel(
                 year,
                 identifier,
                 name,
@@ -235,12 +239,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                 scientificValue,
                 landingPage);
 
-        return FetchByIdAndYearResponse.create(selfUriBase, publisher);
-    }
-
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+        return FetchByIdAndYearResponse.create(selfUriBase, series);
     }
 
 }
