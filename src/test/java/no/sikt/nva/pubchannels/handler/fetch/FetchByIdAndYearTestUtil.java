@@ -30,6 +30,10 @@ public class FetchByIdAndYearTestUtil {
 
     private static final int YEAR_START = 1900;
 
+    private FetchByIdAndYearTestUtil() {
+
+    }
+
     public static void mockDataportenResponse(String dataportenPathElement, String year, String identifier,
                                               String responseBody) {
         stubFor(
