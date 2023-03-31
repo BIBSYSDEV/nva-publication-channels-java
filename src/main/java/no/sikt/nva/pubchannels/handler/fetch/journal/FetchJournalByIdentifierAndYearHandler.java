@@ -14,7 +14,7 @@ import static nva.commons.core.attempt.Try.attempt;
 public class FetchJournalByIdentifierAndYearHandler extends
         FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
-    public static final String JOURNAL_PATH_ELEMENT = "journal";
+    private static final String JOURNAL_PATH_ELEMENT = "journal";
 
     @JacocoGenerated
     public FetchJournalByIdentifierAndYearHandler() {

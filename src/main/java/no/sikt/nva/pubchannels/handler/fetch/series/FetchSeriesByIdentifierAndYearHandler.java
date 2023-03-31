@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -11,7 +12,9 @@ import nva.commons.core.JacocoGenerated;
 
 import static nva.commons.core.attempt.Try.attempt;
 
-public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, Void> {
+public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
+
+    private static final String SERIES_PATH_ELEMENT = "series";
 
     @JacocoGenerated
     public FetchSeriesByIdentifierAndYearHandler() {
@@ -24,9 +27,14 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     }
 
     @Override
-    protected Void processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
-        attempt(() -> validate(requestInfo))
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+        var request = attempt(() -> validate(requestInfo))
+                .map(FetchByIdAndYearRequest::new)
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
-        return null;
+
+        var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
+
+        return FetchByIdAndYearResponse.create(publisherIdBaseUri,
+                publicationChannelClient.getChannel(ChannelType.SERIES, request.getIdentifier(), request.getYear()));
     }
 }
