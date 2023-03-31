@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.journal.DataportenBodyBuilder;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
 
