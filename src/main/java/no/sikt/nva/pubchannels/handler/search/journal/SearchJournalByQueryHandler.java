@@ -3,7 +3,7 @@ package no.sikt.nva.pubchannels.handler.search.journal;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenFindJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchJournalResponse;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import nva.commons.apigateway.ApiGatewayHandler;
@@ -69,7 +69,6 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, Paginat
 
         validate(year, query, offset, size);
 
-
         var searchResult = searchJournal(year, query, offset, size);
 
         return PaginatedSearchResult.create(
@@ -82,6 +81,11 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, Paginat
         );
     }
 
+    @Override
+    protected Integer getSuccessStatusCode(Void input, PaginatedSearchResult<JournalResult> output) {
+        return HttpURLConnection.HTTP_OK;
+    }
+
     private void validate(String year, String query, int offset, int size) throws BadRequestException {
         attempt(() -> {
             validateYear(year, Year.of(1900), "Year");
@@ -92,18 +96,13 @@ public class SearchJournalByQueryHandler extends ApiGatewayHandler<Void, Paginat
                 .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
     }
 
-    @Override
-    protected Integer getSuccessStatusCode(Void input, PaginatedSearchResult<JournalResult> output) {
-        return HttpURLConnection.HTTP_OK;
-    }
-
-    private DataportenFindJournalResponse searchJournal(String year, String query, int offset, int size)
+    private DataportenSearchJournalResponse searchJournal(String year, String query, int offset, int size)
             throws ApiGatewayException {
         var queryParams = getQueryParams(year, query, offset, size);
         return publicationChannelClient.getChannel(ChannelType.JOURNAL, queryParams);
     }
 
-    private List<JournalResult> getJournalHits(URI baseUri, DataportenFindJournalResponse searchResult) {
+    private List<JournalResult> getJournalHits(URI baseUri, DataportenSearchJournalResponse searchResult) {
         return searchResult.getResultSet()
                 .getPageResult()
                 .stream()
