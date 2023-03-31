@@ -1,9 +1,8 @@
 package no.sikt.nva.pubchannels.dataporten;
 
 
-import no.sikt.nva.pubchannels.dataporten.model.FetchJournalByIdAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchPublisherByIdAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.model.FetchSeriesByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.fetch.FetchJournalByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.fetch.FetchPublisherByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 
 public enum ChannelType {

@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.validator;
 
+import nva.commons.core.JacocoGenerated;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -10,10 +11,16 @@ import java.util.UUID;
 import static java.lang.String.format;
 import static nva.commons.core.attempt.Try.attempt;
 
-public interface Validator {
+public final class Validator {
 
-    static void validateString(String value, int minLength, int maxLength, String name) {
-        Objects.requireNonNull(value, format("%s is required.", name));
+    private static final String IS_REQUIRED_STRING = "%s is required.";
+
+    @JacocoGenerated
+    private Validator() {
+    }
+
+    public static void validateString(String value, int minLength, int maxLength, String name) {
+        Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
         if (value.length() < minLength) {
             throw new ValidationException(format("%s is too short. Minimum length is %d", name, minLength));
         }
@@ -22,27 +29,27 @@ public interface Validator {
         }
     }
 
-    static void validateOptionalIssn(String issn, String name) {
+    public static void validateOptionalIssn(String issn, String name) {
         if (issn != null && !ISSNValidator.getInstance().isValid(issn.trim())) {
             throw new ValidationException(format("%s has an invalid ISSN format.", name));
         }
     }
 
-    static void validateOptionalUrl(String url, String name) {
+    public static void validateOptionalUrl(String url, String name) {
         if (url != null && !UrlValidator.getInstance().isValid(url)) {
             throw new ValidationException(format("%s has an invalid URL format", name));
         }
     }
 
-    static void validateUuid(String value, String name) {
-        Objects.requireNonNull(value, format("%s is required.", name));
+    public static void validateUuid(String value, String name) {
+        Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
         attempt(() -> UUID.fromString(value))
                 .orElseThrow(failure ->
                         new ValidationException(format("%s has an invalid UUIDv4 format", name)));
     }
 
-    static void validateYear(String value, Year minAcceptableYear, String name) {
-        Objects.requireNonNull(value, format("%s is required.", name));
+    public static void validateYear(String value, Year minAcceptableYear, String name) {
+        Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
         var year = attempt(() -> Year.parse(value))
                 .orElseThrow(failure -> new ValidationException(format("%s field is not a valid year.", name)));
         var now = Year.now();
@@ -51,5 +58,11 @@ public interface Validator {
                     format("%s is not between the year %d and %d", name, minAcceptableYear.getValue(), now.getValue()));
         }
 
+    }
+
+    public static void validatePagination(int offset, int size) {
+        if (offset % size != 0) {
+            throw new ValidationException("Offset needs to be divisible by size");
+        }
     }
 }

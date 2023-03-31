@@ -1,6 +1,6 @@
 [versions]
 junit = { strictly = '5.8.2' }
-nva-commons = {strictly = '1.27.3'}
+nva-commons = {strictly = '1.28.0'}
 jackson = { strictly = '2.13.3' }
 mockito = { strictly = '4.5.1' }
 hamcrest = { strictly = '2.2' }
@@ -26,6 +26,7 @@ zalando = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
 
 nva-commons-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nva-commons' }
 nva-commons-apigateway = { group = 'com.github.bibsysdev', name = 'apigateway', version.ref = 'nva-commons' }
+nva-commons-pagination = { group = 'com.github.bibsysdev', name = 'pagination', version.ref = 'nva-commons'}
 
 jackson-core = { group = 'com.fasterxml.jackson.core', name = 'jackson-core', version.ref = 'jackson' }
 jackson-databind = { group = 'com.fasterxml.jackson.core', name = 'jackson-databind', version.ref = 'jackson' }
@@ -46,7 +47,7 @@ wiremock = { group = 'com.github.tomakehurst', name = 'wiremock-jre8', version.r
 commons-validator = { group = 'commons-validator', name = 'commons-validator', version.ref = 'commons-validator-version'}
 
 [bundles]
-nva = ['nva-commons-core', 'nva-commons-apigateway', 'nva-json']
+nva = ['nva-commons-core', 'nva-commons-apigateway', 'nva-json', 'nva-commons-pagination']
 logging = ['log4j-core', 'log4j-api', 'log4j-slf4j18-impl', 'slf4j-api', 'aws-lambda-log4j2']
 testing = ['junit-jupiter-api', 'junit-jupiter-params', 'junit-jupiter-engine', 'mockito-core', 'hamcrest', 'nva-testutils', 'nva-logutils', 'zalando', 'wiremock']
 jackson = ['jackson-core', 'jackson-databind', 'jackson-annotations', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310']
