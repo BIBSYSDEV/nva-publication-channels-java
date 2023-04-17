@@ -42,15 +42,15 @@ Parameters:
   DataportenAuthUrl:
     Type: String
     Description: Base url for Dataporten Auth API
-    Default: ''
+    Default: 'yaml is not my mother tongue'
   DataportenAuthClientId:
     Type: String
     Description: The client id to use Dataporten Auth API
-    Default: ''
+    Default: 'yaml is not my mother tongue'
   DataportenAuthClientSecret:
     Type: String
     Description: The client secret to use Dataporten Auth API
-    Default: ''
+    Default: 'yaml is not my mother tongue'
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
