@@ -15,6 +15,8 @@ Globals:
     Environment:
       Variables:
         ALLOWED_ORIGIN: '*'
+        COGNITO_HOST: !Ref CognitoAuthorizationUri
+        API_HOST: !Ref ApiDomain
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
@@ -43,6 +45,9 @@ Parameters:
     Type: String
     Description: Base path mapping in CustomDomain
     Default: publication-channels-v2
+  CognitoAuthorizationUri:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/CognitoUri'
   CognitoAuthorizerArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Description: Reference to Cognito UserPool for the stage
