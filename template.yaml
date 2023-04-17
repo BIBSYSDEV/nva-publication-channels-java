@@ -20,9 +20,6 @@ Globals:
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
-        DATAPORTEN_AUTH_BASE_URL : '{{resolve:secretsmanager:DataportenChannelRegistryClientCredentials:SecretString:authBaseUrl}}'
-        DATAPORTEN_AUTH_CLIENT_ID: '{{resolve:secretsmanager:DataportenChannelRegistryClientCredentials:SecretString:clientId}}'
-        DATAPORTEN_AUTH_CLIENT_SECRET: '{{resolve:secretsmanager:DataportenChannelRegistryClientCredentials:SecretString:clientSecret}}'
 
   Api:
     Cors:
