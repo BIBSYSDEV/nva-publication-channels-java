@@ -3,7 +3,6 @@ package no.sikt.nva.pubchannels.handler.create;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import nva.commons.apigateway.AccessRight;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.UnauthorizedException;
@@ -58,7 +57,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
     }
 
     protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
-        if (!requestInfo.userIsAuthorized(AccessRight.USER.toString())) {
+        if (requestInfo.getCurrentCustomer() == null) {
             throw new UnauthorizedException();
         }
     }
