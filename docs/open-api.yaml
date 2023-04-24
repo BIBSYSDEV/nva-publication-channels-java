@@ -598,31 +598,6 @@ components:
         sameAs:
           type: string
           nullable: true
-    Series:
-      type: object
-      properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
-        type:
-          type: string
-          pattern: 'Series'
-          description: The type of the returned object, always Series
-        name:
-          $ref: '#/components/schemas/Name'
-        onlineIssn:
-          type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
-          description: The ISSN of the online edition of the Series
-        printIssn:
-          type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
-          nullable: true
-          description: The ISSN of the print edition of the Series
-        scientificValue:
-          $ref: '#/components/schemas/ScientificValue'
-        sameAs:
-          type: string
-          nullable: true
     CreatePublisher:
       type: object
       properties:
@@ -725,23 +700,30 @@ components:
       description: The scientific value of the publication channel. Used in NVI score setting.
     Problem:
       type: object
+      description: NVA error reporting object
+      required:
+        - title
+        - detail
+        - status
       properties:
-        type:
-          type: string
-          description: A URI describing the error and mitigations, in generic cases, this is about:blank
-        status:
-          type: integer
-          format: int32
-          description: The HTTP status code associated with the problem
         title:
           type: string
           description: Human-readable description of the error status
         detail:
           type: string
           description: A more detailed error message describing the error and potential mitigations
+        status:
+          type: integer
+          description: The HTTP status code associated with the problem
+        requestId:
+          type: string
+          description: Identifier of the request causing the problem
         instance:
           type: string
           description: The requested path associated with the error
+        type:
+          type: string
+          description: A URI describing the error and mitigations, in generic cases, this is about:blank
 
   examples:
     PaginatedJournalsExample:
