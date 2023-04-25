@@ -199,16 +199,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Publisher'
+                $ref: '#/components/schemas/PublisherResponse'
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PublisherExample'
+                  $ref: '#/components/examples/PublisherResponseExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/Publisher'
+                $ref: '#/components/schemas/PublisherResponse'
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PublisherExample'
+                  $ref: '#/components/examples/PublisherResponseExample'
         400:
           $ref: '#/components/responses/400'
         404:
@@ -572,8 +572,8 @@ components:
         hits:
           type: array
           items:
-            $ref: '#/components/schemas/Publisher'
-    Publisher:
+            $ref: '#/components/schemas/PublisherResponse'
+    PublisherResponse:
       type: object
       properties:
         '@context':
@@ -783,7 +783,7 @@ components:
         printIssn: '4321-4321'
         homepage: 'https://publisher-of-eternal.fury.no'
       summary: A sample create publisher
-    PublisherExample:
+    PublisherResponseExample:
       value:
         id: 'https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Publisher'
