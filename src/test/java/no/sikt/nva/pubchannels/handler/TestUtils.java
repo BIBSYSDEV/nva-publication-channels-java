@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Random;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
@@ -75,7 +75,7 @@ public class TestUtils {
         return new Random().nextInt(max - min + 1) + min;
     }
 
-    public static ThirdPartyPublicationChannel getChannel(
+    public static ThirdPartyJournal getChannel(
         String year,
         String identifier,
         String name,
@@ -84,7 +84,7 @@ public class TestUtils {
         ScientificValue scientificValue,
         URI landingPage) {
 
-        return new ThirdPartyPublicationChannel() {
+        return new ThirdPartyJournal() {
             @Override
             public String getIdentifier() {
                 return identifier;
@@ -101,16 +101,6 @@ public class TestUtils {
             }
 
             @Override
-            public String getOnlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String getPrintIssn() {
-                return issn;
-            }
-
-            @Override
             public ScientificValue getScientificValue() {
                 return scientificValue;
             }
@@ -118,6 +108,16 @@ public class TestUtils {
             @Override
             public URI getHomepage() {
                 return landingPage;
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
             }
         };
     }
@@ -147,11 +147,6 @@ public class TestUtils {
             }
 
             @Override
-            public String getIsbnPrefix() {
-                return isbnPrefix;
-            }
-
-            @Override
             public ScientificValue getScientificValue() {
                 return scientificValue;
             }
@@ -159,6 +154,11 @@ public class TestUtils {
             @Override
             public URI getHomepage() {
                 return landingPage;
+            }
+
+            @Override
+            public String getIsbnPrefix() {
+                return isbnPrefix;
             }
         };
     }

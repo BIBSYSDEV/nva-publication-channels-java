@@ -10,8 +10,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import org.junit.jupiter.api.Test;
 
 class FetchByIdAndYearResponseTest {
@@ -28,7 +27,7 @@ class FetchByIdAndYearResponseTest {
     }
 
     private static FetchByIdAndYearResponse randomJournal() {
-        var journal = new ThirdPartyPublicationChannel() {
+        var journal = new ThirdPartyJournal() {
 
             @Override
             public String getIdentifier() {
@@ -46,16 +45,6 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public String getOnlineIssn() {
-                return randomString();
-            }
-
-            @Override
-            public String getPrintIssn() {
-                return randomString();
-            }
-
-            @Override
             public ScientificValue getScientificValue() {
                 return randomElement(ScientificValue.values());
             }
@@ -63,6 +52,16 @@ class FetchByIdAndYearResponseTest {
             @Override
             public URI getHomepage() {
                 return randomUri();
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return randomString();
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return randomString();
             }
         };
         return FetchByIdAndYearResponse.create(randomUri(), journal);

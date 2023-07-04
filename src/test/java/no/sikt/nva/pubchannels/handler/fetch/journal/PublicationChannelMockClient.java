@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 
@@ -36,24 +36,6 @@ public class PublicationChannelMockClient {
         return journalsByIdentifier.get(identifier);
     }
 
-    private void mockJournalNotFound(String identifier, String year) {
-        stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_NOT_FOUND)));
-    }
-
-    private void mockJournalInternalServerError(String identifier, String year) {
-        stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
-    }
-
     public String randomJournal(String year) {
         var identifier = UUID.randomUUID().toString();
         var name = randomString();
@@ -64,8 +46,8 @@ public class PublicationChannelMockClient {
 
         mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
 
-        URI selfUriBase = URI.create("https://localhost/publication-channels/journal");
-        ThirdPartyPublicationChannel journal = new ThirdPartyPublicationChannel() {
+        var selfUriBase = URI.create("https://localhost/publication-channels/journal");
+        var journal = new ThirdPartyJournal() {
             @Override
             public String getIdentifier() {
                 return identifier;
@@ -82,16 +64,6 @@ public class PublicationChannelMockClient {
             }
 
             @Override
-            public String getOnlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String getPrintIssn() {
-                return issn;
-            }
-
-            @Override
             public ScientificValue getScientificValue() {
                 return scientificValue;
             }
@@ -100,6 +72,16 @@ public class PublicationChannelMockClient {
             public URI getHomepage() {
                 return landingPage;
             }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
+            }
         };
 
         var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal);
@@ -107,6 +89,24 @@ public class PublicationChannelMockClient {
         journalsByIdentifier.put(identifier, journalDto);
 
         return identifier;
+    }
+
+    private void mockJournalNotFound(String identifier, String year) {
+        stubFor(
+            get("/findjournal/" + identifier + "/" + year)
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_NOT_FOUND)));
+    }
+
+    private void mockJournalInternalServerError(String identifier, String year) {
+        stubFor(
+            get("/findjournal/" + identifier + "/" + year)
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
     private void mockDataporten(String year,

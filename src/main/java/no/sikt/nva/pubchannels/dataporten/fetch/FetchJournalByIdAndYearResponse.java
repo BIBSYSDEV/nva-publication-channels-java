@@ -6,9 +6,10 @@ import java.net.URI;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 
-public final class FetchJournalByIdAndYearResponse implements Immutable, ThirdPartyPublicationChannel {
+public final class FetchJournalByIdAndYearResponse implements Immutable, ThirdPartyJournal {
+
     private static final String YEAR_FIELD = "year";
     private static final String ONLINE_ISSN_FIELD = "eissn";
     private static final String IDENTIFIER_FIELD = "pid";

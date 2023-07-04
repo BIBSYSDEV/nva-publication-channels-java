@@ -2,8 +2,10 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -36,7 +38,9 @@ public class FetchPublisherByIdentifierAndYearHandler extends
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
 
         return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                                               publicationChannelClient.getPublisher(request.getIdentifier(),
-                                                                                     request.getYear()));
+                                               (ThirdPartyPublisher) publicationChannelClient.getChannel(
+                                                   ChannelType.PUBLISHER,
+                                                   request.getIdentifier(),
+                                                   request.getYear()));
     }
 }

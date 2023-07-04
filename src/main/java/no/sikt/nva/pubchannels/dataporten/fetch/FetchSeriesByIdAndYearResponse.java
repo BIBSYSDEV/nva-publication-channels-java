@@ -2,14 +2,13 @@ package no.sikt.nva.pubchannels.dataporten.fetch;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 
-import java.net.URI;
-
-public final class FetchSeriesByIdAndYearResponse implements Immutable, ThirdPartyPublicationChannel {
+public final class FetchSeriesByIdAndYearResponse implements Immutable, ThirdPartyJournal {
 
     private static final String YEAR_FIELD = "year";
     private static final String ONLINE_ISSN_FIELD = "eissn";
@@ -36,12 +35,12 @@ public final class FetchSeriesByIdAndYearResponse implements Immutable, ThirdPar
 
     @JsonCreator
     public FetchSeriesByIdAndYearResponse(@JsonProperty(YEAR_FIELD) String year,
-                                             @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                             @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
-                                             @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                             @JsonProperty(NAME_FIELD) String name,
-                                             @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+                                          @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                          @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                          @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
+                                          @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                          @JsonProperty(NAME_FIELD) String name,
+                                          @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.year = year;
         this.onlineIssn = onlineIssn;
         this.identifier = identifier;
@@ -89,6 +88,4 @@ public final class FetchSeriesByIdAndYearResponse implements Immutable, ThirdPar
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
         return mapper.map(scientificValue);
     }
-
-
 }
