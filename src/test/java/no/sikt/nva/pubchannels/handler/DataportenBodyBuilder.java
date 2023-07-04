@@ -3,13 +3,13 @@ package no.sikt.nva.pubchannels.handler;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
 import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
 import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
 public class DataportenBodyBuilder {
+
     private final Map<String, Object> bodyMap = new ConcurrentHashMap<>();
 
     public DataportenBodyBuilder() {
@@ -37,6 +37,11 @@ public class DataportenBodyBuilder {
 
     public DataportenBodyBuilder withPissn(String pissn) {
         bodyMap.put("pissn", pissn);
+        return this;
+    }
+
+    public DataportenBodyBuilder withIsbnPrefix(String isbnPrefix) {
+        bodyMap.put("isbnprefix", isbnPrefix);
         return this;
     }
 

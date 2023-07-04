@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -30,10 +30,12 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.constructRequest;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.getChannel;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.randomYear;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.setupInterruptedClient;
+import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannel;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
+import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
+import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -136,8 +138,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
-                HttpURLConnection.HTTP_NOT_FOUND);
+        mockResponseWithHttpStatus("/findseries/", identifier, year,
+                                             HttpURLConnection.HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier);
 
@@ -157,8 +159,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
-                HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus("/findseries/", identifier, year,
+                                             HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier);
 
@@ -209,13 +211,13 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var electronicIssn = randomIssn();
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = FetchByIdAndYearTestUtil.scientificValueToLevel(scientificValue);
+        var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var type = "Series";
-        var body = FetchByIdAndYearTestUtil.getResponseBody(year, identifier, name, electronicIssn, issn, level,
-                landingPage, type);
+        var body = TestUtils.getResponseBody(year, identifier, name, electronicIssn, issn, level,
+                                             landingPage, type);
 
-        FetchByIdAndYearTestUtil.mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
 
         return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
     }
@@ -229,8 +231,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
             ScientificValue scientificValue,
             URI landingPage) {
 
-        URI selfUriBase = URI.create(SELF_URI_BASE);
-        ThirdPartyPublicationChannel series = getChannel(
+        var selfUriBase = URI.create(SELF_URI_BASE);
+        var series = getChannel(
                 year,
                 identifier,
                 name,

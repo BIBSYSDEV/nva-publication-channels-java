@@ -1,24 +1,12 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchResponse;
-import no.sikt.nva.pubchannels.handler.AuthClient;
-import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
-import nva.commons.apigateway.exceptions.ApiGatewayException;
-import nva.commons.apigateway.exceptions.BadGatewayException;
-import nva.commons.apigateway.exceptions.NotFoundException;
-import nva.commons.core.Environment;
-import nva.commons.core.JacocoGenerated;
-import nva.commons.core.paths.UriWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -28,14 +16,26 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Set;
-
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
-import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static nva.commons.core.attempt.Try.attempt;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
+import no.sikt.nva.pubchannels.dataporten.fetch.FetchPublisherByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchResponse;
+import no.sikt.nva.pubchannels.handler.AuthClient;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.NotFoundException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataportenPublicationChannelClient implements PublicationChannelClient {
 
@@ -43,6 +43,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private static final String SEARCH_PATH_ELEMENT = "channels";
+    public static final String PUBLISHER_PATH_ELEMENT = "findpublisher";
     private final HttpClient httpClient;
     private final URI dataportenBaseUri;
     private final AuthClient authClient;
@@ -62,36 +63,43 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     @Override
     public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
-            throws ApiGatewayException {
+        throws ApiGatewayException {
         var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
-        return attempt(() -> executeRequest(request, type.responseClass))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+        return attempt(() -> executeRequest(request, type.responseClass)).orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
     public DataportenSearchResponse getChannel(ChannelType type, Map<String, String> queryParameters)
-            throws ApiGatewayException {
+        throws ApiGatewayException {
         var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
         return attempt(() -> executeRequest(request, DataportenSearchResponse.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    }
+
+    @Override
+    public ThirdPartyPublisher getPublisher(String identifier, String year) throws ApiGatewayException {
+        var request = createFetchPublicationChannelRequest(PUBLISHER_PATH_ELEMENT, identifier, year);
+        return attempt(() -> executeRequest(request, FetchPublisherByIdAndYearResponse.class))
+                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
     public DataportenCreateJournalResponse createJournal(DataportenCreateJournalRequest body)
-            throws ApiGatewayException {
+        throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, body);
         return attempt(() -> executeRequest(request, DataportenCreateJournalResponse.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
     public DataportenCreatePublisherResponse createPublisher(DataportenCreatePublisherRequest body)
-            throws ApiGatewayException {
+        throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreatePublisherRequest(token, body);
         return attempt(() -> executeRequest(request, DataportenCreatePublisherResponse.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
@@ -99,12 +107,11 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
         var token = authClient.getToken();
         var request = createCreateSeriesRequest(token, body);
         return attempt(() -> executeRequest(request, DataportenCreateSeriesResponse.class))
-                .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
-
+                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     private <T> T executeRequest(HttpRequest request, Class<T> clazz)
-            throws ApiGatewayException, IOException, InterruptedException {
+        throws ApiGatewayException, IOException, InterruptedException {
         var response = httpClient.send(request, BodyHandlers.ofString());
 
         if (!OK_STATUSES.contains(response.statusCode())) {
@@ -134,35 +141,33 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
 
     private HttpRequest createFetchPublicationChannelRequest(String pathElement, String identifier, String year) {
         return HttpRequest.newBuilder()
-                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                .uri(constructUri(pathElement, identifier, year))
-                .GET()
-                .build();
+                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                   .uri(constructUri(pathElement, identifier, year))
+                   .GET()
+                   .build();
     }
 
     private HttpRequest createFindPublicationChannelRequest(String pathElement, Map<String, String> queryParams) {
         return HttpRequest.newBuilder()
-                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                .uri(addQueryParamameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
-                .GET()
-                .build();
+                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                   .uri(addQueryParamameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
+                   .GET()
+                   .build();
     }
-
 
     private HttpRequest createCreateJournalRequest(String token, DataportenCreateJournalRequest body) {
 
         var bodyAsJsonString =
-                attempt(() -> dtoObjectMapper.writeValueAsString(body))
-                        .orElseThrow();
+            attempt(() -> dtoObjectMapper.writeValueAsString(body))
+                .orElseThrow();
 
         return getHttpRequest(token, bodyAsJsonString, "createjournal");
     }
 
-
     private HttpRequest createCreatePublisherRequest(String token, DataportenCreatePublisherRequest request) {
         var bodyAsJsonString =
-                attempt(() -> dtoObjectMapper.writeValueAsString(request))
-                        .orElseThrow();
+            attempt(() -> dtoObjectMapper.writeValueAsString(request))
+                .orElseThrow();
 
         return getHttpRequest(token, bodyAsJsonString, "createpublisher");
     }
@@ -170,31 +175,31 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private HttpRequest createCreateSeriesRequest(String token, DataportenCreateSeriesRequest body) {
 
         var bodyAsJsonString =
-                attempt(() -> dtoObjectMapper.writeValueAsString(body))
-                        .orElseThrow();
+            attempt(() -> dtoObjectMapper.writeValueAsString(body))
+                .orElseThrow();
 
         return getHttpRequest(token, bodyAsJsonString, "createseries");
     }
 
     private HttpRequest getHttpRequest(String token, String journalRequestBodyAsString, String path) {
         return HttpRequest.newBuilder()
-                .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + token)
-                .uri(constructUri(path, "createpid"))
-                .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
-                .build();
+                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+                   .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
+                   .header(AUTHORIZATION, "Bearer " + token)
+                   .uri(constructUri(path, "createpid"))
+                   .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
+                   .build();
     }
 
     private URI constructUri(String... children) {
         return UriWrapper.fromUri(dataportenBaseUri)
-                .addChild(children)
-                .getUri();
+                   .addChild(children)
+                   .getUri();
     }
 
     private URI addQueryParamameters(URI uri, Map<String, String> queryParameters) {
         return UriWrapper.fromUri(uri)
-                .addQueryParameters(queryParameters)
-                .getUri();
+                   .addQueryParameters(queryParameters)
+                   .getUri();
     }
 }
