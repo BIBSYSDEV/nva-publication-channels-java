@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -120,12 +121,11 @@ public class PublicationChannelMockClient {
         var level = scientificValueToLevel(scientificValue);
         var body = new DataportenBodyBuilder()
                        .withType("Journal")
-                       .withYear(year)
                        .withPid(identifier)
-                       .withName(name)
+                       .withOriginalTitle(name)
                        .withEissn(electronicIssn)
                        .withPissn(issn)
-                       .withLevel(level)
+                       .withLevel(new DataportenLevel(year, level))
                        .withKurl(landingPage.toString())
                        .build();
 

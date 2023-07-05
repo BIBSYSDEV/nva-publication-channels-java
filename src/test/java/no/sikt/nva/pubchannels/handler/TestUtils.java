@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
@@ -270,26 +271,26 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResponse(String year, String name, String pid, String eissn,
+    public static String createDataportenJournalResponse(String year, String originalTitle, String pid, String eissn,
                                                          String pissn, URI kurl, String level) {
-        return new DataportenBodyBuilder().withYear(year)
+        return new DataportenBodyBuilder()
                    .withPid(pid)
-                   .withName(name)
+                   .withOriginalTitle(originalTitle)
                    .withEissn(eissn)
                    .withPissn(pissn)
                    .withKurl(kurl.toString())
-                   .withLevel(level)
+                   .withLevel(new DataportenLevel(year, level))
                    .build();
     }
 
     public static String createDataportenPublisherResponse(String year, String name, String pid, String isbnPrefix,
                                                            URI kurl, String level) {
-        return new DataportenBodyBuilder().withYear(year)
+        return new DataportenBodyBuilder()
                    .withPid(pid)
                    .withName(name)
                    .withIsbnPrefix(isbnPrefix)
                    .withKurl(kurl.toString())
-                   .withLevel(level)
+                   .withLevel(new DataportenLevel(year, level))
                    .build();
     }
 
