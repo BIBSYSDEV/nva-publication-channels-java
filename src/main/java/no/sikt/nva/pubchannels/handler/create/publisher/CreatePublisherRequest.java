@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CreatePublisherRequest {
 
     private static final String NAME_FIELD = "name";
-    private static final String ISBN_PREFIX_FIELD = "isbnprefix";
+    private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
     private static final String HOMEPAGE_FIELD = "homepage";
 
     @JsonProperty(NAME_FIELD)

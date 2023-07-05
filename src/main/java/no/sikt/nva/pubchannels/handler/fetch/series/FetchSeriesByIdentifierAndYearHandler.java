@@ -28,8 +28,8 @@ public class FetchSeriesByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws
-                                                                                                          ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var request = attempt(() -> validate(requestInfo))
                           .map(FetchByIdAndYearRequest::new)
                           .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
