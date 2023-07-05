@@ -12,8 +12,8 @@ import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannel;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResult;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenSearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
@@ -51,8 +51,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenSeries;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenSeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -77,7 +77,7 @@ class SearchSeriesByQueryHandlerTest {
     private SearchSeriesByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
-    public static PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchSeriesResultNameSearch(
+    public static PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultNameSearch(
         List<String> dataportenResults,
         String year,
         String name, int queryOffset, int querySize)
@@ -168,7 +168,7 @@ class SearchSeriesByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
-        var expectedSearchresult = getExpectedPaginatedSearchSeriesResultNameSearch(
+        var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(
             dataportenSearchResult, year, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
@@ -200,8 +200,8 @@ class SearchSeriesByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
-        var expectedSearchresult = getExpectedPaginatedSearchSeriesResultNameSearch(dataportenSearchResult, year, name,
-                                                                                    offset, size);
+        var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(dataportenSearchResult, year, name,
+                                                                              offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
@@ -335,11 +335,11 @@ class SearchSeriesByQueryHandlerTest {
                    .stream()
                    .map(result -> attempt(
                        () -> objectMapper.readValue(result, DataportenSeries.class)).orElseThrow())
-                   .map(SearchSeriesByQueryHandlerTest::toSeriesResult)
+                   .map(SearchSeriesByQueryHandlerTest::toResult)
                    .collect(Collectors.toList());
     }
 
-    private static SeriesResult toSeriesResult(ThirdPartyJournal series) {
+    private static SeriesResult toResult(ThirdPartySeries series) {
         return SeriesResult.create(constructPublicationChannelUri(PATH_ELEMENT, null), series);
     }
 
@@ -354,7 +354,7 @@ class SearchSeriesByQueryHandlerTest {
         var landingPage = randomUri();
 
         var dataportenEntityResult = List.of(
-            createDataportenJournalResult(year, name, pid, electronicIssn, printIssn, landingPage, level)
+            createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -375,7 +375,7 @@ class SearchSeriesByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
         var dataportenResult = List.of(
-            createDataportenJournalResult(year, name, pid, electronicIssn, printIssn, landingPage, level)
+            createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -399,7 +399,7 @@ class SearchSeriesByQueryHandlerTest {
         var expectedHits = List.of(
             SeriesResult.create(
                 constructPublicationChannelUri(PATH_ELEMENT, null),
-                createChannel(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)));
+                createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)));
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(

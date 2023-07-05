@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 

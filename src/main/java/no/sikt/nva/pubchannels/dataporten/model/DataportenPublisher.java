@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten.model.fetch;
+package no.sikt.nva.pubchannels.dataporten.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import java.net.URI;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 
 public final class DataportenPublisher implements Immutable, ThirdPartyPublisher {
 

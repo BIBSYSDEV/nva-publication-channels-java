@@ -14,7 +14,7 @@ import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResult;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenSearchPublisherResult;
@@ -52,8 +52,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenPublisher;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -357,7 +357,7 @@ class SearchPublisherByQueryHandlerTest {
         var landingPage = randomUri();
 
         var dataportenEntityResult = List.of(
-            createDataportenPublisherResult(year, name, pid, isbnPrefix, landingPage, level)
+            createDataportenPublisherResponse(year, name, pid, isbnPrefix, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -378,7 +378,7 @@ class SearchPublisherByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
         var dataportenResult = List.of(
-            createDataportenPublisherResult(year, name, pid, isbnPrefix, landingPage, level)
+            createDataportenPublisherResponse(year, name, pid, isbnPrefix, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,

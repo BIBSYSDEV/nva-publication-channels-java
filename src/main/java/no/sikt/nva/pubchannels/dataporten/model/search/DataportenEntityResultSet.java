@@ -17,6 +17,7 @@ public class DataportenEntityResultSet<T> implements ThirdPartyResultSet<T> {
         this.pageResult = pageResult;
     }
 
+    @Override
     public List<T> getPageResult() {
         return pageResult;
     }

@@ -1,12 +1,12 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenJournal;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenPublisher;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenSeries;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenJournal;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenPublisher;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenSeries;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchJournalResponse;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchPublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchSeriesResponse;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public enum ChannelType {

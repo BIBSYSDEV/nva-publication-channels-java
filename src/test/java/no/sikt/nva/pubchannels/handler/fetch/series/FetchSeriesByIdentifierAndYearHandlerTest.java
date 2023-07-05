@@ -1,7 +1,9 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannel;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createJournal;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
@@ -207,9 +209,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
-        var type = "Series";
-        var body = TestUtils.getResponseBody(year, identifier, name, electronicIssn, issn, level,
-                                             landingPage, type);
+        var body = createDataportenJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level);
 
         mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
 
@@ -226,7 +226,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         URI landingPage) {
 
         var selfUriBase = URI.create(SELF_URI_BASE);
-        var series = createChannel(
+        var series = createSeries(
             year,
             identifier,
             name,

@@ -10,7 +10,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import org.junit.jupiter.api.Test;
 
 class FetchByIdAndYearResponseTest {

@@ -14,8 +14,8 @@ import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannel;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResult;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createJournal;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenSearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
@@ -52,8 +52,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenJournal;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -357,7 +357,7 @@ class SearchJournalByQueryHandlerTest {
         var landingPage = randomUri();
 
         var dataportenEntityResult = List.of(
-            createDataportenJournalResult(year, name, pid, electronicIssn, printIssn, landingPage, level)
+            createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -378,7 +378,7 @@ class SearchJournalByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
         var dataportenJournalResult = List.of(
-            createDataportenJournalResult(year, name, pid, electronicIssn, printIssn, landingPage, level)
+            createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
         );
         var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
@@ -402,7 +402,7 @@ class SearchJournalByQueryHandlerTest {
         var expectedHits = List.of(
             JournalResult.create(
                 constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null),
-                createChannel(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)
+                createJournal(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)
             ));
 
         return PaginatedSearchResult.create(

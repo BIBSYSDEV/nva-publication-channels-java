@@ -2,7 +2,7 @@ package no.sikt.nva.pubchannels.dataporten.model.search;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenSeries;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenSeries;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public class DataportenSearchSeriesResponse implements ThirdPartySearchResponse {
@@ -24,10 +24,12 @@ public class DataportenSearchSeriesResponse implements ThirdPartySearchResponse 
         this.resultSet = resultSet;
     }
 
+    @Override
     public DataportenEntityResultSet<DataportenSeries> getResultSet() {
         return resultSet;
     }
 
+    @Override
     public DataPortenEntityPageInformation getPageInformation() {
         return pageInformation;
     }

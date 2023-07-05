@@ -8,7 +8,6 @@ import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisher
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 

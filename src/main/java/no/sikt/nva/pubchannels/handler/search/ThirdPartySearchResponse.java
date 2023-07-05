@@ -1,6 +1,6 @@
 package no.sikt.nva.pubchannels.handler.search;
 
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 
 public interface ThirdPartySearchResponse {
 

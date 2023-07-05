@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;

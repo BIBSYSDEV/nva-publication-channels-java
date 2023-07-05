@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -53,7 +53,7 @@ public final class SeriesResult {
         this.sameAs = sameAs;
     }
 
-    public static SeriesResult create(URI selfUriBase, ThirdPartyJournal series) {
+    public static SeriesResult create(URI selfUriBase, ThirdPartySeries series) {
         var id = UriWrapper.fromUri(selfUriBase)
                      .addChild(series.getIdentifier(), String.valueOf(series.getYear()))
                      .getUri();

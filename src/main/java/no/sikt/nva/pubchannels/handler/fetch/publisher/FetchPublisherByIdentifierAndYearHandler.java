@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;

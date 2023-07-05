@@ -18,6 +18,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,14 +37,13 @@ import java.util.stream.IntStream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
 
 public class TestUtils {
 
+    public static final String PAGERESULT_FIELD = "pageresult";
     private static final int YEAR_START = 1900;
     private static final ScientificValueMapper mapper = new ScientificValueMapper();
 
@@ -81,7 +82,6 @@ public class TestUtils {
     }
 
     public static String scientificValueToLevel(ScientificValue scientificValue) {
-
         return ScientificValueMapper.VALUES.entrySet()
                    .stream()
                    .filter(item -> item.getValue().equals(scientificValue))
@@ -102,20 +102,21 @@ public class TestUtils {
 
     public static List<String> getDataportenSearchResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(i -> createDataportenJournalResult(year, name, UUID.randomUUID().toString(), randomIssn(),
-                                                                randomIssn(), randomUri(), randomLevel()))
+                   .mapToObj(
+                       i -> createDataportenJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
+                                                            randomIssn(), randomUri(), randomLevel()))
                    .collect(Collectors.toList());
     }
 
     public static List<String> getDataportenSearchPublisherResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(i -> createDataportenPublisherResult(year, name, UUID.randomUUID().toString(),
-                                                                  String.valueOf(randomIsbnPrefix()),
-                                                                  randomUri(), randomLevel()))
+                   .mapToObj(i -> createDataportenPublisherResponse(year, name, UUID.randomUUID().toString(),
+                                                                    String.valueOf(randomIsbnPrefix()),
+                                                                    randomUri(), randomLevel()))
                    .collect(Collectors.toList());
     }
 
-    public static ThirdPartyJournal createChannel(
+    public static ThirdPartyJournal createJournal(
         String year,
         String identifier,
         String name,
@@ -125,6 +126,53 @@ public class TestUtils {
         URI landingPage) {
 
         return new ThirdPartyJournal() {
+            @Override
+            public String getIdentifier() {
+                return identifier;
+            }
+
+            @Override
+            public String getYear() {
+                return year;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public ScientificValue getScientificValue() {
+                return scientificValue;
+            }
+
+            @Override
+            public URI getHomepage() {
+                return landingPage;
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
+            }
+        };
+    }
+
+    public static ThirdPartySeries createSeries(
+        String year,
+        String identifier,
+        String name,
+        String electronicIssn,
+        String issn,
+        ScientificValue scientificValue,
+        URI landingPage) {
+
+        return new ThirdPartySeries() {
             @Override
             public String getIdentifier() {
                 return identifier;
@@ -203,48 +251,6 @@ public class TestUtils {
         };
     }
 
-    public static String getResponseBody(
-        String year,
-        String identifier,
-        String name,
-        String electronicIssn,
-        String issn,
-        String level,
-        URI landingPage,
-        String type) {
-
-        return new DataportenBodyBuilder()
-                   .withType(type)
-                   .withYear(year)
-                   .withPid(identifier)
-                   .withName(name)
-                   .withEissn(electronicIssn)
-                   .withPissn(issn)
-                   .withLevel(level)
-                   .withKurl(landingPage.toString())
-                   .build();
-    }
-
-    public static String getResponseBody(
-        String year,
-        String identifier,
-        String name,
-        String isbnPrefix,
-        String level,
-        URI landingPage,
-        String type) {
-
-        return new DataportenBodyBuilder()
-                   .withType(type)
-                   .withYear(year)
-                   .withPid(identifier)
-                   .withName(name)
-                   .withIsbnPrefix(isbnPrefix)
-                   .withLevel(level)
-                   .withKurl(landingPage.toString())
-                   .build();
-    }
-
     public static DataportenPublicationChannelClient setupInterruptedClient() throws IOException, InterruptedException {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
@@ -264,8 +270,8 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResult(String year, String name, String pid, String eissn, String pissn,
-                                                       URI kurl, String level) {
+    public static String createDataportenJournalResponse(String year, String name, String pid, String eissn,
+                                                         String pissn, URI kurl, String level) {
         return new DataportenBodyBuilder().withYear(year)
                    .withPid(pid)
                    .withName(name)
@@ -276,8 +282,8 @@ public class TestUtils {
                    .build();
     }
 
-    public static String createDataportenPublisherResult(String year, String name, String pid, String isbnPrefix,
-                                                         URI kurl, String level) {
+    public static String createDataportenPublisherResponse(String year, String name, String pid, String isbnPrefix,
+                                                           URI kurl, String level) {
         return new DataportenBodyBuilder().withYear(year)
                    .withPid(pid)
                    .withName(name)
@@ -297,23 +303,29 @@ public class TestUtils {
         return uri;
     }
 
-    public static String getDataportenResponseBody(List<String> results, int offset,
-                                                   int size) {
-
+    public static String getDataportenResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize =
             results.stream()
                 .skip(offset)
                 .limit(size)
                 .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
                 .collect(Collectors.toList());
-        var entityResult = objectMapper.createObjectNode();
-        var arrayNode = objectMapper.createArrayNode();
-        resultsWithOffsetAndSize.forEach(arrayNode::add);
-        entityResult.put("pageresult", arrayNode);
+        var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
+        return buildDataportenSearchResponse(results, entityResult);
+    }
 
+    private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {
         return new DataportenBodyBuilder()
                    .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
                    .withEntityResultSet(entityResult)
                    .build();
+    }
+
+    private static ObjectNode createEntityResultObjectNode(List<JsonNode> results) {
+        var entityResult = objectMapper.createObjectNode();
+        var arrayNode = objectMapper.createArrayNode();
+        results.forEach(arrayNode::add);
+        entityResult.put(PAGERESULT_FIELD, arrayNode);
+        return entityResult;
     }
 }

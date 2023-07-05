@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;

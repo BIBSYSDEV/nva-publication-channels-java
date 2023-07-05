@@ -1,7 +1,6 @@
-package no.sikt.nva.pubchannels.handler.fetch;
+package no.sikt.nva.pubchannels.handler;
 
 import java.net.URI;
-import no.sikt.nva.pubchannels.handler.ScientificValue;
 
 public interface ThirdPartyPublicationChannel {
 

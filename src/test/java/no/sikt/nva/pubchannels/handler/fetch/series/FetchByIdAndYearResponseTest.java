@@ -10,7 +10,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import org.junit.jupiter.api.Test;
 
 class FetchByIdAndYearResponseTest {
@@ -27,7 +27,7 @@ class FetchByIdAndYearResponseTest {
     }
 
     private static FetchByIdAndYearResponse randomSeries() {
-        var series = new ThirdPartyJournal() {
+        var series = new ThirdPartySeries() {
 
             @Override
             public String getIdentifier() {

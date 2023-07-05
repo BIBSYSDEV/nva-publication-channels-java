@@ -24,7 +24,7 @@ import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesReq
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
