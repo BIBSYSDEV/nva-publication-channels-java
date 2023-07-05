@@ -1,10 +1,10 @@
 package no.sikt.nva.pubchannels.handler;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
+import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
@@ -67,8 +67,8 @@ public class DataportenBodyBuilder {
         return this;
     }
 
-    public DataportenBodyBuilder withEntityResultSet(DataportenEntityResultSet resultSet) {
-        bodyMap.put("entityResultSet", resultSet);
+    public DataportenBodyBuilder withEntityResultSet(ObjectNode entityResultSet) {
+        bodyMap.put("entityResultSet", entityResultSet);
         return this;
     }
 

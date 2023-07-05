@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten.fetch;
+package no.sikt.nva.pubchannels.dataporten.model.fetch;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,7 @@ import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
 
-public final class FetchPublisherByIdAndYearResponse implements Immutable, ThirdPartyPublisher {
+public final class DataportenPublisher implements Immutable, ThirdPartyPublisher {
 
     private static final String YEAR_FIELD = "year";
     private static final String IDENTIFIER_FIELD = "pid";
@@ -31,12 +31,12 @@ public final class FetchPublisherByIdAndYearResponse implements Immutable, Third
     private final URI homepage;
 
     @JsonCreator
-    public FetchPublisherByIdAndYearResponse(@JsonProperty(YEAR_FIELD) String year,
-                                             @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
-                                             @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-                                             @JsonProperty(NAME_FIELD) String name,
-                                             @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+    public DataportenPublisher(@JsonProperty(YEAR_FIELD) String year,
+                               @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                               @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
+                               @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
+                               @JsonProperty(NAME_FIELD) String name,
+                               @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.year = year;
         this.identifier = identifier;
         this.scientificValue = scientificValue;

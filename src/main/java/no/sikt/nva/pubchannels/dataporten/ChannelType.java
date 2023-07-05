@@ -1,21 +1,29 @@
 package no.sikt.nva.pubchannels.dataporten;
 
-import no.sikt.nva.pubchannels.dataporten.fetch.FetchJournalByIdAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.fetch.FetchPublisherByIdAndYearResponse;
-import no.sikt.nva.pubchannels.dataporten.fetch.FetchSeriesByIdAndYearResponse;
+import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenJournal;
+import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenPublisher;
+import no.sikt.nva.pubchannels.dataporten.model.fetch.DataportenSeries;
+import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchPublisherResponse;
+import no.sikt.nva.pubchannels.dataporten.model.search.DataportenSearchSeriesResponse;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public enum ChannelType {
 
-    JOURNAL("findjournal", FetchJournalByIdAndYearResponse.class),
-    PUBLISHER("findpublisher", FetchPublisherByIdAndYearResponse.class),
-    SERIES("findseries", FetchSeriesByIdAndYearResponse.class);
+    JOURNAL("findjournal", DataportenJournal.class, DataportenSearchJournalResponse.class),
+    PUBLISHER("findpublisher", DataportenPublisher.class, DataportenSearchPublisherResponse.class),
+    SERIES("findseries", DataportenSeries.class, DataportenSearchSeriesResponse.class);
 
     public final String pathElement;
-    public final Class<? extends ThirdPartyPublicationChannel> responseClass;
+    public final Class<? extends ThirdPartyPublicationChannel> fetchResponseClass;
 
-    ChannelType(String pathElement, Class<? extends ThirdPartyPublicationChannel> responseClass) {
+    public final Class<? extends ThirdPartySearchResponse> searchResponseClass;
+
+    ChannelType(String pathElement, Class<? extends ThirdPartyPublicationChannel> fetchResponseClass,
+                Class<? extends ThirdPartySearchResponse> searchResponseClass) {
         this.pathElement = pathElement;
-        this.responseClass = responseClass;
+        this.fetchResponseClass = fetchResponseClass;
+        this.searchResponseClass = searchResponseClass;
     }
 }

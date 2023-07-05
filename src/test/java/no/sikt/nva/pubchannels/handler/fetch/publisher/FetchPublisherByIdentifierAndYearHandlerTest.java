@@ -1,7 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getPublisher;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
@@ -224,7 +224,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         URI landingPage) {
 
         var selfUriBase = URI.create(SELF_URI_BASE);
-        var publisher = getPublisher(
+        var publisher = createPublisher(
             year,
             identifier,
             name,

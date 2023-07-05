@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;

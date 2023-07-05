@@ -1,13 +1,13 @@
 package no.sikt.nva.pubchannels.handler.search.journal;
 
+import java.net.URI;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-
-import java.net.URI;
 
 public class SearchJournalByQueryHandler extends SearchByQueryHandler<JournalResult> {
 
@@ -24,8 +24,7 @@ public class SearchJournalByQueryHandler extends SearchByQueryHandler<JournalRes
     }
 
     @Override
-    protected JournalResult createResult(URI baseUri, DataportenEntityResult entityResult) {
-        return JournalResult.create(baseUri, entityResult);
+    protected JournalResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult) {
+        return JournalResult.create(baseUri, (ThirdPartyJournal) entityResult);
     }
-
 }

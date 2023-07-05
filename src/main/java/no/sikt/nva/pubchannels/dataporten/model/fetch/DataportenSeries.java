@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten.fetch;
+package no.sikt.nva.pubchannels.dataporten.model.fetch;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,7 @@ import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyJournal;
 
-public final class FetchJournalByIdAndYearResponse implements Immutable, ThirdPartyJournal {
+public final class DataportenSeries implements Immutable, ThirdPartyJournal {
 
     private static final String YEAR_FIELD = "year";
     private static final String ONLINE_ISSN_FIELD = "eissn";
@@ -34,13 +34,13 @@ public final class FetchJournalByIdAndYearResponse implements Immutable, ThirdPa
     private final URI homepage;
 
     @JsonCreator
-    public FetchJournalByIdAndYearResponse(@JsonProperty(YEAR_FIELD) String year,
-                                           @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                           @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                           @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
-                                           @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                           @JsonProperty(NAME_FIELD) String name,
-                                           @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+    public DataportenSeries(@JsonProperty(YEAR_FIELD) String year,
+                            @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                            @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                            @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
+                            @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                            @JsonProperty(NAME_FIELD) String name,
+                            @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
         this.year = year;
         this.onlineIssn = onlineIssn;
         this.identifier = identifier;

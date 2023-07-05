@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten.create;
+package no.sikt.nva.pubchannels.dataporten.model.create;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

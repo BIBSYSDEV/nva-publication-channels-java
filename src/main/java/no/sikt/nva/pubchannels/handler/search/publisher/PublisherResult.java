@@ -2,23 +2,21 @@ package no.sikt.nva.pubchannels.handler.search.publisher;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
+import java.net.URI;
+import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-import java.net.URI;
-import java.util.Objects;
-
 public final class PublisherResult {
+
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
-    private static final String ONLINE_ISSN_FIELD = "onlineIssn";
-    private static final String PRINT_ISSN_FIELD = "printIssn";
+    private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
 
@@ -30,10 +28,8 @@ public final class PublisherResult {
     private final URI id;
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(ONLINE_ISSN_FIELD)
-    private final String onlineIssn;
-    @JsonProperty(PRINT_ISSN_FIELD)
-    private final String printIssn;
+    @JsonProperty(ISBN_PREFIX_FIELD)
+    private final String isbnPrefix;
     @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
     @JsonProperty(SAME_AS_FIELD)
@@ -42,28 +38,25 @@ public final class PublisherResult {
     @JsonCreator
     private PublisherResult(@JsonProperty(ID_FIELD) URI id,
                             @JsonProperty(NAME_FIELD) String name,
-                            @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                            @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                            @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
                             @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
-        this.onlineIssn = onlineIssn;
-        this.printIssn = printIssn;
+        this.isbnPrefix = isbnPrefix;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
     }
 
-    public static PublisherResult create(URI selfUriBase, DataportenEntityResult journal) {
+    public static PublisherResult create(URI selfUriBase, ThirdPartyPublisher publisher) {
         var id = UriWrapper.fromUri(selfUriBase)
-                .addChild(journal.getIdentifier(), String.valueOf(journal.getCurrentLevel().getYear()))
-                .getUri();
+                     .addChild(publisher.getIdentifier(), String.valueOf(publisher.getYear()))
+                     .getUri();
         return new PublisherResult(id,
-                journal.getName(),
-                journal.getOnlineIssn(),
-                journal.getPrintIssn(),
-                new ScientificValueMapper().map(journal.getCurrentLevel().getLevel()),
-                journal.getHomepage());
+                                   publisher.getName(),
+                                   publisher.getIsbnPrefix(),
+                                   publisher.getScientificValue(),
+                                   publisher.getHomepage());
     }
 
     public String getType() {
@@ -82,12 +75,8 @@ public final class PublisherResult {
         return name;
     }
 
-    public String getOnlineIssn() {
-        return onlineIssn;
-    }
-
-    public String getPrintIssn() {
-        return printIssn;
+    public String getIsbnPrefix() {
+        return isbnPrefix;
     }
 
     public ScientificValue getScientificValue() {
@@ -96,6 +85,18 @@ public final class PublisherResult {
 
     public URI getSameAs() {
         return sameAs;
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(getType(),
+                            getContext(),
+                            getId(),
+                            getName(),
+                            getIsbnPrefix(),
+                            getScientificValue(),
+                            getSameAs());
     }
 
     @JacocoGenerated
@@ -109,40 +110,25 @@ public final class PublisherResult {
         }
         PublisherResult that = (PublisherResult) o;
         return Objects.equals(getType(), that.getType())
-                && Objects.equals(getContext(), that.getContext())
-                && Objects.equals(getId(), that.getId())
-                && Objects.equals(getName(), that.getName())
-                && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
-                && Objects.equals(getPrintIssn(), that.getPrintIssn())
-                && Objects.equals(getScientificValue(), that.getScientificValue())
-                && Objects.equals(getSameAs(), that.getSameAs());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getType(),
-                getContext(),
-                getId(),
-                getName(),
-                getOnlineIssn(),
-                getPrintIssn(),
-                getScientificValue(),
-                getSameAs());
+               && Objects.equals(getContext(), that.getContext())
+               && Objects.equals(getId(), that.getId())
+               && Objects.equals(getName(), that.getName())
+               && Objects.equals(getIsbnPrefix(), that.getIsbnPrefix())
+               && Objects.equals(getScientificValue(), that.getScientificValue())
+               && Objects.equals(getSameAs(), that.getSameAs());
     }
 
     @JacocoGenerated
     @Override
     public String toString() {
         return "PublisherResult{"
-                + "type='" + type + '\''
-                + ", context=" + context
-                + ", id=" + id
-                + ", name='" + name + '\''
-                + ", onlineIssn='" + onlineIssn + '\''
-                + ", printIssn='" + printIssn + '\''
-                + ", scientificValue='" + scientificValue + '\''
-                + ", sameAs=" + sameAs
-                + '}';
+               + "type='" + type + '\''
+               + ", context=" + context
+               + ", id=" + id
+               + ", name='" + name + '\''
+               + ", isbnPrefix='" + isbnPrefix + '\''
+               + ", scientificValue='" + scientificValue + '\''
+               + ", sameAs=" + sameAs
+               + '}';
     }
 }

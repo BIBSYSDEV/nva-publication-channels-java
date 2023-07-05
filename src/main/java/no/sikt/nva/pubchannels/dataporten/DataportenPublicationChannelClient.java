@@ -16,16 +16,16 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Set;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreatePublisherResponse;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesRequest;
-import no.sikt.nva.pubchannels.dataporten.create.DataportenCreateSeriesResponse;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenSearchResponse;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.apigateway.exceptions.NotFoundException;
@@ -62,15 +62,15 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
         throws ApiGatewayException {
         var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
-        return attempt(() -> executeRequest(request, type.responseClass)).orElseThrow(
+        return attempt(() -> executeRequest(request, type.fetchResponseClass)).orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
-    public DataportenSearchResponse getChannel(ChannelType type, Map<String, String> queryParameters)
+    public ThirdPartySearchResponse searchChannel(ChannelType type, Map<String, String> queryParameters)
         throws ApiGatewayException {
         var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
-        return attempt(() -> executeRequest(request, DataportenSearchResponse.class))
+        return attempt(() -> executeRequest(request, type.searchResponseClass))
                    .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
