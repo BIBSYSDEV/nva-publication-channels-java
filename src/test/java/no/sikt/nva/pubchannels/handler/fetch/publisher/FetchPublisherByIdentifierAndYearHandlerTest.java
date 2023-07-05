@@ -77,7 +77,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(String.valueOf(year), identifier);
 
         var expectedPublisher = mockPublisherFound(year, identifier);
 
@@ -116,7 +116,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
-        var input = constructRequest(randomYear(), identifier);
+        var input = constructRequest(String.valueOf(randomYear()), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -133,7 +133,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     @Test
     void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
         mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
 
@@ -153,7 +153,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     @Test
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
         mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
@@ -180,7 +180,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
 
-        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -201,7 +201,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private FetchByIdAndYearResponse mockPublisherFound(String year, String identifier) {
+    private FetchByIdAndYearResponse mockPublisherFound(int year, String identifier) {
         var name = randomString();
         var isbnPrefix = String.valueOf(randomIsbnPrefix());
         var scientificValue = randomElement(ScientificValue.values());
@@ -209,9 +209,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var landingPage = randomUri();
         var body = createDataportenPublisherResponse(year, name, identifier, isbnPrefix, landingPage, level);
 
-        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(year, identifier, name, isbnPrefix, scientificValue, landingPage);
+        return getFetchByIdAndYearResponse(String.valueOf(year), identifier, name, isbnPrefix, scientificValue,
+                                           landingPage);
     }
 
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(

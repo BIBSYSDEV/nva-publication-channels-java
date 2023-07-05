@@ -52,7 +52,10 @@ public final class DataportenJournal implements Immutable, ThirdPartyJournal {
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(getDataportenLevel()).map(DataportenLevel::getYear).orElse(null);
+        return Optional.ofNullable(getDataportenLevel())
+                   .map(DataportenLevel::getYear)
+                   .map(String::valueOf)
+                   .orElse(null);
     }
 
     @Override

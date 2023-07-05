@@ -68,9 +68,9 @@ public class TestUtils {
                         .withBody(responseBody)));
     }
 
-    public static String randomYear() {
+    public static int randomYear() {
         var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
-        return Integer.toString(YEAR_START + randomInteger(bound));
+        return YEAR_START + randomInteger(bound);
     }
 
     public static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
@@ -101,7 +101,7 @@ public class TestUtils {
         return String.valueOf((int) Math.floor(Math.random() * (MAX_LEVEL - MIN_LEVEL + 1) + MIN_LEVEL));
     }
 
-    public static List<String> getDataportenSearchResult(String year, String name, int maxNr) {
+    public static List<String> getDataportenSearchResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(
                        i -> createDataportenJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
@@ -109,7 +109,7 @@ public class TestUtils {
                    .collect(Collectors.toList());
     }
 
-    public static List<String> getDataportenSearchPublisherResult(String year, String name, int maxNr) {
+    public static List<String> getDataportenSearchPublisherResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(i -> createDataportenPublisherResponse(year, name, UUID.randomUUID().toString(),
                                                                     String.valueOf(randomIsbnPrefix()),
@@ -271,7 +271,7 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResponse(String year, String originalTitle, String pid, String eissn,
+    public static String createDataportenJournalResponse(int year, String originalTitle, String pid, String eissn,
                                                          String pissn, URI kurl, String level) {
         return new DataportenBodyBuilder()
                    .withPid(pid)
@@ -283,7 +283,7 @@ public class TestUtils {
                    .build();
     }
 
-    public static String createDataportenPublisherResponse(String year, String name, String pid, String isbnPrefix,
+    public static String createDataportenPublisherResponse(int year, String name, String pid, String isbnPrefix,
                                                            URI kurl, String level) {
         return new DataportenBodyBuilder()
                    .withPid(pid)

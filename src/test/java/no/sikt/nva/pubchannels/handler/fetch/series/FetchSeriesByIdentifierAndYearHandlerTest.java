@@ -1,7 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createJournal;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
@@ -78,7 +77,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(String.valueOf(year), identifier);
 
         var expectedSeries = mockSeriesFound(year, identifier);
 
@@ -117,7 +116,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
-        var input = constructRequest(randomYear(), identifier);
+        var input = constructRequest(String.valueOf(randomYear()), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -133,7 +132,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     @Test
     void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
         mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
 
@@ -153,7 +152,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     @Test
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
         mockResponseWithHttpStatus("/findseries/", identifier, year,
                                    HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -181,7 +180,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
 
-        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -202,18 +201,20 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private FetchByIdAndYearResponse mockSeriesFound(String year, String identifier) {
+    private FetchByIdAndYearResponse mockSeriesFound(int year, String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
+        var yearString = String.valueOf(year);
         var body = createDataportenJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level);
 
-        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, yearString, identifier, body);
 
-        return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        return getFetchByIdAndYearResponse(yearString, identifier, name, electronicIssn, issn, scientificValue,
+                                           landingPage);
     }
 
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(

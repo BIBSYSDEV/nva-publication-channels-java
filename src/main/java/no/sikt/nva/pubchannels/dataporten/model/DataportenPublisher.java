@@ -48,7 +48,10 @@ public final class DataportenPublisher implements Immutable, ThirdPartyPublisher
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(getDataportenLevel()).map(DataportenLevel::getYear).orElse(null);
+        return Optional.ofNullable(getDataportenLevel())
+                   .map(DataportenLevel::getYear)
+                   .map(String::valueOf)
+                   .orElse(null);
     }
 
     @Override

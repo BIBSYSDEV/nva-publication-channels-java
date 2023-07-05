@@ -37,7 +37,7 @@ public class PublicationChannelMockClient {
         return journalsByIdentifier.get(identifier);
     }
 
-    public String randomJournal(String year) {
+    public String randomJournal(int year) {
         var identifier = UUID.randomUUID().toString();
         var name = randomString();
         var electronicIssn = randomIssn();
@@ -56,7 +56,7 @@ public class PublicationChannelMockClient {
 
             @Override
             public String getYear() {
-                return year;
+                return String.valueOf(year);
             }
 
             @Override
@@ -110,7 +110,7 @@ public class PublicationChannelMockClient {
                         .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
-    private void mockDataporten(String year,
+    private void mockDataporten(int year,
                                 String identifier,
                                 String name,
                                 String electronicIssn,

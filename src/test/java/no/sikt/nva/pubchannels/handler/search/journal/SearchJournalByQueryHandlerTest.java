@@ -14,14 +14,14 @@ import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createJournal;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createJournal;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenSearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
+import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -95,11 +95,11 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
-        var year = randomValidYear();
+        var year = randomYear();
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
-        var input = constructRequest(Map.of("year", year, "query", issn));
+        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn));
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -112,11 +112,11 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsPid() throws IOException, UnprocessableContentException {
-        var year = randomValidYear();
+        var year = randomYear();
         var pid = UUID.randomUUID().toString();
         var expectedSearchResult = getExpectedPaginatedSearchResultPidSearch(year, pid);
 
-        var input = constructRequest(Map.of("year", year, "query", pid));
+        var input = constructRequest(Map.of("year", String.valueOf(year), "query", pid));
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -130,7 +130,8 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
-        var year = randomValidYear();
+        var year = randomYear();
+        var yearString = String.valueOf(year);
         var name = randomString();
         int maxNr = 30;
         int offset = 0;
@@ -139,11 +140,11 @@ class SearchJournalByQueryHandlerTest {
         var responseBody = getDataportenResponseBody(dataportenSearchResult, offset, size);
         stubDataportenSearchResponse(
             responseBody, HttpURLConnection.HTTP_OK,
-            YEAR_QUERY_PARAM, year,
+            YEAR_QUERY_PARAM, yearString,
             DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
             DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
-        var input = constructRequest(Map.of("year", year, "query", name));
+        var input = constructRequest(Map.of("year", yearString, "query", name));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -154,13 +155,14 @@ class SearchJournalByQueryHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
         var expectedSearchresult = getExpectedPaginatedSearchJournalResultNameSearch(
-            dataportenSearchResult, year, name, offset, size);
+            dataportenSearchResult, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsNameAndOffsetIs10() throws IOException, UnprocessableContentException {
-        var year = randomValidYear();
+        var year = randomYear();
+        var yearString = String.valueOf(year);
         var name = randomString();
         int offset = 10;
         int size = 10;
@@ -169,12 +171,12 @@ class SearchJournalByQueryHandlerTest {
         stubDataportenSearchResponse(
             getDataportenResponseBody(dataportenSearchResult, offset, size),
             HttpURLConnection.HTTP_OK,
-            YEAR_QUERY_PARAM, year,
+            YEAR_QUERY_PARAM, yearString,
             DATAPORTEN_PAGE_COUNT_PARAM, String.valueOf(size),
             DATAPORTEN_PAGE_NO_PARAM, String.valueOf(offset / size),
             NAME_QUERY_PARAM, name);
         var input = constructRequest(
-            Map.of("year", year, "query", name,
+            Map.of("year", yearString, "query", name,
                    "offset", String.valueOf(offset), "size", String.valueOf(size)));
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -186,7 +188,7 @@ class SearchJournalByQueryHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
         var expectedSearchresult = getExpectedPaginatedSearchJournalResultNameSearch(
-            dataportenSearchResult, year, name, offset, size);
+            dataportenSearchResult, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
@@ -224,7 +226,7 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenMissingQuery() throws IOException {
-        var input = constructRequest(Map.of("year", randomValidYear()));
+        var input = constructRequest(Map.of("year", String.valueOf(randomYear())));
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -239,17 +241,26 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
-        var input = constructRequest(Map.of("year", randomValidYear(), "query", "Lorem Ipsum "
-                                                                                + "is simply dummy text of the "
-                                                                                + "printing and typesetting industry."
-                                                                                + " Lorem Ipsum has been the "
-                                                                                + "industry's standard dummy text "
-                                                                                + "ever since the 1500s, when an "
-                                                                                + "unknown printer took a galley "
-                                                                                + "of type and scrambled it to make a"
-                                                                                + " type specimen book. It has "
-                                                                                + "survived not only five centuries,"
-                                                                                + " but also the l"));
+        var input = constructRequest(Map.of("year", String.valueOf(randomYear()), "query", "Lorem Ipsum "
+                                                                                           + "is simply dummy text of"
+                                                                                           + " the "
+                                                                                           + "printing and "
+                                                                                           + "typesetting industry."
+                                                                                           + " Lorem Ipsum has been "
+                                                                                           + "the "
+                                                                                           + "industry's standard "
+                                                                                           + "dummy text "
+                                                                                           + "ever since the 1500s, "
+                                                                                           + "when an "
+                                                                                           + "unknown printer took a "
+                                                                                           + "galley "
+                                                                                           + "of type and scrambled "
+                                                                                           + "it to make a"
+                                                                                           + " type specimen book. It"
+                                                                                           + " has "
+                                                                                           + "survived not only five "
+                                                                                           + "centuries,"
+                                                                                           + " but also the l"));
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -264,7 +275,7 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenOffsetAndSizeAreNotDivisible() throws IOException {
-        var input = constructRequest(Map.of("year", randomValidYear(), "query", randomString(),
+        var input = constructRequest(Map.of("year", String.valueOf(randomYear()), "query", randomString(),
                                             "offset", "5", "size", "8"));
 
         this.handlerUnderTest.handleRequest(input, output, context);
@@ -281,18 +292,19 @@ class SearchJournalByQueryHandlerTest {
     @Test
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
 
-        var year = randomValidYear();
+        var year = randomYear();
+        var yearString = String.valueOf(year);
         var name = randomString();
         int maxNr = 30;
         var dataportenSearchResult = getDataportenSearchResult(year, name, maxNr);
         var responseBody = getDataportenResponseBody(dataportenSearchResult, 0, 10);
         stubDataportenSearchResponse(
             responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
-            YEAR_QUERY_PARAM, year,
+            YEAR_QUERY_PARAM, yearString,
             DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
             DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
-        var input = constructRequest(Map.of("year", year, "query", name));
+        var input = constructRequest(Map.of("year", yearString, "query", name));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -320,8 +332,7 @@ class SearchJournalByQueryHandlerTest {
         String year,
         String name, int queryOffset, int querySize)
         throws UnprocessableContentException {
-        var expectedHits =
-            mapToJournalResults(dataportenResults);
+        var expectedHits = mapToJournalResults(dataportenResults);
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, Map.of("year", year, "query", name)),
@@ -347,7 +358,7 @@ class SearchJournalByQueryHandlerTest {
     }
 
     private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultIssnSearch(
-        String year,
+        int year,
         String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
@@ -362,15 +373,15 @@ class SearchJournalByQueryHandlerTest {
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                                      ISSN_QUERY_PARAM, printIssn,
-                                     YEAR_QUERY_PARAM, year,
+                                     YEAR_QUERY_PARAM, String.valueOf(year),
                                      DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                                      DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
 
-        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
+        return getSingleHit(String.valueOf(year), printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
-    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultPidSearch(String year, String pid)
+    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultPidSearch(int year, String pid)
         throws UnprocessableContentException {
         var printIssn = randomIssn();
         var name = randomString();
@@ -382,12 +393,12 @@ class SearchJournalByQueryHandlerTest {
         );
         var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
-                                     YEAR_QUERY_PARAM, year,
+                                     YEAR_QUERY_PARAM, String.valueOf(year),
                                      DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                                      DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
                                      PID_QUERY_PARAM, pid);
 
-        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
+        return getSingleHit(String.valueOf(year), printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
     private PaginatedSearchResult<JournalResult> getSingleHit(
@@ -451,10 +462,5 @@ class SearchJournalByQueryHandlerTest {
             url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
         }
         return url;
-    }
-
-    private String randomValidYear() {
-        var bound = (LocalDate.now().getYear() + 1) - 1900;
-        return Integer.toString(1900 + randomInteger(bound));
     }
 }
