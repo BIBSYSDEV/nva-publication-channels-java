@@ -584,15 +584,10 @@ components:
           description: The type of the returned object, always Publisher
         name:
           $ref: '#/components/schemas/Name'
-        onlineIssn:
+        isbnPrefix:
           type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
-          description: The ISSN of the online edition of the Publisher
-        printIssn:
-          type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
-          description: The ISSN of the print edition of the Publisher
+          description: The isbnPrefix of the publsher
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
         sameAs:
@@ -604,16 +599,10 @@ components:
         name:
           type: string
           description: Name of the publisher
-        printIssn:
+        isbnPrefix:
           type: string
           nullable: true
-          description: The print publication ISSN
-          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
-        onlineIssn:
-          type: string
-          nullable: true
-          description: The electronic publication ISSN
-          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
+          description: The isbnPrefix of the publsher
         homepage:
           type: string
           format: uri
@@ -779,8 +768,7 @@ components:
     CreatePublisherExample:
       value:
         name: 'The publisher of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
+        isbnPrefix: '123-82-432'
         homepage: 'https://publisher-of-eternal.fury.no'
       summary: A sample create publisher
     PublisherResponseExample:
@@ -788,8 +776,7 @@ components:
         id: 'https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Publisher'
         name: 'The publisher of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
+        isbnPrefix: '123-82-432'
         scientificValue: 'LEVEL_1'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample publisher
