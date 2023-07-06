@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.publisher;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomIsbnPrefix;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
@@ -286,7 +287,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", "publisher", pid)
+                   .addChild("publication-channels", "publisher", pid, currentYear())
                    .getUri();
     }
 }

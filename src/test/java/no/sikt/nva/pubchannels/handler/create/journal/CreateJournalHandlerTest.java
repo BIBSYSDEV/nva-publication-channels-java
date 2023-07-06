@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -361,7 +362,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", "journal", pid)
+                   .addChild("publication-channels", "journal", pid, currentYear())
                    .getUri();
     }
 }

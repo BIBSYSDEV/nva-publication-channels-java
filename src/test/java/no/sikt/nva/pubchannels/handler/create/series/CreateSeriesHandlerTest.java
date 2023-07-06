@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -360,7 +361,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     private URI createExpectedUri(String pid) {
         return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", "series", pid)
+                   .addChild("publication-channels", "series", pid, currentYear())
                    .getUri();
     }
 }

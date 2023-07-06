@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +51,10 @@ public class TestUtils {
 
     private TestUtils() {
 
+    }
+
+    public static String currentYear() {
+        return Year.now().toString();
     }
 
     public static ScientificValue getScientificValue(String level) {
