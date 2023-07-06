@@ -7,8 +7,8 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public class DataportenSearchSeriesResponse implements ThirdPartySearchResponse {
 
-    private static final String ENTITY_RESULT_SET = "entityResultSet";
-    private static final String ENTITY_PAGE_INFORMATION = "entityPageInformation";
+    private static final String ENTITY_RESULT_SET = "entityResultSetDto";
+    private static final String ENTITY_PAGE_INFORMATION = "entityPageInformationDto";
     @JsonProperty(ENTITY_PAGE_INFORMATION)
     private final DataPortenEntityPageInformation pageInformation;
 
