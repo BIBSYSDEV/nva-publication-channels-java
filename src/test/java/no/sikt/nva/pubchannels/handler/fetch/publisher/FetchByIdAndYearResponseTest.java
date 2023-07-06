@@ -1,12 +1,5 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
-import org.junit.jupiter.api.Test;
-
-import java.net.URI;
-
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -14,6 +7,11 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.net.URI;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import org.junit.jupiter.api.Test;
 
 class FetchByIdAndYearResponseTest {
 
@@ -29,7 +27,7 @@ class FetchByIdAndYearResponseTest {
     }
 
     private static FetchByIdAndYearResponse randomPublisher() {
-        var publisher = new ThirdPartyPublicationChannel() {
+        var publisher = new ThirdPartyPublisher() {
 
             @Override
             public String getIdentifier() {
@@ -47,12 +45,7 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public String getOnlineIssn() {
-                return randomString();
-            }
-
-            @Override
-            public String getPrintIssn() {
+            public String getIsbnPrefix() {
                 return randomString();
             }
 

@@ -1,15 +1,16 @@
 package no.sikt.nva.pubchannels.handler;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import no.sikt.nva.pubchannels.dataporten.search.DataPortenEntityPageInformation;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResultSet;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
+import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
 public class DataportenBodyBuilder {
+
     private final Map<String, Object> bodyMap = new ConcurrentHashMap<>();
 
     public DataportenBodyBuilder() {
@@ -30,6 +31,11 @@ public class DataportenBodyBuilder {
         return this;
     }
 
+    public DataportenBodyBuilder withOriginalTitle(String originalTitle) {
+        bodyMap.put("originalTitle", originalTitle);
+        return this;
+    }
+
     public DataportenBodyBuilder withEissn(String eissn) {
         bodyMap.put("eissn", eissn);
         return this;
@@ -40,20 +46,20 @@ public class DataportenBodyBuilder {
         return this;
     }
 
-    public DataportenBodyBuilder withYear(String year) {
-        bodyMap.put("year", year);
+    public DataportenBodyBuilder withIsbnPrefix(String isbnPrefix) {
+        bodyMap.put("isbnprefix", isbnPrefix);
         return this;
     }
 
-    public DataportenBodyBuilder withLevel(String level) {
+    public DataportenBodyBuilder withLevel(DataportenLevel level) {
         if (Objects.nonNull(level)) {
-            bodyMap.put("level", level);
+            bodyMap.put("levelElementDto", level);
         }
         return this;
     }
 
     public DataportenBodyBuilder withKurl(String kurl) {
-        bodyMap.put("kURL", kurl);
+        bodyMap.put("kurl", kurl);
         return this;
     }
 
@@ -62,8 +68,8 @@ public class DataportenBodyBuilder {
         return this;
     }
 
-    public DataportenBodyBuilder withEntityResultSet(DataportenEntityResultSet resultSet) {
-        bodyMap.put("entityResultSet", resultSet);
+    public DataportenBodyBuilder withEntityResultSet(ObjectNode entityResultSet) {
+        bodyMap.put("entityResultSet", entityResultSet);
         return this;
     }
 

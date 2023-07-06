@@ -2,17 +2,16 @@ package no.sikt.nva.pubchannels.handler.search.series;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
+import java.net.URI;
+import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-import java.net.URI;
-import java.util.Objects;
-
 public final class SeriesResult {
+
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
@@ -54,16 +53,16 @@ public final class SeriesResult {
         this.sameAs = sameAs;
     }
 
-    public static SeriesResult create(URI selfUriBase, DataportenEntityResult journal) {
+    public static SeriesResult create(URI selfUriBase, ThirdPartySeries series) {
         var id = UriWrapper.fromUri(selfUriBase)
-                .addChild(journal.getIdentifier(), String.valueOf(journal.getCurrentLevel().getYear()))
-                .getUri();
+                     .addChild(series.getIdentifier(), String.valueOf(series.getYear()))
+                     .getUri();
         return new SeriesResult(id,
-                journal.getName(),
-                journal.getOnlineIssn(),
-                journal.getPrintIssn(),
-                new ScientificValueMapper().map(journal.getCurrentLevel().getLevel()),
-                journal.getHomepage());
+                                series.getName(),
+                                series.getOnlineIssn(),
+                                series.getPrintIssn(),
+                                series.getScientificValue(),
+                                series.getHomepage());
     }
 
     public String getType() {
@@ -100,6 +99,19 @@ public final class SeriesResult {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        return Objects.hash(getType(),
+                            getContext(),
+                            getId(),
+                            getName(),
+                            getOnlineIssn(),
+                            getPrintIssn(),
+                            getScientificValue(),
+                            getSameAs());
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -109,40 +121,27 @@ public final class SeriesResult {
         }
         SeriesResult that = (SeriesResult) o;
         return Objects.equals(getType(), that.getType())
-                && Objects.equals(getContext(), that.getContext())
-                && Objects.equals(getId(), that.getId())
-                && Objects.equals(getName(), that.getName())
-                && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
-                && Objects.equals(getPrintIssn(), that.getPrintIssn())
-                && Objects.equals(getScientificValue(), that.getScientificValue())
-                && Objects.equals(getSameAs(), that.getSameAs());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getType(),
-                getContext(),
-                getId(),
-                getName(),
-                getOnlineIssn(),
-                getPrintIssn(),
-                getScientificValue(),
-                getSameAs());
+               && Objects.equals(getContext(), that.getContext())
+               && Objects.equals(getId(), that.getId())
+               && Objects.equals(getName(), that.getName())
+               && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
+               && Objects.equals(getPrintIssn(), that.getPrintIssn())
+               && Objects.equals(getScientificValue(), that.getScientificValue())
+               && Objects.equals(getSameAs(), that.getSameAs());
     }
 
     @JacocoGenerated
     @Override
     public String toString() {
         return "PublisherResult{"
-                + "type='" + type + '\''
-                + ", context=" + context
-                + ", id=" + id
-                + ", name='" + name + '\''
-                + ", onlineIssn='" + onlineIssn + '\''
-                + ", printIssn='" + printIssn + '\''
-                + ", scientificValue='" + scientificValue + '\''
-                + ", sameAs=" + sameAs
-                + '}';
+               + "type='" + type + '\''
+               + ", context=" + context
+               + ", id=" + id
+               + ", name='" + name + '\''
+               + ", onlineIssn='" + onlineIssn + '\''
+               + ", printIssn='" + printIssn + '\''
+               + ", scientificValue='" + scientificValue + '\''
+               + ", sameAs=" + sameAs
+               + '}';
     }
 }

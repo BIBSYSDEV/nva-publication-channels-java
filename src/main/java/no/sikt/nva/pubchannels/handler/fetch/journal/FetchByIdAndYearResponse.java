@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -53,16 +53,16 @@ public class FetchByIdAndYearResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublicationChannel journal) {
+    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal) {
         var id = UriWrapper.fromUri(selfUriBase)
                      .addChild(journal.getIdentifier(), journal.getYear())
                      .getUri();
         return new FetchByIdAndYearResponse(id,
-                              journal.getName(),
-                              journal.getOnlineIssn(),
-                              journal.getPrintIssn(),
-                              journal.getScientificValue(),
-                              journal.getHomepage());
+                                            journal.getName(),
+                                            journal.getOnlineIssn(),
+                                            journal.getPrintIssn(),
+                                            journal.getScientificValue(),
+                                            journal.getHomepage());
     }
 
     public String getType() {
@@ -99,6 +99,19 @@ public class FetchByIdAndYearResponse {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        return Objects.hash(getType(),
+                            getContext(),
+                            getId(),
+                            getName(),
+                            getOnlineIssn(),
+                            getPrintIssn(),
+                            getScientificValue(),
+                            getSameAs());
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -115,19 +128,6 @@ public class FetchByIdAndYearResponse {
                && Objects.equals(getPrintIssn(), that.getPrintIssn())
                && Objects.equals(getScientificValue(), that.getScientificValue())
                && Objects.equals(getSameAs(), that.getSameAs());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getType(),
-                            getContext(),
-                            getId(),
-                            getName(),
-                            getOnlineIssn(),
-                            getPrintIssn(),
-                            getScientificValue(),
-                            getSameAs());
     }
 
     @JacocoGenerated

@@ -1,26 +1,25 @@
-package no.sikt.nva.pubchannels.handler.create.publisher;
+package no.sikt.nva.pubchannels.dataporten.model.create;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CreatePublisherRequest {
+public class DataportenCreatePublisherRequest {
 
     private static final String NAME_FIELD = "name";
-    private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
-    private static final String HOMEPAGE_FIELD = "homepage";
-
+    private static final String ISBN_PREFIX_FIELD = "isbnprefix";
+    private static final String URL_FIELD = "url";
     @JsonProperty(NAME_FIELD)
     private final String name;
     @JsonProperty(ISBN_PREFIX_FIELD)
     private final String isbnPrefix;
-    @JsonProperty(HOMEPAGE_FIELD)
+    @JsonProperty(URL_FIELD)
     private final String homepage;
 
     @JsonCreator
-    public CreatePublisherRequest(
+    public DataportenCreatePublisherRequest(
         @JsonProperty(NAME_FIELD) String name,
         @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-        @JsonProperty(HOMEPAGE_FIELD) String homepage) {
+        @JsonProperty(URL_FIELD) String homepage) {
         this.name = name;
         this.isbnPrefix = isbnPrefix;
         this.homepage = homepage;

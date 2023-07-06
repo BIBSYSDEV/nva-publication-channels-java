@@ -1,6 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch;
-
-import no.sikt.nva.pubchannels.handler.ScientificValue;
+package no.sikt.nva.pubchannels.handler;
 
 import java.net.URI;
 
@@ -11,10 +9,6 @@ public interface ThirdPartyPublicationChannel {
     String getYear();
 
     String getName();
-
-    String getOnlineIssn();
-
-    String getPrintIssn();
 
     ScientificValue getScientificValue();
 

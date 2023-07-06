@@ -2,14 +2,13 @@ package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
+import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
-
-import java.net.URI;
-import java.util.Objects;
 
 public class FetchByIdAndYearResponse {
 
@@ -54,16 +53,16 @@ public class FetchByIdAndYearResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublicationChannel channel) {
+    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartySeries channel) {
         var id = UriWrapper.fromUri(selfUriBase)
-                .addChild(channel.getIdentifier(), channel.getYear())
-                .getUri();
+                     .addChild(channel.getIdentifier(), channel.getYear())
+                     .getUri();
         return new FetchByIdAndYearResponse(id,
-                channel.getName(),
-                channel.getOnlineIssn(),
-                channel.getPrintIssn(),
-                channel.getScientificValue(),
-                channel.getHomepage());
+                                            channel.getName(),
+                                            channel.getOnlineIssn(),
+                                            channel.getPrintIssn(),
+                                            channel.getScientificValue(),
+                                            channel.getHomepage());
     }
 
     public String getType() {
@@ -100,6 +99,19 @@ public class FetchByIdAndYearResponse {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        return Objects.hash(getType(),
+                            getContext(),
+                            getId(),
+                            getName(),
+                            getOnlineIssn(),
+                            getPrintIssn(),
+                            getScientificValue(),
+                            getSameAs());
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -109,41 +121,28 @@ public class FetchByIdAndYearResponse {
         }
         var that = (FetchByIdAndYearResponse) o;
         return Objects.equals(getType(), that.getType())
-                && Objects.equals(getContext(), that.getContext())
-                && Objects.equals(getId(), that.getId())
-                && Objects.equals(getName(), that.getName())
-                && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
-                && Objects.equals(getPrintIssn(), that.getPrintIssn())
-                && Objects.equals(getScientificValue(), that.getScientificValue())
-                && Objects.equals(getSameAs(), that.getSameAs());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getType(),
-                getContext(),
-                getId(),
-                getName(),
-                getOnlineIssn(),
-                getPrintIssn(),
-                getScientificValue(),
-                getSameAs());
+               && Objects.equals(getContext(), that.getContext())
+               && Objects.equals(getId(), that.getId())
+               && Objects.equals(getName(), that.getName())
+               && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
+               && Objects.equals(getPrintIssn(), that.getPrintIssn())
+               && Objects.equals(getScientificValue(), that.getScientificValue())
+               && Objects.equals(getSameAs(), that.getSameAs());
     }
 
     @JacocoGenerated
     @Override
     public String toString() {
         return "FetchByIdAndYearResponse{"
-                + "type='" + TYPE + '\''
-                + ", context=" + context
-                + ", id=" + id
-                + ", name='" + name + '\''
-                + ", onlineIssn='" + onlineIssn + '\''
-                + ", printIssn='" + printIssn + '\''
-                + ", scientificValue='" + scientificValue + '\''
-                + ", sameAs=" + sameAs
-                + '}';
+               + "type='" + TYPE + '\''
+               + ", context=" + context
+               + ", id=" + id
+               + ", name='" + name + '\''
+               + ", onlineIssn='" + onlineIssn + '\''
+               + ", printIssn='" + printIssn + '\''
+               + ", scientificValue='" + scientificValue + '\''
+               + ", sameAs=" + sameAs
+               + '}';
     }
 }
 

@@ -1,31 +1,29 @@
-package no.sikt.nva.pubchannels.dataporten.fetch;
+package no.sikt.nva.pubchannels.dataporten.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 
-import java.net.URI;
+public final class DataportenSeries implements Immutable, ThirdPartySeries {
 
-public final class FetchPublisherByIdAndYearResponse implements Immutable, ThirdPartyPublicationChannel {
-    private static final String YEAR_FIELD = "year";
-    private static final String ONLINE_ISSN_FIELD = "eissn";
     private static final String IDENTIFIER_FIELD = "pid";
-    private static final String SCIENTIFIC_VALUE_FIELD = "level";
+    private static final String NAME_FIELD = "originalTitle";
+    private static final String ONLINE_ISSN_FIELD = "eissn";
     private static final String PRINT_ISSN_FIELD = "pissn";
-    private static final String NAME_FIELD = "name";
-    private static final String HOMEPAGE_FIELD = "kURL";
+    private static final String LEVEL_FIELD = "levelElementDto";
+    private static final String HOMEPAGE_FIELD = "kurl";
 
-    @JsonProperty(YEAR_FIELD)
-    private final String year;
     @JsonProperty(ONLINE_ISSN_FIELD)
     private final String onlineIssn;
     @JsonProperty(IDENTIFIER_FIELD)
     private final String identifier;
-    @JsonProperty(SCIENTIFIC_VALUE_FIELD)
-    private final String scientificValue;
+    @JsonProperty(LEVEL_FIELD)
+    private final DataportenLevel dataportenLevel;
     @JsonProperty(PRINT_ISSN_FIELD)
     private final String printIssn;
     @JsonProperty(NAME_FIELD)
@@ -34,17 +32,14 @@ public final class FetchPublisherByIdAndYearResponse implements Immutable, Third
     private final URI homepage;
 
     @JsonCreator
-    public FetchPublisherByIdAndYearResponse(@JsonProperty(YEAR_FIELD) String year,
-                                             @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                             @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) String scientificValue,
-                                             @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                             @JsonProperty(NAME_FIELD) String name,
-                                             @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
-        this.year = year;
+    public DataportenSeries(@JsonProperty(IDENTIFIER_FIELD) String identifier, @JsonProperty(NAME_FIELD) String name,
+                            @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                            @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                            @JsonProperty(LEVEL_FIELD) DataportenLevel dataportenLevel,
+                            @JsonProperty(HOMEPAGE_FIELD) URI homepage) {
+        this.dataportenLevel = dataportenLevel;
         this.onlineIssn = onlineIssn;
         this.identifier = identifier;
-        this.scientificValue = scientificValue;
         this.printIssn = printIssn;
         this.name = name;
         this.homepage = homepage;
@@ -57,7 +52,10 @@ public final class FetchPublisherByIdAndYearResponse implements Immutable, Third
 
     @Override
     public String getYear() {
-        return year;
+        return Optional.ofNullable(getDataportenLevel())
+                   .map(DataportenLevel::getYear)
+                   .map(String::valueOf)
+                   .orElse(null);
     }
 
     @Override
@@ -85,7 +83,13 @@ public final class FetchPublisherByIdAndYearResponse implements Immutable, Third
         return printIssn;
     }
 
+    public DataportenLevel getDataportenLevel() {
+        return dataportenLevel;
+    }
+
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
-        return mapper.map(scientificValue);
+        return Optional.ofNullable(getDataportenLevel())
+                   .map(level -> mapper.map(level.getLevel()))
+                   .orElse(ScientificValue.UNASSIGNED);
     }
 }

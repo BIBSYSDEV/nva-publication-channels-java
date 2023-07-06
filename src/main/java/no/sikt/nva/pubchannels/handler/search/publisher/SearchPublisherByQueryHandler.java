@@ -1,13 +1,13 @@
 package no.sikt.nva.pubchannels.handler.search.publisher;
 
+import java.net.URI;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
-import no.sikt.nva.pubchannels.dataporten.search.DataportenEntityResult;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-
-import java.net.URI;
 
 public class SearchPublisherByQueryHandler extends SearchByQueryHandler<PublisherResult> {
 
@@ -24,7 +24,7 @@ public class SearchPublisherByQueryHandler extends SearchByQueryHandler<Publishe
     }
 
     @Override
-    protected PublisherResult createResult(URI baseUri, DataportenEntityResult entityResult) {
-        return PublisherResult.create(baseUri, entityResult);
+    protected PublisherResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult) {
+        return PublisherResult.create(baseUri, (ThirdPartyPublisher) entityResult);
     }
 }

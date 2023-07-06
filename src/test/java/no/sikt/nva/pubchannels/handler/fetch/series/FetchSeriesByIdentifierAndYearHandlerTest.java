@@ -1,12 +1,33 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
+import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
+import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
+import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.RandomDataGenerator;
@@ -22,35 +43,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.constructRequest;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.getChannel;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.randomYear;
-import static no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearTestUtil.setupInterruptedClient;
-import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.mockito.Mockito.when;
-
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest {
+
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/series";
     private static final String DATAPORTEN_PATH_ELEMENT = "/findseries/";
+    private static final Context context = new FakeContext();
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
-
-    private static final Context context = new FakeContext();
     private Environment environment;
 
     @BeforeEach
@@ -77,7 +77,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(String.valueOf(year), identifier);
 
         var expectedSeries = mockSeriesFound(year, identifier);
 
@@ -90,13 +90,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
-
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
-            throws IOException {
+        throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString());
 
@@ -109,15 +108,15 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                is(containsString("Year")));
+                   is(containsString("Year")));
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
     @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
-            throws IOException {
+        throws IOException {
 
-        var input = constructRequest(randomYear(), identifier);
+        var input = constructRequest(String.valueOf(randomYear()), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -127,17 +126,15 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                is(containsString("Pid")));
+        assertThat(problem.getDetail(), is(containsString("Pid")));
     }
 
     @Test
     void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
-        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
-                HttpURLConnection.HTTP_NOT_FOUND);
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier);
 
@@ -155,10 +152,10 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     @Test
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
+        var year = String.valueOf(randomYear());
 
-        FetchByIdAndYearTestUtil.mockResponseWithHttpStatus("/findseries/", identifier, year,
-                HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus("/findseries/", identifier, year,
+                                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier);
 
@@ -174,7 +171,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(),
-                is(equalTo("Unexpected response from upstream!")));
+                   is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -183,7 +180,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
 
-        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -204,42 +201,41 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private FetchByIdAndYearResponse mockSeriesFound(String year, String identifier) {
+    private FetchByIdAndYearResponse mockSeriesFound(int year, String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = FetchByIdAndYearTestUtil.scientificValueToLevel(scientificValue);
+        var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
-        var type = "Series";
-        var body = FetchByIdAndYearTestUtil.getResponseBody(year, identifier, name, electronicIssn, issn, level,
-                landingPage, type);
+        var yearString = String.valueOf(year);
+        var body = createDataportenJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level);
 
-        FetchByIdAndYearTestUtil.mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, yearString, identifier, body);
 
-        return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        return getFetchByIdAndYearResponse(yearString, identifier, name, electronicIssn, issn, scientificValue,
+                                           landingPage);
     }
 
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
-            String year,
-            String identifier,
-            String name,
-            String electronicIssn,
-            String issn,
-            ScientificValue scientificValue,
-            URI landingPage) {
+        String year,
+        String identifier,
+        String name,
+        String electronicIssn,
+        String issn,
+        ScientificValue scientificValue,
+        URI landingPage) {
 
-        URI selfUriBase = URI.create(SELF_URI_BASE);
-        ThirdPartyPublicationChannel series = getChannel(
-                year,
-                identifier,
-                name,
-                electronicIssn,
-                issn,
-                scientificValue,
-                landingPage);
+        var selfUriBase = URI.create(SELF_URI_BASE);
+        var series = createSeries(
+            year,
+            identifier,
+            name,
+            electronicIssn,
+            issn,
+            scientificValue,
+            landingPage);
 
         return FetchByIdAndYearResponse.create(selfUriBase, series);
     }
-
 }

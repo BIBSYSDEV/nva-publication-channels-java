@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -42,13 +43,10 @@ import org.zalando.problem.Problem;
 class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static final int YEAR_START = 2004;
-
+    private static final Context context = new FakeContext();
     private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
     private PublicationChannelMockClient mockRegistry;
-
     private ByteArrayOutputStream output;
-
-    private static final Context context = new FakeContext();
     private Environment environment;
 
     @BeforeEach
@@ -69,9 +67,9 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     @Test
     void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
-        var year = randomYear();
+        var year = TestUtils.randomYear();
         var identifier = mockRegistry.randomJournal(year);
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(String.valueOf(year), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -231,13 +229,13 @@ class FetchJournalByIdentifierAndYearHandlerTest {
                    .build();
     }
 
-    private String randomYear() {
-        var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
-        return Integer.toString(YEAR_START + randomInteger(bound));
-    }
-
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    }
+
+    private String randomYear() {
+        var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
+        return Integer.toString(YEAR_START + randomInteger(bound));
     }
 }

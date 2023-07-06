@@ -1,8 +1,10 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -10,10 +12,8 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-import static nva.commons.core.attempt.Try.attempt;
-
 public class FetchSeriesByIdentifierAndYearHandler extends
-        FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
+                                                   FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -28,15 +28,17 @@ public class FetchSeriesByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context) throws
-            ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var request = attempt(() -> validate(requestInfo))
-                .map(FetchByIdAndYearRequest::new)
-                .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
+                          .map(FetchByIdAndYearRequest::new)
+                          .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
 
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
 
         return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                publicationChannelClient.getChannel(ChannelType.SERIES, request.getIdentifier(), request.getYear()));
+                                               (ThirdPartySeries) publicationChannelClient.getChannel(
+                                                   ChannelType.SERIES,
+                                                   request.getIdentifier(), request.getYear()));
     }
 }

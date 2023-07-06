@@ -14,9 +14,10 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.fetch.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 
@@ -34,6 +35,61 @@ public class PublicationChannelMockClient {
 
     public FetchByIdAndYearResponse getJournal(String identifier) {
         return journalsByIdentifier.get(identifier);
+    }
+
+    public String randomJournal(int year) {
+        var identifier = UUID.randomUUID().toString();
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var issn = randomIssn();
+        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
+        var landingPage = randomUri();
+
+        mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+
+        var selfUriBase = URI.create("https://localhost/publication-channels/journal");
+        var journal = new ThirdPartyJournal() {
+            @Override
+            public String getIdentifier() {
+                return identifier;
+            }
+
+            @Override
+            public String getYear() {
+                return String.valueOf(year);
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public ScientificValue getScientificValue() {
+                return scientificValue;
+            }
+
+            @Override
+            public URI getHomepage() {
+                return landingPage;
+            }
+
+            @Override
+            public String getOnlineIssn() {
+                return electronicIssn;
+            }
+
+            @Override
+            public String getPrintIssn() {
+                return issn;
+            }
+        };
+
+        var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal);
+
+        journalsByIdentifier.put(identifier, journalDto);
+
+        return identifier;
     }
 
     private void mockJournalNotFound(String identifier, String year) {
@@ -54,62 +110,7 @@ public class PublicationChannelMockClient {
                         .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
-    public String randomJournal(String year) {
-        var identifier = UUID.randomUUID().toString();
-        var name = randomString();
-        var electronicIssn = randomIssn();
-        var issn = randomIssn();
-        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var landingPage = randomUri();
-
-        mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
-
-        URI selfUriBase = URI.create("https://localhost/publication-channels/journal");
-        ThirdPartyPublicationChannel journal = new ThirdPartyPublicationChannel() {
-            @Override
-            public String getIdentifier() {
-                return identifier;
-            }
-
-            @Override
-            public String getYear() {
-                return year;
-            }
-
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public String getOnlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String getPrintIssn() {
-                return issn;
-            }
-
-            @Override
-            public ScientificValue getScientificValue() {
-                return scientificValue;
-            }
-
-            @Override
-            public URI getHomepage() {
-                return landingPage;
-            }
-        };
-
-        var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal);
-
-        journalsByIdentifier.put(identifier, journalDto);
-
-        return identifier;
-    }
-
-    private void mockDataporten(String year,
+    private void mockDataporten(int year,
                                 String identifier,
                                 String name,
                                 String electronicIssn,
@@ -120,12 +121,11 @@ public class PublicationChannelMockClient {
         var level = scientificValueToLevel(scientificValue);
         var body = new DataportenBodyBuilder()
                        .withType("Journal")
-                       .withYear(year)
                        .withPid(identifier)
-                       .withName(name)
+                       .withOriginalTitle(name)
                        .withEissn(electronicIssn)
                        .withPissn(issn)
-                       .withLevel(level)
+                       .withLevel(new DataportenLevel(year, level))
                        .withKurl(landingPage.toString())
                        .build();
 
