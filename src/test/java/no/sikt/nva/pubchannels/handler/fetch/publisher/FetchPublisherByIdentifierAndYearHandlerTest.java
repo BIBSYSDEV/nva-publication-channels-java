@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
@@ -36,6 +37,7 @@ import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -80,6 +82,26 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var input = constructRequest(String.valueOf(year), identifier);
 
         var expectedPublisher = mockPublisherFound(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+
+        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualPublisher, is(equalTo(expectedPublisher)));
+    }
+
+    @Test
+    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
+        var year = String.valueOf(YEAR_START);
+        var identifier = UUID.randomUUID().toString();
+
+        var input = constructRequest(year, identifier);
+
+        var expectedPublisher = mockPublisherFoundYearValueNull(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -215,6 +237,20 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                                            landingPage);
     }
 
+    private FetchByIdAndYearResponse mockPublisherFoundYearValueNull(String year, String identifier) {
+        var name = randomString();
+        var isbnPrefix = String.valueOf(randomIsbnPrefix());
+        var scientificValue = randomElement(ScientificValue.values());
+        var level = scientificValueToLevel(scientificValue);
+        var landingPage = randomUri();
+        var body = createDataportenPublisherResponse(null, name, identifier, isbnPrefix, landingPage, level);
+
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+
+        return getFetchByIdAndYearResponse(year, identifier, name, isbnPrefix, scientificValue,
+                                           landingPage);
+    }
+
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
         String year,
         String identifier,
@@ -232,6 +268,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
             scientificValue,
             landingPage);
 
-        return FetchByIdAndYearResponse.create(selfUriBase, publisher);
+        return FetchByIdAndYearResponse.create(selfUriBase, publisher, year);
     }
 }

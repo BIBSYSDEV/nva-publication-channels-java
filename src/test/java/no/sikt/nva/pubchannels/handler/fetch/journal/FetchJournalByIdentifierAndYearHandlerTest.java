@@ -83,6 +83,24 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
+    @Test
+    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.randomJournalWithThirdPartyYearValueNull(year);
+        var input = constructRequest(String.valueOf(year), identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+
+        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var expectedJournal = mockRegistry.getJournal(identifier);
+        assertThat(actualJournal, is(equalTo(expectedJournal)));
+    }
+
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
