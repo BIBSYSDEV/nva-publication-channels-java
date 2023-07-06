@@ -53,8 +53,10 @@ public class TestUtils {
 
     }
 
-    public static String currentYear() {
-        return Year.now().toString();
+    public static URI createExpectedUri(String pid, String channelPathElement) {
+        return new UriWrapper(HTTPS, "localhost")
+                   .addChild("publication-channels", channelPathElement, pid, currentYear())
+                   .getUri();
     }
 
     public static ScientificValue getScientificValue(String level) {
@@ -318,6 +320,10 @@ public class TestUtils {
                 .collect(Collectors.toList());
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildDataportenSearchResponse(results, entityResult);
+    }
+
+    private static String currentYear() {
+        return Year.now().toString();
     }
 
     private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {

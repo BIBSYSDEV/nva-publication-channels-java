@@ -1,8 +1,7 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
-import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -26,7 +25,6 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +36,7 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest extends CreateHandlerTest {
 
+    public static final String JOURNAL_PATH_ELEMENT = "journal";
     private transient CreateJournalHandler handlerUnderTest;
 
     private Environment environment;
@@ -74,7 +73,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
     }
 
     @Test
@@ -227,7 +226,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
     }
 
     @ParameterizedTest
@@ -281,7 +280,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
     }
 
     @Test
@@ -304,7 +303,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
     }
 
     @Test
@@ -327,7 +326,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
     }
 
     @Test
@@ -358,11 +357,5 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                      dtoObjectMapper.writeValueAsString(new DataportenCreateJournalResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request)
         );
-    }
-
-    private URI createExpectedUri(String pid) {
-        return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", "journal", pid, currentYear())
-                   .getUri();
     }
 }
