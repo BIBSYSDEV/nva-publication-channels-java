@@ -64,12 +64,12 @@ public class DataportenBodyBuilder {
     }
 
     public DataportenBodyBuilder withEntityPageInformation(DataPortenEntityPageInformation pageInformation) {
-        bodyMap.put("entityPageInformation", pageInformation);
+        bodyMap.put("entityPageInformationDto", pageInformation);
         return this;
     }
 
     public DataportenBodyBuilder withEntityResultSet(ObjectNode entityResultSet) {
-        bodyMap.put("entityResultSet", entityResultSet);
+        bodyMap.put("entityResultSetDto", entityResultSet);
         return this;
     }
 
