@@ -25,7 +25,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
-    public static final String CURRENT_YEAR = Year.now().toString();
+    private static final String CURRENT_YEAR = Year.now().toString();
     protected PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
