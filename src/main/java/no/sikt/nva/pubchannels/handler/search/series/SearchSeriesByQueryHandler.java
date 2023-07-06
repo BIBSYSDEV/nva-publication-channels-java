@@ -15,7 +15,7 @@ public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesResul
     private static final ChannelType CHANNEL_TYPE = ChannelType.SERIES;
 
     @JacocoGenerated
-    protected SearchSeriesByQueryHandler() {
+    public SearchSeriesByQueryHandler() {
         super(PATH_ELEMENT, CHANNEL_TYPE);
     }
 
