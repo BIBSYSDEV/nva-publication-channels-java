@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create;
 
+import java.time.Year;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -18,11 +19,13 @@ import java.net.http.HttpClient;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
 public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
+
     private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI =
             "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
+    private static final String CURRENT_YEAR = Year.now().toString();
     protected PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
@@ -52,7 +55,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
         return new UriWrapper(HTTPS, apiDomain)
-                .addChild(customDomainBasePath, path, pid)
+                .addChild(customDomainBasePath, path, pid, CURRENT_YEAR)
                 .getUri();
     }
 

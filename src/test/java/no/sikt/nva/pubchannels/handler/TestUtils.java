@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +51,12 @@ public class TestUtils {
 
     private TestUtils() {
 
+    }
+
+    public static URI createExpectedUri(String pid, String channelPathElement) {
+        return new UriWrapper(HTTPS, "localhost")
+                   .addChild("publication-channels", channelPathElement, pid, currentYear())
+                   .getUri();
     }
 
     public static ScientificValue getScientificValue(String level) {
@@ -313,6 +320,10 @@ public class TestUtils {
                 .collect(Collectors.toList());
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildDataportenSearchResponse(results, entityResult);
+    }
+
+    private static String currentYear() {
+        return Year.now().toString();
     }
 
     private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {

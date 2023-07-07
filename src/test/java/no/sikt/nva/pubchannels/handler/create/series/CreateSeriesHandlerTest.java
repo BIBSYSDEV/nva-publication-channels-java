@@ -1,7 +1,7 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
+import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -25,7 +25,6 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +36,7 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateSeriesHandlerTest extends CreateHandlerTest {
 
+    public static final String SERIES_PATH_ELEMENT = "series";
     private transient CreateSeriesHandler handlerUnderTest;
 
     private Environment environment;
@@ -73,7 +73,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @Test
@@ -226,7 +226,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @ParameterizedTest
@@ -280,7 +280,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @Test
@@ -303,7 +303,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @Test
@@ -326,7 +326,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid))));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @Test
@@ -356,11 +356,5 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreateSeriesResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
-    }
-
-    private URI createExpectedUri(String pid) {
-        return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", "series", pid)
-                   .getUri();
     }
 }
