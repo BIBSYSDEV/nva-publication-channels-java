@@ -128,6 +128,24 @@ class SearchSeriesByQueryHandlerTest {
     }
 
     @Test
+    void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
+        throws IOException, UnprocessableContentException {
+        var year = String.valueOf(randomYear());
+        var issn = randomIssn();
+        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
+
+        var input = constructRequest(Map.of("year", year, "query", issn));
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
     void shouldReturnResultWithSuccessWhenQueryIsPid() throws IOException, UnprocessableContentException {
         var year = randomYear();
         var pid = UUID.randomUUID().toString();
@@ -368,15 +386,37 @@ class SearchSeriesByQueryHandlerTest {
         var dataportenEntityResult = List.of(
             createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
         );
+        mockDataportenResponse(yearString, printIssn, dataportenEntityResult);
+
+        return getSingleHit(yearString, printIssn, pid, name, electronicIssn, level, landingPage);
+    }
+
+    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+        String year,
+        String printIssn)
+        throws UnprocessableContentException {
+        var pid = UUID.randomUUID().toString();
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var level = randomLevel();
+        var landingPage = randomUri();
+
+        var dataportenEntityResult = List.of(
+            createDataportenJournalResponse(null, name, pid, electronicIssn, printIssn, landingPage, level)
+        );
+        mockDataportenResponse(year, printIssn, dataportenEntityResult);
+
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
+    }
+
+    private void mockDataportenResponse(String year, String printIssn, List<String> dataportenEntityResult) {
         var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
         stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                                      ISSN_QUERY_PARAM, printIssn,
-                                     YEAR_QUERY_PARAM, yearString,
+                                     YEAR_QUERY_PARAM, year,
                                      DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                                      DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
-
-        return getSingleHit(yearString, printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
     private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultPidSearch(int year, String pid)
