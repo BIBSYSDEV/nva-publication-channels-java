@@ -64,6 +64,6 @@ class FetchByIdAndYearResponseTest {
                 return randomString();
             }
         };
-        return FetchByIdAndYearResponse.create(randomUri(), series);
+        return FetchByIdAndYearResponse.create(randomUri(), series, randomString());
     }
 }

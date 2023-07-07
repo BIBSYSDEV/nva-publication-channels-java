@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
@@ -48,9 +49,11 @@ public class FetchByIdAndYearResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublisher publisher) {
+    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublisher publisher,
+                                                  String requestedYear) {
+        var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(publisher.getIdentifier(), publisher.getYear())
+                     .addChild(publisher.getIdentifier(), year)
                      .getUri();
         return new FetchByIdAndYearResponse(id,
                                             publisher.getName(),

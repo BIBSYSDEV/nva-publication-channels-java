@@ -45,8 +45,46 @@ public class PublicationChannelMockClient {
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
 
-        mockDataporten(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        var responseBody = getDataportenResponseBody(year, identifier, name, electronicIssn, issn, scientificValue,
+                                                     landingPage);
 
+        mockDataporten(year, identifier, responseBody);
+
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+
+        return identifier;
+    }
+
+    public String randomJournalWithThirdPartyYearValueNull(int year) {
+        var identifier = UUID.randomUUID().toString();
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var issn = randomIssn();
+        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
+        var landingPage = randomUri();
+
+        var responseBody = getDataportenResponseBody(null, identifier, name, electronicIssn, issn, scientificValue,
+                                                     landingPage);
+
+        mockDataporten(year, identifier, responseBody);
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        return identifier;
+    }
+
+    private static void mockDataporten(int year, String identifier, String responseBody) {
+        stubFor(
+            get("/findjournal/" + identifier + "/" + year)
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_OK)
+                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                        .withBody(responseBody)));
+    }
+
+    private void createJournalAndAddToMap(Integer year, String identifier, String name, String electronicIssn,
+                                          String issn,
+                                          ScientificValue scientificValue, URI landingPage) {
         var selfUriBase = URI.create("https://localhost/publication-channels/journal");
         var journal = new ThirdPartyJournal() {
             @Override
@@ -85,11 +123,9 @@ public class PublicationChannelMockClient {
             }
         };
 
-        var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal);
+        var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal, String.valueOf(year));
 
         journalsByIdentifier.put(identifier, journalDto);
-
-        return identifier;
     }
 
     private void mockJournalNotFound(String identifier, String year) {
@@ -110,33 +146,24 @@ public class PublicationChannelMockClient {
                         .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 
-    private void mockDataporten(int year,
-                                String identifier,
-                                String name,
-                                String electronicIssn,
-                                String issn,
-                                ScientificValue scientificValue,
-                                URI landingPage) {
+    private String getDataportenResponseBody(Integer year,
+                                             String identifier,
+                                             String name,
+                                             String electronicIssn,
+                                             String issn,
+                                             ScientificValue scientificValue,
+                                             URI landingPage) {
 
         var level = scientificValueToLevel(scientificValue);
-        var body = new DataportenBodyBuilder()
-                       .withType("Journal")
-                       .withPid(identifier)
-                       .withOriginalTitle(name)
-                       .withEissn(electronicIssn)
-                       .withPissn(issn)
-                       .withLevel(new DataportenLevel(year, level))
-                       .withKurl(landingPage.toString())
-                       .build();
-
-        stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_OK)
-                        .withHeader("Content-Type", "application/json;charset=UTF-8")
-                        .withBody(body)));
+        return new DataportenBodyBuilder()
+                   .withType("Journal")
+                   .withPid(identifier)
+                   .withOriginalTitle(name)
+                   .withEissn(electronicIssn)
+                   .withPissn(issn)
+                   .withLevel(new DataportenLevel(year, level))
+                   .withKurl(landingPage.toString())
+                   .build();
     }
 
     private String scientificValueToLevel(ScientificValue scientificValue) {

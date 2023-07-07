@@ -46,7 +46,7 @@ import nva.commons.core.paths.UriWrapper;
 public class TestUtils {
 
     public static final String PAGERESULT_FIELD = "pageresult";
-    private static final int YEAR_START = 1900;
+    public static final int YEAR_START = 1900;
     private static final ScientificValueMapper mapper = new ScientificValueMapper();
 
     private TestUtils() {
@@ -278,7 +278,7 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResponse(int year, String originalTitle, String pid, String eissn,
+    public static String createDataportenJournalResponse(Integer year, String originalTitle, String pid, String eissn,
                                                          String pissn, URI kurl, String level) {
         return new DataportenBodyBuilder()
                    .withPid(pid)
@@ -290,7 +290,7 @@ public class TestUtils {
                    .build();
     }
 
-    public static String createDataportenPublisherResponse(int year, String name, String pid, String isbnPrefix,
+    public static String createDataportenPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
                                                            URI kurl, String level) {
         return new DataportenBodyBuilder()
                    .withPid(pid)

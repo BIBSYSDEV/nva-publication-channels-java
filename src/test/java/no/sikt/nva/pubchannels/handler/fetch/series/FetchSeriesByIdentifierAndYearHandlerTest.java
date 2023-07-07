@@ -92,6 +92,26 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
+    @Test
+    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
+        var year = String.valueOf(randomYear());
+        var identifier = UUID.randomUUID().toString();
+
+        var input = constructRequest(year, identifier);
+
+        var expectedSeries = mockSeriesFoundYearValueNull(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+
+        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualSeries, is(equalTo(expectedSeries)));
+    }
+
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
@@ -217,6 +237,21 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
                                            landingPage);
     }
 
+    private FetchByIdAndYearResponse mockSeriesFoundYearValueNull(String year, String identifier) {
+        var name = randomString();
+        var electronicIssn = randomIssn();
+        var issn = randomIssn();
+        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
+        var level = TestUtils.scientificValueToLevel(scientificValue);
+        var landingPage = randomUri();
+        var body = createDataportenJournalResponse(null, name, identifier, electronicIssn, issn, landingPage, level);
+
+        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+
+        return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue,
+                                           landingPage);
+    }
+
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
         String year,
         String identifier,
@@ -236,6 +271,6 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
             scientificValue,
             landingPage);
 
-        return FetchByIdAndYearResponse.create(selfUriBase, series);
+        return FetchByIdAndYearResponse.create(selfUriBase, series, year);
     }
 }

@@ -4,8 +4,8 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -37,9 +37,10 @@ public class FetchJournalByIdentifierAndYearHandler extends
 
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
+        var requestYear = request.getYear();
         return FetchByIdAndYearResponse.create(journalIdBaseUri,
                                                (ThirdPartyJournal) publicationChannelClient.getChannel(
                                                    ChannelType.JOURNAL,
-                                                   request.getIdentifier(), request.getYear()));
+                                                   request.getIdentifier(), requestYear), requestYear);
     }
 }

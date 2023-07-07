@@ -1,8 +1,8 @@
 package no.sikt.nva.pubchannels.handler;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
@@ -52,7 +52,7 @@ public class DataportenBodyBuilder {
     }
 
     public DataportenBodyBuilder withLevel(DataportenLevel level) {
-        if (Objects.nonNull(level)) {
+        if (nonNull(level)) {
             bodyMap.put("levelElementDto", level);
         }
         return this;

@@ -37,10 +37,11 @@ public class FetchPublisherByIdentifierAndYearHandler extends
 
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
 
+        var requestYear = request.getYear();
         return FetchByIdAndYearResponse.create(publisherIdBaseUri,
                                                (ThirdPartyPublisher) publicationChannelClient.getChannel(
                                                    ChannelType.PUBLISHER,
                                                    request.getIdentifier(),
-                                                   request.getYear()));
+                                                   requestYear), requestYear);
     }
 }
