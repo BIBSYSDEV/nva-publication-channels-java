@@ -6,7 +6,7 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublishe
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
-import static no.sikt.nva.pubchannels.handler.TestUtils.randomIsbnPrefix;
+import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.scientificValueToLevel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
@@ -37,7 +37,6 @@ import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -225,7 +224,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     private FetchByIdAndYearResponse mockPublisherFound(int year, String identifier) {
         var name = randomString();
-        var isbnPrefix = String.valueOf(randomIsbnPrefix());
+        var isbnPrefix = String.valueOf(validIsbnPrefix());
         var scientificValue = randomElement(ScientificValue.values());
         var level = scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
@@ -239,7 +238,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     private FetchByIdAndYearResponse mockPublisherFoundYearValueNull(String year, String identifier) {
         var name = randomString();
-        var isbnPrefix = String.valueOf(randomIsbnPrefix());
+        var isbnPrefix = String.valueOf(validIsbnPrefix());
         var scientificValue = randomElement(ScientificValue.values());
         var level = scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
