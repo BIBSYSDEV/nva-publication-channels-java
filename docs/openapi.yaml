@@ -778,7 +778,7 @@ components:
         id: 'https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
         type: 'Publisher'
         name: 'The publisher of eternal fury'
-        isbnPrefix: '123-82-432'
+        isbnPrefix: '12345-1234567'
         scientificValue: 'LEVEL_1'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample publisher
