@@ -83,7 +83,7 @@ class SearchSeriesByQueryHandlerTest {
         String name, int queryOffset, int querySize)
         throws UnprocessableContentException {
         var expectedHits =
-            mapToSeriesResults(dataportenResults);
+            mapToSeriesResults(dataportenResults, year);
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(PATH_ELEMENT, Map.of("year", year, "query", name)),
@@ -359,17 +359,17 @@ class SearchSeriesByQueryHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private static List<SeriesResult> mapToSeriesResults(List<String> dataportenResults) {
+    private static List<SeriesResult> mapToSeriesResults(List<String> dataportenResults, String requestedYear) {
         return dataportenResults
                    .stream()
                    .map(result -> attempt(
                        () -> objectMapper.readValue(result, DataportenSeries.class)).orElseThrow())
-                   .map(SearchSeriesByQueryHandlerTest::toResult)
+                   .map(series -> toResult(series, requestedYear))
                    .collect(Collectors.toList());
     }
 
-    private static SeriesResult toResult(ThirdPartySeries series) {
-        return SeriesResult.create(constructPublicationChannelUri(PATH_ELEMENT, null), series);
+    private static SeriesResult toResult(ThirdPartySeries series, String requestedYear) {
+        return SeriesResult.create(constructPublicationChannelUri(PATH_ELEMENT, null), series, requestedYear);
     }
 
     private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultIssnSearch(
@@ -452,7 +452,8 @@ class SearchSeriesByQueryHandlerTest {
         var expectedHits = List.of(
             SeriesResult.create(
                 constructPublicationChannelUri(PATH_ELEMENT, null),
-                createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)));
+                createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage),
+                year));
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
@@ -48,9 +49,10 @@ public final class PublisherResult {
         this.sameAs = sameAs;
     }
 
-    public static PublisherResult create(URI selfUriBase, ThirdPartyPublisher publisher) {
+    public static PublisherResult create(URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
+        var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(publisher.getIdentifier(), String.valueOf(publisher.getYear()))
+                     .addChild(publisher.getIdentifier(), year)
                      .getUri();
         return new PublisherResult(id,
                                    publisher.getName(),

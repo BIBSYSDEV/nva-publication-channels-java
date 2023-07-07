@@ -24,7 +24,8 @@ public class SearchPublisherByQueryHandler extends SearchByQueryHandler<Publishe
     }
 
     @Override
-    protected PublisherResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult) {
-        return PublisherResult.create(baseUri, (ThirdPartyPublisher) entityResult);
+    protected PublisherResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult,
+                                           String requestedYear) {
+        return PublisherResult.create(baseUri, (ThirdPartyPublisher) entityResult, requestedYear);
     }
 }

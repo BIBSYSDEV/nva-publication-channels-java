@@ -24,7 +24,7 @@ public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesResul
     }
 
     @Override
-    protected SeriesResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult) {
-        return SeriesResult.create(baseUri, (ThirdPartySeries) entityResult);
+    protected SeriesResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
+        return SeriesResult.create(baseUri, (ThirdPartySeries) entityResult, requestedYear);
     }
 }

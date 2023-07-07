@@ -81,7 +81,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
             offset,
             size,
             searchResult.getPageInformation().getTotalResults(),
-            getHits(constructBaseUri(), searchResult),
+            getHits(constructBaseUri(), searchResult, year),
             Map.of(QUERY_PARAM, query, YEAR_QUERY_PARAM, year)
         );
     }
@@ -91,7 +91,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         return HttpURLConnection.HTTP_OK;
     }
 
-    protected abstract T createResult(URI baseUri, ThirdPartyPublicationChannel entityResult);
+    protected abstract T createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear);
 
     protected URI constructBaseUri() {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
@@ -117,11 +117,11 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         return publicationChannelClient.searchChannel(channelType, queryParams);
     }
 
-    private List<T> getHits(URI baseUri, ThirdPartySearchResponse searchResult) {
+    private List<T> getHits(URI baseUri, ThirdPartySearchResponse searchResult, String requestedYear) {
         return searchResult.getResultSet()
                    .getPageResult()
                    .stream()
-                   .map(result -> createResult(baseUri, result))
+                   .map(result -> createResult(baseUri, result, requestedYear))
                    .collect(Collectors.toList());
     }
 

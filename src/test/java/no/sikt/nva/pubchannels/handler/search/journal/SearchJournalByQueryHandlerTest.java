@@ -350,7 +350,7 @@ class SearchJournalByQueryHandlerTest {
         String year,
         String name, int queryOffset, int querySize)
         throws UnprocessableContentException {
-        var expectedHits = mapToJournalResults(dataportenResults);
+        var expectedHits = mapToJournalResults(dataportenResults, year);
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, Map.of("year", year, "query", name)),
@@ -362,17 +362,17 @@ class SearchJournalByQueryHandlerTest {
                    "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private static List<JournalResult> mapToJournalResults(List<String> dataportenResults) {
+    private static List<JournalResult> mapToJournalResults(List<String> dataportenResults, String requestedYear) {
         return dataportenResults
                    .stream()
                    .map(result -> attempt(
                        () -> objectMapper.readValue(result, DataportenJournal.class)).orElseThrow())
-                   .map(SearchJournalByQueryHandlerTest::toJournalResult)
+                   .map(journal -> toJournalResult(journal, requestedYear))
                    .collect(Collectors.toList());
     }
 
-    private static JournalResult toJournalResult(ThirdPartyJournal journal) {
-        return JournalResult.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null), journal);
+    private static JournalResult toJournalResult(ThirdPartyJournal journal, String requestedYear) {
+        return JournalResult.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null), journal, requestedYear);
     }
 
     private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultIssnSearch(
@@ -451,7 +451,8 @@ class SearchJournalByQueryHandlerTest {
         var expectedHits = List.of(
             JournalResult.create(
                 constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null),
-                createJournal(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage)
+                createJournal(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage),
+                year
             ));
 
         return PaginatedSearchResult.create(

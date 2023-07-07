@@ -116,7 +116,7 @@ class SearchPublisherByQueryHandlerTest {
         throws IOException, UnprocessableContentException {
         var year = String.valueOf(randomYear());
         var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
+        var expectedSearchResult = getExpectedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
 
         var input = constructRequest(Map.of("year", year, "query", issn));
 
@@ -352,7 +352,7 @@ class SearchPublisherByQueryHandlerTest {
         String year,
         String name, int queryOffset, int querySize)
         throws UnprocessableContentException {
-        var expectedHits = mapToPublisherResults(dataportenResults);
+        var expectedHits = mapToPublisherResults(dataportenResults, year);
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, Map.of("year", year, "query", name)),
@@ -364,17 +364,18 @@ class SearchPublisherByQueryHandlerTest {
                    "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private static List<PublisherResult> mapToPublisherResults(List<String> dataportenResults) {
+    private static List<PublisherResult> mapToPublisherResults(List<String> dataportenResults, String requestedYear) {
         return dataportenResults
                    .stream()
                    .map(result -> attempt(
                        () -> objectMapper.readValue(result, DataportenPublisher.class)).orElseThrow())
-                   .map(SearchPublisherByQueryHandlerTest::toPublisherResult)
+                   .map(publisher -> toPublisherResult(publisher, requestedYear))
                    .collect(Collectors.toList());
     }
 
-    private static PublisherResult toPublisherResult(ThirdPartyPublisher publisher) {
-        return PublisherResult.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null), publisher);
+    private static PublisherResult toPublisherResult(ThirdPartyPublisher publisher, String requestedYear) {
+        return PublisherResult.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null), publisher,
+                                      requestedYear);
     }
 
     private PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchResultIssnSearch(
@@ -395,7 +396,7 @@ class SearchPublisherByQueryHandlerTest {
         return getSingleHit(yearString, printIssn, pid, name, isbnPrefix, level, landingPage);
     }
 
-    private PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+    private PaginatedSearchResult<PublisherResult> getExpectedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
         String year,
         String printIssn)
         throws UnprocessableContentException {
@@ -455,7 +456,7 @@ class SearchPublisherByQueryHandlerTest {
         var expectedHits = List.of(
             PublisherResult.create(
                 constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null),
-                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage)
+                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage), year
             ));
 
         return PaginatedSearchResult.create(
