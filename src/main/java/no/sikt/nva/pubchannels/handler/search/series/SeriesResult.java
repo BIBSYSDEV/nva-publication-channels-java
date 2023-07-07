@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.model.Contexts;
@@ -53,9 +54,10 @@ public final class SeriesResult {
         this.sameAs = sameAs;
     }
 
-    public static SeriesResult create(URI selfUriBase, ThirdPartySeries series) {
+    public static SeriesResult create(URI selfUriBase, ThirdPartySeries series, String requestedYear) {
+        var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(series.getIdentifier(), String.valueOf(series.getYear()))
+                     .addChild(series.getIdentifier(), year)
                      .getUri();
         return new SeriesResult(id,
                                 series.getName(),
