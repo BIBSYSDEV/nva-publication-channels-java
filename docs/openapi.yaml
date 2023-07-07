@@ -588,6 +588,7 @@ components:
           type: string
           nullable: true
           description: The isbnPrefix of the publsher
+          pattern: ^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
         sameAs:
@@ -603,6 +604,7 @@ components:
           type: string
           nullable: true
           description: The isbnPrefix of the publsher
+          pattern: ^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$
         homepage:
           type: string
           format: uri
@@ -768,7 +770,7 @@ components:
     CreatePublisherExample:
       value:
         name: 'The publisher of eternal fury'
-        isbnPrefix: '123-82-432'
+        isbnPrefix: '12345-1234567'
         homepage: 'https://publisher-of-eternal.fury.no'
       summary: A sample create publisher
     PublisherResponseExample:
