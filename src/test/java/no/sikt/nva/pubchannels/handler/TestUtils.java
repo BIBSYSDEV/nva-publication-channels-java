@@ -31,7 +31,6 @@ import java.time.Year;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,6 +46,7 @@ public class TestUtils {
 
     public static final String PAGERESULT_FIELD = "pageresult";
     public static final int YEAR_START = 1900;
+    public static final String VALID_ISBN_PREFIX = "12345-1234567";
     private static final ScientificValueMapper mapper = new ScientificValueMapper();
 
     private TestUtils() {
@@ -97,11 +97,8 @@ public class TestUtils {
                    .collect(SingletonCollector.collectOrElse(null));
     }
 
-    //TODO: Check isbn prefix format with PO
-    public static int randomIsbnPrefix() {
-        int min = 1000;
-        int max = 9999;
-        return new Random().nextInt(max - min + 1) + min;
+    public static String validIsbnPrefix() {
+        return VALID_ISBN_PREFIX;
     }
 
     public static String randomLevel() {
@@ -119,7 +116,7 @@ public class TestUtils {
     public static List<String> getDataportenSearchPublisherResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(i -> createDataportenPublisherResponse(year, name, UUID.randomUUID().toString(),
-                                                                    String.valueOf(randomIsbnPrefix()),
+                                                                    String.valueOf(validIsbnPrefix()),
                                                                     randomUri(), randomLevel()))
                    .collect(Collectors.toList());
     }

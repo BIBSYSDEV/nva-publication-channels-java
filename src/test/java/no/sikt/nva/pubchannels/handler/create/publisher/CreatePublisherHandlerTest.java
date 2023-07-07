@@ -1,8 +1,9 @@
 package no.sikt.nva.pubchannels.handler.create.publisher;
 
 import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.randomIsbnPrefix;
+import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.UUID;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
@@ -194,6 +196,22 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     }
 
     @ParameterizedTest
+    @MethodSource("invalidIsbnPrefixes")
+    void shouldReturnBadRequestWhenIsbnPrefixInvalid(String isbnPrefix) throws IOException {
+
+        var testPublisher = new CreatePublisherRequestBuilder().withName(randomString())
+                                .withIsbnPrefix(isbnPrefix)
+                                .build();
+        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(containsString("Isbn prefix")));
+    }
+
+    @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
         var testPublisher = new CreatePublisherRequestBuilder()
@@ -212,7 +230,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldCreatePublisherWithNameAndIsbnPrefix() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var isbnPrefix = String.valueOf(randomIsbnPrefix());
+        var isbnPrefix = String.valueOf(validIsbnPrefix());
         var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, isbnPrefix, null);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
@@ -270,6 +288,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
+    }
+
+    private static Stream<String> invalidIsbnPrefixes() {
+        return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
     }
 
     private void setupStub(

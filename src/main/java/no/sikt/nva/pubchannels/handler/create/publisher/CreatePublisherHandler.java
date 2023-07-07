@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.publisher;
 
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIsbnPrefix;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import static nva.commons.core.attempt.Try.attempt;
@@ -50,6 +51,7 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
 
     private CreatePublisherRequest validate(CreatePublisherRequest input) {
         validateString(input.getName(), 5, 300, "Name");
+        validateOptionalIsbnPrefix(input.getIsbnPrefix(), "Isbn prefix");
         validateOptionalUrl(input.getHomepage(), "Homepage");
         return input;
     }
