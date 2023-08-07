@@ -104,7 +104,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     private void validate(String year, String query, int offset, int size) throws BadRequestException {
         attempt(() -> {
             validateYear(year, Year.of(1900), "Year");
-            validateString(query, 0, 300, "Query");
+            validateString(query, 3, 300, "Query");
             validatePagination(offset, size);
             return null;
         })

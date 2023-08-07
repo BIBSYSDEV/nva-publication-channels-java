@@ -23,7 +23,7 @@ public final class Validator {
 
     public static void validateString(String value, int minLength, int maxLength, String name) {
         Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
-        if (value.length() < minLength) {
+        if (value.length() <= minLength) {
             throw new ValidationException(format("%s is too short. Minimum length is %d", name, minLength));
         }
         if (value.length() > maxLength) {
