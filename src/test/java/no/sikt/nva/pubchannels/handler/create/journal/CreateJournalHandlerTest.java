@@ -36,10 +36,12 @@ import no.sikt.nva.pubchannels.dataporten.model.DataportenJournal;
 import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.series.CreateSeriesRequestBuilder;
 import no.sikt.nva.pubchannels.handler.fetch.journal.FetchByIdAndYearResponse;
 import no.sikt.nva.pubchannels.handler.fetch.journal.PublicationChannelMockClient;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -91,7 +93,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shouldReturnBadGatewayWhenUnautorized() throws IOException {
+    void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
 

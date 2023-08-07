@@ -7,16 +7,9 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.dataporten.ChannelType;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
-import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -30,7 +23,7 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
 
     @JacocoGenerated
     public CreateJournalHandler() {
-        super(CreateJournalRequest.class, new Environment(), DataportenPublicationChannelClient.defaultInstance());
+        super(CreateJournalRequest.class, new Environment());
     }
 
     public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
@@ -38,8 +31,8 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
+    protected FetchByIdAndYearResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
+                                                    Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                              .map(CreateJournalHandler::getClientRequest)
@@ -48,13 +41,8 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
 
         return FetchByIdAndYearResponse.create(
             constructIdUri(JOURNAL_PATH_ELEMENT, createResponse.getPid()),
-            (ThirdPartyJournal) fetchChanel(createResponse.getPid()),
+            (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, createResponse.getPid(), getYear()),
             getYear());
-    }
-
-    private ThirdPartyPublicationChannel fetchChanel(String journalPid)
-        throws ApiGatewayException {
-        return publicationChannelClient.getChannel(JOURNAL, journalPid, getYear());
     }
 
     private static String getYear() {
@@ -62,11 +50,8 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
     }
 
     private static DataportenCreateJournalRequest getClientRequest(CreateJournalRequest request) {
-        return new DataportenCreateJournalRequest(
-            request.getName(),
-            request.getPrintIssn(),
-            request.getOnlineIssn(),
-            request.getHomepage());
+        return new DataportenCreateJournalRequest(request.getName(), request.getPrintIssn(), request.getOnlineIssn(),
+                                                  request.getHomepage());
     }
 
     private CreateJournalRequest validate(CreateJournalRequest input) {

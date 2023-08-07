@@ -7,6 +7,7 @@ import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
+import no.sikt.nva.pubchannels.handler.create.series.CreateSeriesRequest;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.AccessRight;
@@ -78,6 +79,12 @@ public abstract class CreateHandlerTest {
                 .withAccessRights(customerId, AccessRight.USER.toString())
                 .withBody(body)
                 .build();
+    }
+
+    protected static <T> InputStream constructUnauthorizedRequest(T body) throws JsonProcessingException {
+        return new HandlerRequestBuilder<T>(dtoObjectMapper)
+                   .withBody(body)
+                   .build();
     }
 
     protected static void stubResponse(int statusCode, String url, String body, String request) {

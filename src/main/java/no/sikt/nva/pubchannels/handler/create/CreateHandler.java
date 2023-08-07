@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 
+import static java.util.Objects.isNull;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
 
 public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
@@ -60,7 +61,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
     }
 
     protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
-        if (requestInfo.getCurrentCustomer() == null) {
+        if (isNull(requestInfo.getCurrentCustomer())) {
             throw new UnauthorizedException();
         }
     }

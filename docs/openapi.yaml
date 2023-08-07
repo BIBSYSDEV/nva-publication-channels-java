@@ -156,11 +156,10 @@ paths:
       responses:
         201:
           description: successful operation
-          headers:
-            Location:
+          content:
+            application/json:
               schema:
-                type: string
-              description: A URI to the new resource
+                $ref: '#/components/schemas/JournalResponse'
         400:
           $ref: '#/components/responses/400'
         502:
@@ -298,11 +297,10 @@ paths:
       responses:
         201:
           description: successful operation
-          headers:
-            Location:
+          content:
+            application/json:
               schema:
-                type: string
-              description: A URI to the new resource
+                $ref: '#/components/schemas/PublisherResponse'
         400:
           $ref: '#/components/responses/400'
         502:
@@ -440,11 +438,10 @@ paths:
       responses:
         201:
           description: successful operation
-          headers:
-            Location:
+          content:
+            application/json:
               schema:
-                type: string
-              description: A URI to the new resource
+                $ref: '#/components/schemas/Series'
         400:
           $ref: '#/components/responses/400'
         502:
