@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
-import java.util.Calendar;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
@@ -30,7 +29,6 @@ import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRes
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalResponse;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -69,7 +67,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shouldReturnCreatedJournalWithSuccess() throws IOException {
+    void shouldReturnCreatedJournalWithSuccess(WireMockRuntimeInfo wireMockRuntimeInfo) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var expectedSeries = constructExpectedSeries(expectedPid);
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
@@ -81,7 +79,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var response = GatewayResponse
                            .fromOutputStream(output, CreateSeriesResponse.class);
-
+        var s = wireMockRuntimeInfo.getWireMock().allStubMappings();
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
@@ -97,7 +95,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
-        return new CreateSeriesResponse(uri, null, null, null, ScientificValue.UNASSIGNED, null);
+        return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
@@ -372,7 +370,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     private void stubFetchResponse(String expectedPid) {
         stubFor(
-            get("/findseries/" + expectedPid + "/" + Calendar.getInstance().getWeekYear())
+            get("/findseries/" + expectedPid + "/" + Year.now())
                 .withHeader("Accept", WireMock.equalTo("application/json"))
                 .willReturn(
                     aResponse()
@@ -380,9 +378,11 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(nonNull(expectedPid)
                                       ? new DataportenBodyBuilder()
-                                            .withType("Journal")
+                                            .withType("Series")
+                                            .withOriginalTitle(VALID_NAME)
                                             .withPid(expectedPid)
                                             .build()
                                       : null)));
     }
+
 }

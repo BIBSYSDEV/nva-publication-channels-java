@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
-import java.util.Calendar;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
@@ -30,7 +29,6 @@ import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRe
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherResponse;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -92,7 +90,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
-        return new CreateJournalResponse(uri, null, null, null, ScientificValue.UNASSIGNED, null);
+        return new CreateJournalResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
@@ -332,13 +330,14 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     private void stubFetchResponse(String expectedPid) {
-        stubFor(get("/findjournal/" + expectedPid + "/" + Calendar.getInstance().getWeekYear()).withHeader("Accept",
+        stubFor(get("/findjournal/" + expectedPid + "/" + Year.now()).withHeader("Accept",
                                                                                                            WireMock.equalTo(
                                                                                                                "application/json"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
                                     .withHeader("Content-Type", "application/json;charset=UTF-8")
                                     .withBody(nonNull(expectedPid) ? new DataportenBodyBuilder().withType("Journal")
                                                                          .withPid(expectedPid)
+                                                                         .withOriginalTitle(VALID_NAME)
                                                                          .build() : null)));
     }
 }
