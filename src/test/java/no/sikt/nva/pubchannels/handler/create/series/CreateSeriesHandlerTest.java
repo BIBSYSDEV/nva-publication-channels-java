@@ -67,7 +67,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shouldReturnCreatedJournalWithSuccess(WireMockRuntimeInfo wireMockRuntimeInfo) throws IOException {
+    void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var expectedSeries = constructExpectedSeries(expectedPid);
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
@@ -79,7 +79,6 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var response = GatewayResponse
                            .fromOutputStream(output, CreateSeriesResponse.class);
-        var s = wireMockRuntimeInfo.getWireMock().allStubMappings();
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
