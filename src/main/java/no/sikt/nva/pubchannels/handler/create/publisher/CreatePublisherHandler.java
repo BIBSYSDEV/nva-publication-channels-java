@@ -43,8 +43,7 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreatePublisherResponse.create(
             createdUri,
-            (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, createResponse.getPid(), getYear()),
-            getYear());
+            (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, createResponse.getPid(), getYear()));
     }
 
     private static DataportenCreatePublisherRequest getClientRequest(CreatePublisherRequest request) {

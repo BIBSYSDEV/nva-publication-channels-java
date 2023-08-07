@@ -19,6 +19,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Year;
 import java.util.Calendar;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -27,12 +28,14 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.journal.FetchByIdAndYearResponse;
+import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherResponse;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,17 +69,30 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
+        var expectedJournal = constructExpectedJournal(expectedPid);
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+
+        assertThat(response.getBodyObject(CreateJournalResponse.class), is(equalTo(expectedJournal)));
+    }
+
+    private CreateJournalResponse constructExpectedJournal(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("journal")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreateJournalResponse(uri, null, null, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
@@ -118,7 +134,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
+    void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
         setupStub(null, new DataportenCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK,
@@ -215,7 +231,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -256,7 +272,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(printIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -272,7 +288,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(onlineIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -288,7 +304,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }

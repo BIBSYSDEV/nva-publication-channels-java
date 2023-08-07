@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
-import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.paths.UriWrapper;
 
 public class CreateJournalResponse {
 
@@ -54,11 +52,7 @@ public class CreateJournalResponse {
         this.sameAs = sameAs;
     }
 
-    public static CreateJournalResponse create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
-        var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
-        var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(journal.getIdentifier(), year)
-                     .getUri();
+    public static CreateJournalResponse create(URI id, ThirdPartyJournal journal) {
         return new CreateJournalResponse(id,
                                          journal.getName(),
                                          journal.getOnlineIssn(),

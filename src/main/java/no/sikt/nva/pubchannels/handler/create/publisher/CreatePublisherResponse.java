@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
-import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.paths.UriWrapper;
 
 public class CreatePublisherResponse {
 
@@ -49,12 +47,7 @@ public class CreatePublisherResponse {
         this.sameAs = sameAs;
     }
 
-    public static CreatePublisherResponse create(URI selfUriBase, ThirdPartyPublisher publisher,
-                                                 String requestedYear) {
-        var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
-        var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(publisher.getIdentifier(), year)
-                     .getUri();
+    public static CreatePublisherResponse create(URI id, ThirdPartyPublisher publisher) {
         return new CreatePublisherResponse(id,
                                            publisher.getName(),
                                            publisher.getIsbnPrefix(),

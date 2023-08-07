@@ -43,8 +43,7 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Cr
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateJournalResponse.create(
             createdUri,
-            (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, createResponse.getPid(), getYear()),
-            getYear());
+            (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, createResponse.getPid(), getYear()));
     }
 
     private static DataportenCreateJournalRequest getClientRequest(CreateJournalRequest request) {

@@ -43,8 +43,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateSeriesResponse.create(
             createdUri,
-            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, createResponse.getPid(), getYear()),
-            getYear());
+            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, createResponse.getPid(), getYear()));
     }
 
     private static DataportenCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {

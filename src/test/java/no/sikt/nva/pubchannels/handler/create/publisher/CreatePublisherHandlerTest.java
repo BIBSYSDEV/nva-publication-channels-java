@@ -21,6 +21,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Year;
 import java.util.Calendar;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -30,13 +31,14 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.create.series.CreateSeriesRequestBuilder;
-import no.sikt.nva.pubchannels.handler.fetch.publisher.FetchByIdAndYearResponse;
+import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalResponse;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +73,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedPublisherWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
+        var expectedPublisher = constructExpectedPublisher(expectedPid);
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
@@ -79,12 +82,24 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
         var response = GatewayResponse
-                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
+
+        assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
+    }
+
+    private CreatePublisherResponse constructExpectedPublisher(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("publisher")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreatePublisherResponse(uri, null, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
@@ -250,7 +265,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
         var response = GatewayResponse
-                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -270,7 +285,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
         var response = GatewayResponse
-                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
