@@ -6,7 +6,6 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOption
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import java.util.Calendar;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
@@ -19,7 +18,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, FetchByIdAndYearResponse> {
+public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, CreateJournalResponse> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -33,8 +32,8 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
-                                                    Context context) throws ApiGatewayException {
+    protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
+                                                 Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                              .map(CreateJournalHandler::getClientRequest)
@@ -42,14 +41,10 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
         var createResponse = publicationChannelClient.createJournal(validInput);
         var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, createResponse.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return FetchByIdAndYearResponse.create(
+        return CreateJournalResponse.create(
             createdUri,
             (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, createResponse.getPid(), getYear()),
             getYear());
-    }
-
-    private static String getYear() {
-        return String.valueOf(Calendar.getInstance().getWeekYear());
     }
 
     private static DataportenCreateJournalRequest getClientRequest(CreateJournalRequest request) {

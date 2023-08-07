@@ -6,21 +6,19 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOption
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import java.util.Calendar;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
-import no.sikt.nva.pubchannels.handler.fetch.publisher.FetchByIdAndYearResponse;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest, FetchByIdAndYearResponse> {
+public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest, CreatePublisherResponse> {
 
     private static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
@@ -34,7 +32,7 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(CreatePublisherRequest input, RequestInfo requestInfo,
+    protected CreatePublisherResponse processInput(CreatePublisherRequest input, RequestInfo requestInfo,
                                                     Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
@@ -43,14 +41,10 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
         var createResponse = publicationChannelClient.createPublisher(validInput);
         var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, createResponse.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return FetchByIdAndYearResponse.create(
+        return CreatePublisherResponse.create(
             createdUri,
             (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, createResponse.getPid(), getYear()),
             getYear());
-    }
-
-    private static String getYear() {
-        return String.valueOf(Calendar.getInstance().getWeekYear());
     }
 
     private static DataportenCreatePublisherRequest getClientRequest(CreatePublisherRequest request) {

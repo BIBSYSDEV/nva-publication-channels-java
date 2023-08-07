@@ -1,5 +1,10 @@
 package no.sikt.nva.pubchannels.handler.create;
 
+import static java.util.Objects.isNull;
+import static nva.commons.core.paths.UriWrapper.HTTPS;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.Year;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
@@ -12,17 +17,9 @@ import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.secrets.SecretsReader;
 
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.http.HttpClient;
-
-import static java.util.Objects.isNull;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
-
 public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
 
-    private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI =
-            "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
+    private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
@@ -38,8 +35,8 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
         var authBaseUri = URI.create(secretsReader.fetchSecret(SECRET_NAME, "authBaseUrl"));
         var pubChannelBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI));
         var authClient = new DataportenAuthClient(HttpClient.newBuilder().build(), authBaseUri, clientId, clientSecret);
-        this.publicationChannelClient =
-                new DataportenPublicationChannelClient(HttpClient.newBuilder().build(), pubChannelBaseUri, authClient);
+        this.publicationChannelClient = new DataportenPublicationChannelClient(HttpClient.newBuilder().build(),
+                                                                               pubChannelBaseUri, authClient);
     }
 
     protected CreateHandler(Class<I> requestClass, Environment environment, PublicationChannelClient client) {
@@ -55,9 +52,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
     protected URI constructIdUri(String path, String pid) {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
-        return new UriWrapper(HTTPS, apiDomain)
-                .addChild(customDomainBasePath, path, pid, CURRENT_YEAR)
-                .getUri();
+        return new UriWrapper(HTTPS, apiDomain).addChild(customDomainBasePath, path, pid, CURRENT_YEAR).getUri();
     }
 
     protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
@@ -66,4 +61,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
         }
     }
 
+    protected String getYear() {
+        return String.valueOf(Year.now());
+    }
 }

@@ -11,7 +11,7 @@ import no.sikt.nva.pubchannels.model.Contexts;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public class FetchByIdAndYearResponse {
+public class CreateJournalResponse {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
@@ -40,12 +40,12 @@ public class FetchByIdAndYearResponse {
     private final URI sameAs;
 
     @JsonCreator
-    public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
-                                    @JsonProperty(NAME_FIELD) String name,
-                                    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                    @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    public CreateJournalResponse(@JsonProperty(ID_FIELD) URI id,
+                                 @JsonProperty(NAME_FIELD) String name,
+                                 @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                 @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                 @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                                 @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.onlineIssn = onlineIssn;
@@ -54,17 +54,17 @@ public class FetchByIdAndYearResponse {
         this.sameAs = sameAs;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
+    public static CreateJournalResponse create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
         var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
                      .addChild(journal.getIdentifier(), year)
                      .getUri();
-        return new FetchByIdAndYearResponse(id,
-                                            journal.getName(),
-                                            journal.getOnlineIssn(),
-                                            journal.getPrintIssn(),
-                                            journal.getScientificValue(),
-                                            journal.getHomepage());
+        return new CreateJournalResponse(id,
+                                         journal.getName(),
+                                         journal.getOnlineIssn(),
+                                         journal.getPrintIssn(),
+                                         journal.getScientificValue(),
+                                         journal.getHomepage());
     }
 
     public String getType() {
@@ -121,7 +121,7 @@ public class FetchByIdAndYearResponse {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
+        CreateJournalResponse that = (CreateJournalResponse) o;
         return Objects.equals(getType(), that.getType())
                && Objects.equals(getContext(), that.getContext())
                && Objects.equals(getId(), that.getId())

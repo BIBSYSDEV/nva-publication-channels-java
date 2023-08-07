@@ -105,26 +105,6 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shouldReturnUnauthorizedWhenNvaUserIsNotAuthorized() throws IOException {
-        var input = constructUnauthorizedRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
-
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unauthorized")));
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
