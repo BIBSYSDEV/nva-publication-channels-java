@@ -7,6 +7,8 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Calendar;
+import java.util.Map;
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
@@ -39,9 +41,10 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Fetc
                              .map(CreateSeriesHandler::getClientRequest)
                              .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
         var createResponse = publicationChannelClient.createSeries(validInput);
-
+        var createdUri = constructIdUri(SERIES_PATH_ELEMENT, createResponse.getPid());
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return FetchByIdAndYearResponse.create(
-            constructIdUri(SERIES_PATH_ELEMENT, createResponse.getPid()),
+            createdUri,
             (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, createResponse.getPid(), getYear()),
             getYear());
     }

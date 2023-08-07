@@ -7,6 +7,8 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Calendar;
+import java.util.Map;
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -38,9 +40,10 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Fe
                              .map(CreateJournalHandler::getClientRequest)
                              .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
         var createResponse = publicationChannelClient.createJournal(validInput);
-
+        var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, createResponse.getPid());
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return FetchByIdAndYearResponse.create(
-            constructIdUri(JOURNAL_PATH_ELEMENT, createResponse.getPid()),
+            createdUri,
             (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, createResponse.getPid(), getYear()),
             getYear());
     }

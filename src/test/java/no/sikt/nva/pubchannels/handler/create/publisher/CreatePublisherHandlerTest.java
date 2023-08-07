@@ -29,7 +29,6 @@ import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.create.series.CreateSeriesRequestBuilder;
@@ -49,8 +48,8 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreatePublisherHandlerTest extends CreateHandlerTest {
 
+    public static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private transient CreatePublisherHandler handlerUnderTest;
-
     private Environment environment;
 
     @BeforeEach
@@ -83,6 +82,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                            .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
     }
 
     @Test

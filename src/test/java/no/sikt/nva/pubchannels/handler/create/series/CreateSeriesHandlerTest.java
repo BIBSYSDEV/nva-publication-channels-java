@@ -4,8 +4,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -17,11 +17,11 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.UUID;
+import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
@@ -31,7 +31,6 @@ import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchByIdAndYearResponse;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.apigateway.AccessRight;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
@@ -45,6 +44,7 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateSeriesHandlerTest extends CreateHandlerTest {
 
+    public static final String SERIES_PATH_ELEMENT = "series";
     private transient CreateSeriesHandler handlerUnderTest;
 
     private Environment environment;
@@ -79,6 +79,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                            .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
+        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
     }
 
     @Test
