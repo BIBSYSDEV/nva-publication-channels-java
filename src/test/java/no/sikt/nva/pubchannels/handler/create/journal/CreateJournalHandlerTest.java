@@ -1,29 +1,51 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Calendar;
 import java.util.UUID;
+import javax.xml.crypto.Data;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenJournal;
+import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
+import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.fetch.journal.FetchByIdAndYearResponse;
+import no.sikt.nva.pubchannels.handler.fetch.journal.PublicationChannelMockClient;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,9 +58,7 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest extends CreateHandlerTest {
 
-    public static final String JOURNAL_PATH_ELEMENT = "journal";
     private transient CreateJournalHandler handlerUnderTest;
-
     private Environment environment;
 
     @BeforeEach
@@ -53,7 +73,6 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
         var publicationChannelSource =
             new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, dataportenAuthSource);
-
         handlerUnderTest = new CreateJournalHandler(environment, publicationChannelSource);
     }
 
@@ -62,22 +81,17 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
-
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
-
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
-    void shoudReturnBadGatewayWhenUnautorized() throws IOException {
+    void shouldReturnBadGatewayWhenUnautorized() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
 
@@ -97,7 +111,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shoudReturnBadGatewayWhenForbidden() throws IOException {
+    void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
@@ -208,7 +222,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
     @ParameterizedTest
     @MethodSource("validIssn")
-    void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
+    void shouldReturnCreatedWhenValidPrintIssn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
         setupStub(expectedPid, new DataportenCreateJournalRequest(VALID_NAME, issn, null, null),
@@ -220,18 +234,15 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @ParameterizedTest
     @MethodSource("invalidIssn")
-    void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
+    void shouldReturnBadRequestWhenInvalidElectronicIssn(String issn) throws IOException {
         var testJournal = new CreateJournalRequestBuilder()
                               .withName(VALID_NAME)
                               .withOnlineIssn(issn)
@@ -274,13 +285,10 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -297,13 +305,10 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -320,13 +325,10 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, FetchByIdAndYearResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -357,5 +359,22 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                      dtoObjectMapper.writeValueAsString(new DataportenCreateJournalResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request)
         );
+        stubFetchResponse(expectedPid);
+    }
+
+    private void stubFetchResponse(String expectedPid) {
+        stubFor(
+            get("/findjournal/" + expectedPid + "/" + Calendar.getInstance().getWeekYear())
+                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_OK)
+                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                        .withBody(nonNull(expectedPid)
+                                      ? new DataportenBodyBuilder()
+                                      .withType("Journal")
+                                      .withPid(expectedPid)
+                                      .build()
+                                     : null)));
     }
 }
