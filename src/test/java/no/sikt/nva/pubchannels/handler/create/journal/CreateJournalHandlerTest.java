@@ -46,6 +46,7 @@ import org.zalando.problem.Problem;
 class CreateJournalHandlerTest extends CreateHandlerTest {
 
     public static final String JOURNAL_PATH_ELEMENT = "journal";
+    public static final String PROBLEM = "Some problem";
     private transient CreateJournalHandler handlerUnderTest;
     private Environment environment;
 
@@ -114,6 +115,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
+
     }
 
     @Test
@@ -348,7 +351,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                            int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createjournal/createpid",
-                     dtoObjectMapper.writeValueAsString("Some problem") ,
+                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }

@@ -49,6 +49,7 @@ import org.zalando.problem.Problem;
 class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
+    private static final String PROBLEM = "Some problem";
     private transient CreatePublisherHandler handlerUnderTest;
     private Environment environment;
 
@@ -122,6 +123,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
     }
 
     @Test
@@ -341,7 +343,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
-                     dtoObjectMapper.writeValueAsString("Some problem") ,
+                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
