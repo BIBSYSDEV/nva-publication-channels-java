@@ -24,7 +24,6 @@ import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;

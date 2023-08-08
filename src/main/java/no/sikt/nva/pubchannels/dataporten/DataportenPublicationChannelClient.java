@@ -114,7 +114,6 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     private void handleError(HttpResponse<String> response) throws ApiGatewayException {
-        LOGGER.info("Response from kanalregister: {}", response);
         if (HTTP_NOT_FOUND == response.statusCode()) {
             throw new NotFoundException("Publication channel not found!");
         }
