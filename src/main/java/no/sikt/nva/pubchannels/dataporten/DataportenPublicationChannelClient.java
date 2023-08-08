@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.dataporten;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
@@ -28,6 +29,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.apigateway.exceptions.NotFoundException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
@@ -114,6 +116,9 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     private void handleError(HttpResponse<String> response) throws ApiGatewayException {
         if (HTTP_NOT_FOUND == response.statusCode()) {
             throw new NotFoundException("Publication channel not found!");
+        }
+        if (HTTP_BAD_REQUEST == response.statusCode()) {
+            throw new BadRequestException(response.body());
         }
         LOGGER.error("Error fetching publication channel: {} {}", response.statusCode(), response.body());
         throw new BadGatewayException("Unexpected response from upstream!");

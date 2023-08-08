@@ -40,7 +40,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.xmlunit.validation.ValidationProblem.ProblemType;
 import org.zalando.problem.Problem;
+import org.zalando.problem.ProblemBuilder;
 
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest extends CreateHandlerTest {
@@ -83,16 +85,6 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(response.getBodyObject(CreateJournalResponse.class), is(equalTo(expectedJournal)));
     }
 
-    private CreateJournalResponse constructExpectedJournal(String pid) {
-        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("journal")
-                      .addChild(pid)
-                      .addChild(Year.now().toString())
-                      .getUri();
-        return new CreateJournalResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
-    }
-
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
@@ -111,6 +103,21 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
+
+    @Test
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenCreatingJournalWithAlreadyExistingValues() throws IOException {
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
+        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+
+        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+    }
+
 
     @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
@@ -320,11 +327,31 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
+    private CreateJournalResponse constructExpectedJournal(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("journal")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreateJournalResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
+    }
+
     private void setupStub(String expectedPid, DataportenCreateJournalRequest request, int clientAuthResponseHttpCode,
                            int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createjournal/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreateJournalResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
+    }
+
+    private void setupBadRequestStub(String expectedPid, DataportenCreateJournalRequest request,
+                              int clientAuthResponseHttpCode,
+                           int clientResponseHttpCode) throws JsonProcessingException {
+        stubAuth(clientAuthResponseHttpCode);
+        stubResponse(clientResponseHttpCode, "/createjournal/createpid",
+                     dtoObjectMapper.writeValueAsString("Some problem") ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
