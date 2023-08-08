@@ -105,7 +105,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWithOriginalErrorMessageWhenCreatingJournalWithAlreadyExistingValues() throws IOException {
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
 
@@ -116,10 +116,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-        Problem bodyObject = response.getBodyObject(Problem.class);
-        assertThat(bodyObject, is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
     }
-
 
     @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {

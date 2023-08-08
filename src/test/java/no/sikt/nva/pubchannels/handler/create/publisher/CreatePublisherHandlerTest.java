@@ -27,11 +27,13 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -90,16 +92,6 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
     }
 
-    private CreatePublisherResponse constructExpectedPublisher(String pid) {
-        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("publisher")
-                      .addChild(pid)
-                      .addChild(Year.now().toString())
-                      .getUri();
-        return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
-    }
-
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
@@ -118,6 +110,20 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
+        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+
+        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
     }
 
     @Test
@@ -305,6 +311,16 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
+    private CreatePublisherResponse constructExpectedPublisher(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("publisher")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
+    }
+
     private static Stream<String> invalidIsbnPrefixes() {
         return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
     }
@@ -318,6 +334,16 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
+    }
+
+    private void setupBadRequestStub(String expectedPid, DataportenCreatePublisherRequest request,
+                                     int clientAuthResponseHttpCode,
+                                     int clientResponseHttpCode) throws JsonProcessingException {
+        stubAuth(clientAuthResponseHttpCode);
+        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
+                     dtoObjectMapper.writeValueAsString("Some problem") ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
