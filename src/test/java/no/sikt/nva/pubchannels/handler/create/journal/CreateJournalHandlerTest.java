@@ -116,6 +116,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        Problem bodyObject = response.getBodyObject(Problem.class);
+        assertThat(bodyObject, is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
     }
 
 
