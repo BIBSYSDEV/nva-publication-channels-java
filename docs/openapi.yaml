@@ -161,6 +161,10 @@ paths:
               schema:
                 type: string
               description: A URI to the new resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalResponse'
         400:
           $ref: '#/components/responses/400'
         502:
@@ -297,12 +301,16 @@ paths:
                 $ref: '#/components/examples/CreatePublisherExample'
       responses:
         201:
-          description: successful operation
           headers:
             Location:
               schema:
                 type: string
               description: A URI to the new resource
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherResponse'
         400:
           $ref: '#/components/responses/400'
         502:
@@ -445,6 +453,10 @@ paths:
               schema:
                 type: string
               description: A URI to the new resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
         400:
           $ref: '#/components/responses/400'
         502:

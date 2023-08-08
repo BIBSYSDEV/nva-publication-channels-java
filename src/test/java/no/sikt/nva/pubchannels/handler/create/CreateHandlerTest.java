@@ -80,6 +80,12 @@ public abstract class CreateHandlerTest {
                 .build();
     }
 
+    protected static <T> InputStream constructUnauthorizedRequest(T body) throws JsonProcessingException {
+        return new HandlerRequestBuilder<T>(dtoObjectMapper)
+                   .withBody(body)
+                   .build();
+    }
+
     protected static void stubResponse(int statusCode, String url, String body, String request) {
         stubFor(
                 post(url)

@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
+import static no.sikt.nva.pubchannels.dataporten.ChannelType.SERIES;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
@@ -9,6 +10,7 @@ import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -16,9 +18,9 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Void> {
+public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, CreateSeriesResponse> {
 
-    private static final String PATH_ELEMENT = "series";
+    private static final String SERIES_PATH_ELEMENT = "series";
 
     @JacocoGenerated
     public CreateSeriesHandler() {
@@ -30,16 +32,18 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Void
     }
 
     @Override
-    protected Void processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
+    protected CreateSeriesResponse processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         var validInput = attempt(() -> validate(input))
                              .map(CreateSeriesHandler::getClientRequest)
                              .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
-        var pid = publicationChannelClient.createSeries(validInput);
-        var createdUri = constructIdUri(PATH_ELEMENT, pid.getPid());
+        var createResponse = publicationChannelClient.createSeries(validInput);
+        var createdUri = constructIdUri(SERIES_PATH_ELEMENT, createResponse.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return null;
+        return CreateSeriesResponse.create(
+            createdUri,
+            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, createResponse.getPid(), getYear()));
     }
 
     private static DataportenCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {

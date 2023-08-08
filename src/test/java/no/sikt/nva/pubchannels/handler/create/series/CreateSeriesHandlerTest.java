@@ -1,5 +1,9 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,22 +13,27 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
+import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +69,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
+        var expectedSeries = constructExpectedSeries(expectedPid);
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
 
@@ -67,17 +77,28 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreateSeriesResponse.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+
+        assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
+    }
+
+    private CreateSeriesResponse constructExpectedSeries(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("series")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
-    void shoudReturnBadGatewayWhenUnautorized() throws IOException {
+    void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
 
@@ -97,7 +118,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shoudReturnBadGatewayWhenForbidden() throws IOException {
+    void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
@@ -117,7 +138,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     }
 
     @Test
-    void shoudReturnBadGatewayWhenInternalServerError() throws IOException {
+    void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         setupStub(null, new DataportenCreateSeriesRequest(VALID_NAME, null, null, null),
@@ -220,13 +241,10 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreateSeriesResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @ParameterizedTest
@@ -274,13 +292,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -297,13 +311,10 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreateSeriesResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -320,13 +331,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreateSeriesResponse.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -336,6 +343,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .build();
         var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper)
                           .withBody(testJournal)
+
                           .build();
         handlerUnderTest.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -356,5 +364,24 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreateSeriesResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
     }
+
+    private void stubFetchResponse(String expectedPid) {
+        stubFor(
+            get("/findseries/" + expectedPid + "/" + Year.now())
+                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_OK)
+                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                        .withBody(nonNull(expectedPid)
+                                      ? new DataportenBodyBuilder()
+                                            .withType("Series")
+                                            .withOriginalTitle(VALID_NAME)
+                                            .withPid(expectedPid)
+                                            .build()
+                                      : null)));
+    }
+
 }

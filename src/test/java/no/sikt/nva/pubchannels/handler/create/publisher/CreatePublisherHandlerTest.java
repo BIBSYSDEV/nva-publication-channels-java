@@ -1,5 +1,9 @@
 package no.sikt.nva.pubchannels.handler.create.publisher;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
@@ -11,11 +15,13 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Year;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -23,11 +29,14 @@ import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +50,6 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private transient CreatePublisherHandler handlerUnderTest;
-
     private Environment environment;
 
     @BeforeEach
@@ -63,6 +71,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedPublisherWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
+        var expectedPublisher = constructExpectedPublisher(expectedPid);
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
@@ -70,13 +79,25 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
+
+        assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
+    }
+
+    private CreatePublisherResponse constructExpectedPublisher(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("publisher")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
     }
 
     @Test
@@ -241,13 +262,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                                 .build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -264,13 +282,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                                 .build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Void.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_CREATED)));
-
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
@@ -304,5 +319,23 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
+    }
+
+    private void stubFetchResponse(String pid) {
+        stubFor(
+            get("/findpublisher/" + pid + "/" + Year.now())
+                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_OK)
+                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                        .withBody(nonNull(pid)
+                                      ? new DataportenBodyBuilder()
+                                            .withType("Journal")
+                                            .withName(VALID_NAME)
+                                            .withPid(pid)
+                                            .build()
+                                      : null)));
     }
 }
