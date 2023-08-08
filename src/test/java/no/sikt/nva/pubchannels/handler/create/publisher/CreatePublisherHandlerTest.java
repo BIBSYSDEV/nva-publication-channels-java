@@ -49,6 +49,7 @@ import org.zalando.problem.Problem;
 class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
+    private static final String PROBLEM = "Some problem";
     private transient CreatePublisherHandler handlerUnderTest;
     private Environment environment;
 
@@ -90,16 +91,6 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
     }
 
-    private CreatePublisherResponse constructExpectedPublisher(String pid) {
-        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("publisher")
-                      .addChild(pid)
-                      .addChild(Year.now().toString())
-                      .getUri();
-        return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
-    }
-
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
@@ -118,6 +109,21 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
+        var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
+        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+
+        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
     }
 
     @Test
@@ -305,6 +311,16 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
+    private CreatePublisherResponse constructExpectedPublisher(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("publisher")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
+    }
+
     private static Stream<String> invalidIsbnPrefixes() {
         return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
     }
@@ -318,6 +334,16 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
+    }
+
+    private void setupBadRequestStub(String expectedPid, DataportenCreatePublisherRequest request,
+                                     int clientAuthResponseHttpCode,
+                                     int clientResponseHttpCode) throws JsonProcessingException {
+        stubAuth(clientAuthResponseHttpCode);
+        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }

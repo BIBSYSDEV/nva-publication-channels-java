@@ -29,6 +29,7 @@ import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRes
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -46,6 +47,7 @@ import org.zalando.problem.Problem;
 class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     public static final String SERIES_PATH_ELEMENT = "series";
+    private static final String PROBLEM = "Some problem";
     private transient CreateSeriesHandler handlerUnderTest;
 
     private Environment environment;
@@ -87,16 +89,6 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
     }
 
-    private CreateSeriesResponse constructExpectedSeries(String pid) {
-        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("series")
-                      .addChild(pid)
-                      .addChild(Year.now().toString())
-                      .getUri();
-        return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
-    }
-
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
@@ -115,6 +107,21 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
+        var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
+        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+
+        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
     }
 
     @Test
@@ -354,6 +361,16 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
+    private CreateSeriesResponse constructExpectedSeries(String pid) {
+        var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
+                      .addChild("publication-channels")
+                      .addChild("series")
+                      .addChild(pid)
+                      .addChild(Year.now().toString())
+                      .getUri();
+        return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
+    }
+
     private void setupStub(
         String expectedPid,
         DataportenCreateSeriesRequest request,
@@ -363,6 +380,16 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(new DataportenCreateSeriesResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(request));
+        stubFetchResponse(expectedPid);
+    }
+
+    private void setupBadRequestStub(String expectedPid, DataportenCreateSeriesRequest request,
+                                     int clientAuthResponseHttpCode,
+                                     int clientResponseHttpCode) throws JsonProcessingException {
+        stubAuth(clientAuthResponseHttpCode);
+        stubResponse(clientResponseHttpCode, "/createseries/createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
