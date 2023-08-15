@@ -19,7 +19,7 @@ import nva.commons.secrets.SecretsReader;
 
 public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
 
-    private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL_2";
+    private static final String ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";

@@ -19,7 +19,7 @@ Globals:
         API_HOST: !Ref ApiDomain
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
-        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL_2: !Ref DataportenChannelRegistryBaseUrl
+        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
 
   Api:
     Cors:
@@ -34,11 +34,6 @@ Parameters:
     Description: Domain-name for the backend
   DataportenChannelRegistryBaseUrl:
     Type: String
-    Description: Base url for Dataporten Channel Registry API
-    Default: https://kar-test.dataporten-api.no
-    AllowedValues:
-      - https://kar-test.dataporten-api.no
-      - https://kr-nva.dataporten-api.no
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
