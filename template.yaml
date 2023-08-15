@@ -38,6 +38,7 @@ Parameters:
     Default: https://kar-test.dataporten-api.no
     AllowedValues:
       - https://kar-test.dataporten-api.no
+      - https://kr-nva.dataporten-api.no
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
