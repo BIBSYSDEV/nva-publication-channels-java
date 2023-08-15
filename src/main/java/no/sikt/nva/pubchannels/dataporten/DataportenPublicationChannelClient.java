@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class DataportenPublicationChannelClient implements PublicationChannelClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelClient.class);
-    private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
+    private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL_2";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private static final String SEARCH_PATH_ELEMENT = "channels";
     private final HttpClient httpClient;

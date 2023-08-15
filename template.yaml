@@ -19,7 +19,7 @@ Globals:
         API_HOST: !Ref ApiDomain
         API_DOMAIN: !Ref ApiDomain
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
-        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
+        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL_2: !Ref DataportenChannelRegistryBaseUrl
 
   Api:
     Cors:
