@@ -82,10 +82,10 @@ public class TestUtils {
         return YEAR_START + randomInteger(bound);
     }
 
-    public static InputStream constructRequest(String year, String identifier, MediaType anyType)
+    public static InputStream constructRequest(String year, String identifier, MediaType mediaType)
         throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, anyType.toString()))
+                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year

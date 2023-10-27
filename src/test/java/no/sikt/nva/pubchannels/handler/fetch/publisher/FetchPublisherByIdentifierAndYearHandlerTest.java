@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResponse;
@@ -105,6 +106,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var input = constructRequest(String.valueOf(year), identifier, mediaType);
 
         var expectedPublisher = mockPublisherFound(year, identifier);
+        final var expectedMediaType =
+            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -112,6 +115,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
 
         var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));

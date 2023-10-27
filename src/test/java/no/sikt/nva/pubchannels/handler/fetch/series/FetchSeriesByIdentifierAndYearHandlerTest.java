@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
@@ -104,6 +105,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var input = constructRequest(String.valueOf(year), identifier, mediaType);
 
         var expectedSeries = mockSeriesFound(year, identifier);
+        final var expectedMediaType =
+            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -111,6 +114,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
 
         var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));

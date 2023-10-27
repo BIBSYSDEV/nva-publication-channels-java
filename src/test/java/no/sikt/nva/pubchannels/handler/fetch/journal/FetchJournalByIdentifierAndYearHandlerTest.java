@@ -74,7 +74,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
-                                          ? MediaType.JSON_UTF_8
+                                          ? MediaType.JSON_UTF_8.toString()
                                           : mediaType.toString();
         var year = TestUtils.randomYear();
         var identifier = mockRegistry.randomJournal(year);
