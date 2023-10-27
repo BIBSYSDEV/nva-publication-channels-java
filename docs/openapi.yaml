@@ -34,12 +34,9 @@ paths:
             'method.request.path.identifier'
           integration.request.path.year:
             'method.request.path.year'
-          integration.request.header.Accept:
-            'method.request.header.Accept'
         cacheKeyParameters:
           - 'method.request.path.identifier'
           - 'method.request.path.year'
-          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Journal
@@ -191,12 +188,9 @@ paths:
             'method.request.path.identifier'
           integration.request.path.year:
             'method.request.path.year'
-          integration.request.header.Accept:
-            'method.request.header.Accept'
         cacheKeyParameters:
           - 'method.request.path.identifier'
           - 'method.request.path.year'
-          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Publisher
@@ -348,12 +342,9 @@ paths:
             'method.request.path.identifier'
           integration.request.path.year:
             'method.request.path.year'
-          integration.request.header.Accept:
-            'method.request.header.Accept'
         cacheKeyParameters:
           - 'method.request.path.identifier'
           - 'method.request.path.year'
-          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Series
