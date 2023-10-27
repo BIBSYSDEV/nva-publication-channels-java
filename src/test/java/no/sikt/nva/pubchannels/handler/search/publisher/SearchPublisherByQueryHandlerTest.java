@@ -104,10 +104,10 @@ class SearchPublisherByQueryHandlerTest {
         throws UnprocessableContentException, IOException {
         var year = randomYear();
         var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
         final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
                                           ? MediaType.JSON_UTF_8.toString()
                                           : mediaType.toString();
+        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
         var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
 
@@ -115,11 +115,10 @@ class SearchPublisherByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
-
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
     @Test
@@ -368,7 +367,8 @@ class SearchPublisherByQueryHandlerTest {
                    is(equalTo("Unexpected response from upstream!")));
     }
 
-    private static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType) throws JsonProcessingException {
+    private static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType)
+        throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, mediaType.toString()))
                    .withQueryParameters(queryParameters).build();

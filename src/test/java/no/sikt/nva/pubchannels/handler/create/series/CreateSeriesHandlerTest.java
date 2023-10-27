@@ -71,7 +71,6 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var expectedSeries = constructExpectedSeries(expectedPid);
         var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
 
@@ -86,6 +85,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
 
+        var expectedSeries = constructExpectedSeries(expectedPid);
         assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
     }
 
@@ -388,8 +388,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                                      int clientAuthResponseHttpCode,
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createseries/createpid",
-                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
+        stubResponse(clientResponseHttpCode, "/createseries/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
@@ -410,5 +409,4 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                                             .build()
                                       : null)));
     }
-
 }

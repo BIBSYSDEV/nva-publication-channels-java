@@ -105,21 +105,21 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var input = constructRequest(String.valueOf(year), identifier, mediaType);
 
-        var expectedPublisher = mockPublisherFound(year, identifier);
         final var expectedMediaType =
             mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
+        var expectedPublisher = mockPublisherFound(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
 
+        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualPublisher, is(equalTo(expectedPublisher)));
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
 
-        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
-        assertThat(actualPublisher, is(equalTo(expectedPublisher)));
     }
 
     @Test

@@ -121,10 +121,10 @@ class SearchSeriesByQueryHandlerTest {
         throws UnprocessableContentException, IOException {
         var year = randomYear();
         var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
         final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
                                           ? MediaType.JSON_UTF_8.toString()
                                           : mediaType.toString();
+        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
         var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
 
@@ -132,11 +132,10 @@ class SearchSeriesByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
-
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
     @Test
