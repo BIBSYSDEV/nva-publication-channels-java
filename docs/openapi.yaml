@@ -29,6 +29,17 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+            'method.request.path.identifier'
+          integration.request.path.year:
+            'method.request.path.year'
+          integration.request.header.Accept:
+            'method.request.header.Accept'
+        cacheKeyParameters:
+          - 'method.request.path.identifier'
+          - 'method.request.path.year'
+          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Journal
@@ -175,6 +186,17 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublisherByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+            'method.request.path.identifier'
+          integration.request.path.year:
+            'method.request.path.year'
+          integration.request.header.Accept:
+            'method.request.header.Accept'
+        cacheKeyParameters:
+          - 'method.request.path.identifier'
+          - 'method.request.path.year'
+          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Publisher
@@ -321,6 +343,17 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchSeriesByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+            'method.request.path.identifier'
+          integration.request.path.year:
+            'method.request.path.year'
+          integration.request.header.Accept:
+            'method.request.header.Accept'
+        cacheKeyParameters:
+          - 'method.request.path.identifier'
+          - 'method.request.path.year'
+          - 'method.request.header.Accept'
         type: "AWS_PROXY"
       tags:
         - Series
