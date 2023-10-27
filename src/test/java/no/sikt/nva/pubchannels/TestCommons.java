@@ -1,6 +1,12 @@
 package no.sikt.nva.pubchannels;
 
+import com.google.common.net.MediaType;
+import java.util.stream.Stream;
+import nva.commons.apigateway.MediaTypes;
+import org.junit.jupiter.api.Named;
+
 public class TestCommons {
+
     public static final String LOCALHOST = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String NAME_QUERY_PARAM = "name";
@@ -15,5 +21,13 @@ public class TestCommons {
     public static final String DATAPORTEN_PAGE_COUNT_PARAM = "pagecount";
 
     private TestCommons() {
+    }
+
+    public static Stream<Named<MediaType>> mediaTypeProvider() {
+        return Stream.of(
+            Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
+            Named.of("ANY", MediaType.ANY_TYPE),
+            Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD)
+        );
     }
 }

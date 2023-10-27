@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels.handler;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCALHOST;
 import static no.sikt.nva.pubchannels.TestCommons.MAX_LEVEL;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -80,8 +82,10 @@ public class TestUtils {
         return YEAR_START + randomInteger(bound);
     }
 
-    public static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
+    public static InputStream constructRequest(String year, String identifier, MediaType anyType)
+        throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                   .withHeaders(Map.of(ACCEPT, anyType.toString()))
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year

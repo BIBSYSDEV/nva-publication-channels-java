@@ -32,12 +32,10 @@ import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.apigateway.MediaTypes;
 import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -54,14 +52,6 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     private PublicationChannelMockClient mockRegistry;
     private ByteArrayOutputStream output;
     private Environment environment;
-
-    public static Stream<Named<MediaType>> mediaTypeProvider() {
-        return Stream.of(
-            Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
-            Named.of("ANY", MediaType.ANY_TYPE),
-            Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD)
-        );
-    }
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -80,8 +70,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Should return requested mediatype")
-    @MethodSource("mediaTypeProvider")
+    @DisplayName("Should return requested media type")
+    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
                                           ? MediaType.JSON_UTF_8
@@ -277,7 +267,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
                    is(equalTo("Unexpected response from upstream!")));
     }
 
-    private static InputStream constructRequest(String year, String identifier, MediaType mediaType) throws JsonProcessingException {
+    private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
+        throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, mediaType.toString()))
                    .withPathParameters(Map.of(
