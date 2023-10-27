@@ -57,27 +57,27 @@ Resources:
       CacheClusterEnabled: true
       CacheClusterSize: "0.5"
       MethodSettings:
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1journal~1{identifier}~1{year}'
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1series~1{identifier}~1{year}'
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1publisher~1{identifier}~1{year}'
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1journal'
           CacheTtlInSeconds: 300
           CachingEnabled: false
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1series'
           CacheTtlInSeconds: 300
           CachingEnabled: false
-        - HttpMethod: 'GET'
+        - HttpMethod: 'POST'
           ResourcePath: '/~1publisher'
           CacheTtlInSeconds: 300
           CachingEnabled: false
