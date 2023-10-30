@@ -1,15 +1,16 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
-import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.scientificValueToLevel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
+import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -37,6 +39,7 @@ import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -78,7 +81,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(String.valueOf(year), identifier);
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
 
         var expectedPublisher = mockPublisherFound(year, identifier);
 
@@ -93,12 +96,38 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
     }
 
+    @ParameterizedTest
+    @DisplayName("Should return requested media type")
+    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+
+        var input = constructRequest(String.valueOf(year), identifier, mediaType);
+
+        final var expectedMediaType =
+            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
+        var expectedPublisher = mockPublisherFound(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        assertThat(actualPublisher, is(equalTo(expectedPublisher)));
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
+
+    }
+
     @Test
     void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
         var year = String.valueOf(YEAR_START);
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         var expectedPublisher = mockPublisherFoundYearValueNull(year, identifier);
 
@@ -118,7 +147,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
         throws IOException {
 
-        var input = constructRequest(year, UUID.randomUUID().toString());
+        var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -137,7 +166,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
         throws IOException {
 
-        var input = constructRequest(String.valueOf(randomYear()), identifier);
+        var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -158,7 +187,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -178,7 +207,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         mockResponseWithHttpStatus(DATAPORTEN_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
@@ -201,7 +230,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
 
-        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString());
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);

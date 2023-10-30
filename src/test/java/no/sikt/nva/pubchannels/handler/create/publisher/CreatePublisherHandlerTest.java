@@ -72,7 +72,6 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedPublisherWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var expectedPublisher = constructExpectedPublisher(expectedPid);
         var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
@@ -88,6 +87,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
 
+        var expectedPublisher = constructExpectedPublisher(expectedPid);
         assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
     }
 
@@ -311,6 +311,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
+    private static Stream<String> invalidIsbnPrefixes() {
+        return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
+    }
+
     private CreatePublisherResponse constructExpectedPublisher(String pid) {
         var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
                       .addChild("publication-channels")
@@ -319,10 +323,6 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                       .addChild(Year.now().toString())
                       .getUri();
         return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
-    }
-
-    private static Stream<String> invalidIsbnPrefixes() {
-        return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
     }
 
     private void setupStub(
@@ -342,8 +342,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                                      int clientAuthResponseHttpCode,
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
-                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
+        stubResponse(clientResponseHttpCode, "/createpublisher/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }

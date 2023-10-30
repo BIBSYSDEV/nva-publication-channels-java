@@ -68,7 +68,6 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var expectedJournal = constructExpectedJournal(expectedPid);
         var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
@@ -81,6 +80,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
 
+        var expectedJournal = constructExpectedJournal(expectedPid);
         assertThat(response.getBodyObject(CreateJournalResponse.class), is(equalTo(expectedJournal)));
     }
 
@@ -116,7 +116,6 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
         assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
-
     }
 
     @Test
@@ -347,19 +346,18 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     }
 
     private void setupBadRequestStub(String expectedPid, DataportenCreateJournalRequest request,
-                              int clientAuthResponseHttpCode,
-                           int clientResponseHttpCode) throws JsonProcessingException {
+                                     int clientAuthResponseHttpCode,
+                                     int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createjournal/createpid",
-                     dtoObjectMapper.writeValueAsString(PROBLEM) ,
+        stubResponse(clientResponseHttpCode, "/createjournal/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
     private void stubFetchResponse(String expectedPid) {
         stubFor(get("/findjournal/" + expectedPid + "/" + Year.now()).withHeader("Accept",
-                                                                                                           WireMock.equalTo(
-                                                                                                               "application/json"))
+                                                                                 WireMock.equalTo(
+                                                                                     "application/json"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
                                     .withHeader("Content-Type", "application/json;charset=UTF-8")
                                     .withBody(nonNull(expectedPid) ? new DataportenBodyBuilder().withType("Journal")

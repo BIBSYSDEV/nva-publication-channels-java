@@ -16,6 +16,7 @@ dependencies {
     implementation libs.bundles.nva
     implementation libs.bundles.logging
     implementation libs.bundles.jackson
+    implementation libs.guava
     implementation libs.commons.validator
 }
 

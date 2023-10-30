@@ -1,5 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +15,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +35,7 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -63,6 +67,31 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
+    }
+
+    @ParameterizedTest
+    @DisplayName("Should return requested media type")
+    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
+        final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
+                                          ? MediaType.JSON_UTF_8.toString()
+                                          : mediaType.toString();
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.randomJournal(year);
+        var input = constructRequest(String.valueOf(year), identifier, mediaType);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
+
+        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var expectedJournal = mockRegistry.getJournal(identifier);
+        assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
     @Test
@@ -238,13 +267,19 @@ class FetchJournalByIdentifierAndYearHandlerTest {
                    is(equalTo("Unexpected response from upstream!")));
     }
 
-    private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
+    private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
+        throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year
                    ))
                    .build();
+    }
+
+    private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
+        return constructRequest(year, identifier, MediaType.JSON_UTF_8);
     }
 
     private static Stream<String> invalidYearsProvider() {

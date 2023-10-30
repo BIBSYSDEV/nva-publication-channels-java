@@ -3,6 +3,8 @@ package no.sikt.nva.pubchannels.handler.search.journal;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_NO_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
@@ -39,6 +41,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
+import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +65,7 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import nva.commons.core.Environment;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -93,13 +97,37 @@ class SearchJournalByQueryHandlerTest {
         this.output = new ByteArrayOutputStream();
     }
 
+    @ParameterizedTest
+    @DisplayName("Should return requested media type")
+    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
+        throws IOException, UnprocessableContentException {
+        var year = randomYear();
+        var issn = randomIssn();
+        final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
+                                          ? MediaType.JSON_UTF_8.toString()
+                                          : mediaType.toString();
+        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
+
+        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+    }
+
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
         var year = randomYear();
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn));
+        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -117,7 +145,7 @@ class SearchJournalByQueryHandlerTest {
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
 
-        var input = constructRequest(Map.of("year", year, "query", issn));
+        var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -134,7 +162,7 @@ class SearchJournalByQueryHandlerTest {
         var pid = UUID.randomUUID().toString();
         var expectedSearchResult = getExpectedPaginatedSearchResultPidSearch(year, pid);
 
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", pid));
+        var input = constructRequest(Map.of("year", String.valueOf(year), "query", pid), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -162,7 +190,7 @@ class SearchJournalByQueryHandlerTest {
             DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
             DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
-        var input = constructRequest(Map.of("year", yearString, "query", name));
+        var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -195,7 +223,7 @@ class SearchJournalByQueryHandlerTest {
             NAME_QUERY_PARAM, name);
         var input = constructRequest(
             Map.of("year", yearString, "query", name,
-                   "offset", String.valueOf(offset), "size", String.valueOf(size)));
+                   "offset", String.valueOf(offset), "size", String.valueOf(size)), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -214,7 +242,7 @@ class SearchJournalByQueryHandlerTest {
     @MethodSource("invalidYearsProvider")
     void shouldReturnBadRequestWhenYearIsInvalid(String year) throws IOException {
         var queryParameters = Map.of("year", year, "query", "asd");
-        var input = constructRequest(queryParameters);
+        var input = constructRequest(queryParameters, MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -229,7 +257,7 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenMissingQueryParamYear() throws IOException {
-        var input = constructRequest(Map.of("query", randomString()));
+        var input = constructRequest(Map.of("query", randomString()), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -244,7 +272,7 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenMissingQuery() throws IOException {
-        var input = constructRequest(Map.of("year", String.valueOf(randomYear())));
+        var input = constructRequest(Map.of("year", String.valueOf(randomYear())), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -278,7 +306,8 @@ class SearchJournalByQueryHandlerTest {
                                                                                            + " has "
                                                                                            + "survived not only five "
                                                                                            + "centuries,"
-                                                                                           + " but also the l"));
+                                                                                           + " but also the l"),
+                                     MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -294,7 +323,7 @@ class SearchJournalByQueryHandlerTest {
     @Test
     void shouldReturnBadRequestWhenOffsetAndSizeAreNotDivisible() throws IOException {
         var input = constructRequest(Map.of("year", String.valueOf(randomYear()), "query", randomString(),
-                                            "offset", "5", "size", "8"));
+                                            "offset", "5", "size", "8"), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -322,7 +351,7 @@ class SearchJournalByQueryHandlerTest {
             DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
             DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
-        var input = constructRequest(Map.of("year", yearString, "query", name));
+        var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -336,8 +365,11 @@ class SearchJournalByQueryHandlerTest {
                    is(equalTo("Unexpected response from upstream!")));
     }
 
-    private static InputStream constructRequest(Map<String, String> queryParameters) throws JsonProcessingException {
-        return new HandlerRequestBuilder<Void>(dtoObjectMapper).withQueryParameters(queryParameters).build();
+    private static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType)
+        throws JsonProcessingException {
+        return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
+                   .withQueryParameters(queryParameters).build();
     }
 
     private static Stream<String> invalidYearsProvider() {

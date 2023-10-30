@@ -1,5 +1,15 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
+import static com.google.common.net.MediaType.JSON_UTF_8;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateUuid;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
+import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
+import static nva.commons.core.paths.UriWrapper.HTTPS;
+import com.google.common.net.MediaType;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.time.Year;
+import java.util.List;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
@@ -8,15 +18,8 @@ import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.time.Year;
-
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateUuid;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
-
 public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHandler<I, O> {
+
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
@@ -35,15 +38,10 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         this.publicationChannelClient = client;
     }
 
-    @Override
-    protected Integer getSuccessStatusCode(I input, O output) {
-        return HttpURLConnection.HTTP_OK;
-    }
-
     protected RequestInfo validate(RequestInfo requestInfo) {
         validateUuid(requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim(), "Pid");
         validateYear(requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim(), Year.of(Year.MIN_VALUE),
-                "Year");
+                     "Year");
         return requestInfo;
     }
 
@@ -51,7 +49,20 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
         return new UriWrapper(HTTPS, apiDomain)
-                .addChild(customDomainBasePath, publicationChannelPathElement)
-                .getUri();
+                   .addChild(customDomainBasePath, publicationChannelPathElement)
+                   .getUri();
+    }
+
+    @Override
+    protected List<MediaType> listSupportedMediaTypes() {
+        return List.of(
+            JSON_UTF_8,
+            APPLICATION_JSON_LD
+        );
+    }
+
+    @Override
+    protected Integer getSuccessStatusCode(I input, O output) {
+        return HttpURLConnection.HTTP_OK;
     }
 }
