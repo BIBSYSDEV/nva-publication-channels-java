@@ -8,10 +8,11 @@ import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.model.Contexts;
+import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public final class SeriesResult {
+public final class SeriesResult implements JsonSerializable {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
@@ -140,16 +141,6 @@ public final class SeriesResult {
     @Override
     @JacocoGenerated
     public String toString() {
-        return "PublisherResult{"
-               + "type='" + type + '\''
-               + ", context=" + context
-               + ", id=" + id
-               + ", identifier='" + identifier + '\''
-               + ", name='" + name + '\''
-               + ", onlineIssn='" + onlineIssn + '\''
-               + ", printIssn='" + printIssn + '\''
-               + ", scientificValue='" + scientificValue + '\''
-               + ", sameAs=" + sameAs
-               + '}';
+        return toJsonString();
     }
 }

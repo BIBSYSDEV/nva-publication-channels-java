@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class FetchByIdAndYearResponseTest {
 
     @Test
-    void canSerializeDeserializePublicherWithoutLossOfData() throws JsonProcessingException {
+    void canSerializeDeserializePublisherWithoutLossOfData() throws JsonProcessingException {
         var publisher = randomPublisher();
 
         var serializedPublisher = dtoObjectMapper.writeValueAsString(publisher);

@@ -8,10 +8,11 @@ import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.model.Contexts;
+import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public class FetchByIdAndYearResponse {
+public class FetchByIdAndYearResponse implements JsonSerializable {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
@@ -137,16 +138,6 @@ public class FetchByIdAndYearResponse {
     @Override
     @JacocoGenerated
     public String toString() {
-        return "FetchByIdAndYearResponse{"
-               + "type='" + type + '\''
-               + ", context=" + context
-               + ", id=" + id
-               + ", identifier='" + identifier + '\''
-               + ", name='" + name + '\''
-               + ", onlineIssn='" + onlineIssn + '\''
-               + ", printIssn='" + printIssn + '\''
-               + ", scientificValue=" + scientificValue
-               + ", sameAs=" + sameAs
-               + '}';
+        return toJsonString();
     }
 }
