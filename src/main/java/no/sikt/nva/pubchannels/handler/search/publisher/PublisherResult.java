@@ -16,6 +16,7 @@ public final class PublisherResult {
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
+    private static final String IDENTIFIER_FIELD = "identifier";
     private static final String NAME_FIELD = "name";
     private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
@@ -27,6 +28,10 @@ public final class PublisherResult {
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
     private final URI id;
+
+    @JsonProperty(IDENTIFIER_FIELD)
+    private final String identifier;
+
     @JsonProperty(NAME_FIELD)
     private final String name;
     @JsonProperty(ISBN_PREFIX_FIELD)
@@ -38,11 +43,13 @@ public final class PublisherResult {
 
     @JsonCreator
     private PublisherResult(@JsonProperty(ID_FIELD) URI id,
+                            @JsonProperty(IDENTIFIER_FIELD) String identifier,
                             @JsonProperty(NAME_FIELD) String name,
                             @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
                             @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
                             @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
+        this.identifier = identifier;
         this.name = name;
         this.isbnPrefix = isbnPrefix;
         this.scientificValue = scientificValue;
@@ -55,6 +62,7 @@ public final class PublisherResult {
                      .addChild(publisher.getIdentifier(), year)
                      .getUri();
         return new PublisherResult(id,
+                                   publisher.getIdentifier(),
                                    publisher.getName(),
                                    publisher.getIsbnPrefix(),
                                    publisher.getScientificValue(),
@@ -73,6 +81,10 @@ public final class PublisherResult {
         return id;
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
     public String getName() {
         return name;
     }
@@ -89,20 +101,14 @@ public final class PublisherResult {
         return sameAs;
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(getType(),
-                            getContext(),
-                            getId(),
-                            getName(),
-                            getIsbnPrefix(),
-                            getScientificValue(),
-                            getSameAs());
+        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs);
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -111,22 +117,23 @@ public final class PublisherResult {
             return false;
         }
         PublisherResult that = (PublisherResult) o;
-        return Objects.equals(getType(), that.getType())
-               && Objects.equals(getContext(), that.getContext())
-               && Objects.equals(getId(), that.getId())
-               && Objects.equals(getName(), that.getName())
-               && Objects.equals(getIsbnPrefix(), that.getIsbnPrefix())
-               && Objects.equals(getScientificValue(), that.getScientificValue())
-               && Objects.equals(getSameAs(), that.getSameAs());
+        return Objects.equals(context, that.context)
+               && Objects.equals(id, that.id)
+               && Objects.equals(identifier, that.identifier)
+               && Objects.equals(name, that.name)
+               && Objects.equals(isbnPrefix, that.isbnPrefix)
+               && scientificValue == that.scientificValue
+               && Objects.equals(sameAs, that.sameAs);
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public String toString() {
         return "PublisherResult{"
                + "type='" + type + '\''
                + ", context=" + context
                + ", id=" + id
+               + ", identifier='" + identifier + '\''
                + ", name='" + name + '\''
                + ", isbnPrefix='" + isbnPrefix + '\''
                + ", scientificValue='" + scientificValue + '\''

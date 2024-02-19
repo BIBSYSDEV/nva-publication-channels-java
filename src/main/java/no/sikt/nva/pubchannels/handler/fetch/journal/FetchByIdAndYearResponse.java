@@ -16,6 +16,7 @@ public class FetchByIdAndYearResponse {
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
+    private static final String IDENTIFIER_FIELD = "identifier";
     private static final String NAME_FIELD = "name";
     private static final String ONLINE_ISSN_FIELD = "onlineIssn";
     private static final String PRINT_ISSN_FIELD = "printIssn";
@@ -28,6 +29,8 @@ public class FetchByIdAndYearResponse {
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
     private final URI id;
+    @JsonProperty(IDENTIFIER_FIELD)
+    private final String identifier;
     @JsonProperty(NAME_FIELD)
     private final String name;
     @JsonProperty(ONLINE_ISSN_FIELD)
@@ -41,12 +44,14 @@ public class FetchByIdAndYearResponse {
 
     @JsonCreator
     public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
+                                    @JsonProperty(IDENTIFIER_FIELD) String identifier,
                                     @JsonProperty(NAME_FIELD) String name,
                                     @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
                                     @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                                     @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
                                     @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
+        this.identifier = identifier;
         this.name = name;
         this.onlineIssn = onlineIssn;
         this.printIssn = printIssn;
@@ -60,11 +65,11 @@ public class FetchByIdAndYearResponse {
                      .addChild(journal.getIdentifier(), year)
                      .getUri();
         return new FetchByIdAndYearResponse(id,
+                                            journal.getIdentifier(),
                                             journal.getName(),
                                             journal.getOnlineIssn(),
                                             journal.getPrintIssn(),
-                                            journal.getScientificValue(),
-                                            journal.getHomepage());
+                                            journal.getScientificValue(), journal.getHomepage());
     }
 
     public String getType() {
@@ -77,6 +82,10 @@ public class FetchByIdAndYearResponse {
 
     public URI getId() {
         return id;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
 
     public String getName() {
@@ -99,21 +108,14 @@ public class FetchByIdAndYearResponse {
         return sameAs;
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(getType(),
-                            getContext(),
-                            getId(),
-                            getName(),
-                            getOnlineIssn(),
-                            getPrintIssn(),
-                            getScientificValue(),
-                            getSameAs());
+        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs);
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -122,27 +124,28 @@ public class FetchByIdAndYearResponse {
             return false;
         }
         FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
-        return Objects.equals(getType(), that.getType())
-               && Objects.equals(getContext(), that.getContext())
-               && Objects.equals(getId(), that.getId())
-               && Objects.equals(getName(), that.getName())
-               && Objects.equals(getOnlineIssn(), that.getOnlineIssn())
-               && Objects.equals(getPrintIssn(), that.getPrintIssn())
-               && Objects.equals(getScientificValue(), that.getScientificValue())
-               && Objects.equals(getSameAs(), that.getSameAs());
+        return Objects.equals(context, that.context)
+               && Objects.equals(id, that.id)
+               && Objects.equals(identifier, that.identifier)
+               && Objects.equals(name, that.name)
+               && Objects.equals(onlineIssn, that.onlineIssn)
+               && Objects.equals(printIssn, that.printIssn)
+               && scientificValue == that.scientificValue
+               && Objects.equals(sameAs, that.sameAs);
     }
 
-    @JacocoGenerated
     @Override
+    @JacocoGenerated
     public String toString() {
         return "FetchByIdAndYearResponse{"
                + "type='" + type + '\''
                + ", context=" + context
                + ", id=" + id
+               + ", identifier='" + identifier + '\''
                + ", name='" + name + '\''
                + ", onlineIssn='" + onlineIssn + '\''
                + ", printIssn='" + printIssn + '\''
-               + ", scientificValue='" + scientificValue + '\''
+               + ", scientificValue=" + scientificValue
                + ", sameAs=" + sameAs
                + '}';
     }
