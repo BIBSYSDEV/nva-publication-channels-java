@@ -1,9 +1,11 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static no.sikt.nva.pubchannels.dataporten.ChannelType.SERIES;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.dataporten.ChannelType;
+import no.sikt.nva.pubchannels.dataporten.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -37,9 +39,18 @@ public class FetchSeriesByIdentifierAndYearHandler extends
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
 
         var requestYear = request.getYear();
-        return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                                               (ThirdPartySeries) publicationChannelClient.getChannel(
-                                                   ChannelType.SERIES,
-                                                   request.getIdentifier(), requestYear), requestYear);
+        var series = fetchSeries(request, requestYear);
+        return FetchByIdAndYearResponse.create(publisherIdBaseUri, (ThirdPartySeries) series, requestYear);
+    }
+
+    private ThirdPartyPublicationChannel fetchSeries(FetchByIdAndYearRequest request, String requestYear)
+        throws ApiGatewayException {
+        try {
+            return publicationChannelClient.getChannel(SERIES, request.getIdentifier(), requestYear);
+        } catch (PublicationChannelMovedException movedException) {
+            throw new PublicationChannelMovedException(
+                "Series moved",
+                constructNewLocation(SERIES_PATH_ELEMENT, movedException.getLocation(), requestYear));
+        }
     }
 }
