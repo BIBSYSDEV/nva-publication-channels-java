@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.dataporten;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
@@ -114,13 +115,19 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     private void handleError(HttpResponse<String> response) throws ApiGatewayException {
-        if (HTTP_NOT_FOUND == response.statusCode()) {
+        var statusCode = response.statusCode();
+        if (HTTP_NOT_FOUND == statusCode) {
             throw new NotFoundException("Publication channel not found!");
         }
-        if (HTTP_BAD_REQUEST == response.statusCode()) {
+        if (HTTP_BAD_REQUEST == statusCode) {
             throw new BadRequestException(response.body());
         }
-        LOGGER.error("Error fetching publication channel: {} {}", response.statusCode(), response.body());
+        if (HTTP_MOVED_PERM == statusCode) {
+            var location = response.headers().map().get("Location").get(0);
+            LOGGER.info("Publication channel moved permanently to: {}", location);
+            throw new PublicationChannelMovedException("Publication channel moved permanently!", URI.create(location));
+        }
+        LOGGER.error("Error fetching publication channel: {} {}", statusCode, response.body());
         throw new BadGatewayException("Unexpected response from upstream!");
     }
 

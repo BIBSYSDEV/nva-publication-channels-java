@@ -3,8 +3,10 @@ package no.sikt.nva.pubchannels.handler.fetch.journal;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
+import no.sikt.nva.pubchannels.dataporten.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -38,9 +40,17 @@ public class FetchJournalByIdentifierAndYearHandler extends
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
         var requestYear = request.getYear();
-        return FetchByIdAndYearResponse.create(journalIdBaseUri,
-                                               (ThirdPartyJournal) publicationChannelClient.getChannel(
-                                                   ChannelType.JOURNAL,
-                                                   request.getIdentifier(), requestYear), requestYear);
+        var journal = fetchJournal(request, requestYear);
+        return FetchByIdAndYearResponse.create(journalIdBaseUri, (ThirdPartyJournal) journal, requestYear);
+    }
+
+    private ThirdPartyPublicationChannel fetchJournal(FetchByIdAndYearRequest request, String requestYear)
+        throws ApiGatewayException {
+        try {
+            return publicationChannelClient.getChannel(ChannelType.JOURNAL, request.getIdentifier(), requestYear);
+        } catch (PublicationChannelMovedException movedException) {
+            throw new PublicationChannelMovedException(
+                "Journal moved", constructNewLocation(JOURNAL_PATH_ELEMENT, movedException.getLocation(), requestYear));
+        }
     }
 }
