@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,24 +49,29 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchJournalByIdentifierAndYearHandlerTest {
 
+    public static final String API_DOMAIN = "localhost";
+    public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
+    public static final String JOURNAL_PATH = "journal";
     private static final int YEAR_START = 2004;
     private static final Context context = new FakeContext();
     private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
     private PublicationChannelMockClient mockRegistry;
     private ByteArrayOutputStream output;
     private Environment environment;
+    private String dataportenBaseUri;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
 
         this.environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
-        var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
+        dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
+        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient, URI.create(dataportenBaseUri),
+                                                                              null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
@@ -265,6 +273,28 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
+        var year = randomYear();
+        var requestedIdentifier = UUID.randomUUID().toString();
+        var newIdentifier = UUID.randomUUID().toString();
+        var newChannelRegistryLocation = UriWrapper.fromHost(dataportenBaseUri)
+                                             .addChild("findjournal", newIdentifier, year)
+                                             .toString();
+        mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
+        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
+        assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
+        var expectedLocation = constructExpectedLocation(newIdentifier, year);
+        assertEquals(expectedLocation, response.getHeaders().get("Location"));
+    }
+
+    private static String constructExpectedLocation(String newIdentifier, String year) {
+        return UriWrapper.fromHost(API_DOMAIN)
+                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
+                   .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
