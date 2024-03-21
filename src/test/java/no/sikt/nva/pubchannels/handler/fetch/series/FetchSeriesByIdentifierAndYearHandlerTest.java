@@ -5,6 +5,7 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
@@ -15,6 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -24,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -35,6 +38,7 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,12 +53,14 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest {
 
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/series";
+    public static final String SERIES_PATH = "series";
+    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private static final String DATAPORTEN_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
     private Environment environment;
+    private String dataportenBaseUri;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -63,9 +69,10 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
 
-        var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
+        dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
+        var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, URI.create(dataportenBaseUri),
+                                                                              null);
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
@@ -242,6 +249,23 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+    }
+
+    @Test
+    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
+        var year = String.valueOf(randomYear());
+        var requestedIdentifier = UUID.randomUUID().toString();
+        var newIdentifier = UUID.randomUUID().toString();
+        var newChannelRegistryLocation = UriWrapper.fromHost(dataportenBaseUri)
+                                             .addChild(DATAPORTEN_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, DATAPORTEN_PATH_ELEMENT);
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output,
+                                       context);
+        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
+        assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
+        var expectedLocation = TestUtils.constructExpectedLocation(newIdentifier, year, SERIES_PATH);
+        assertEquals(expectedLocation, response.getHeaders().get("Location"));
     }
 
     private static Stream<String> invalidYearsProvider() {
