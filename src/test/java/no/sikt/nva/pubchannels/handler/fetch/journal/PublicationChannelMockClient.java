@@ -95,10 +95,6 @@ public class PublicationChannelMockClient {
                         .withBody(responseBody)));
     }
 
-    private URI constructUri(String newIdentifier) {
-        return null;
-    }
-
     private void createJournalAndAddToMap(Integer year, String identifier, String name, String electronicIssn,
                                           String issn,
                                           ScientificValue scientificValue, URI landingPage) {
