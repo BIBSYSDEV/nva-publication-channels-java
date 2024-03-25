@@ -75,6 +75,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalResponseExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
         400:
           $ref: '#/components/responses/400'
         404:
@@ -229,6 +236,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/PublisherResponseExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
         400:
           $ref: '#/components/responses/400'
         404:
@@ -383,6 +397,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/SeriesExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
         400:
           $ref: '#/components/responses/400'
         404:

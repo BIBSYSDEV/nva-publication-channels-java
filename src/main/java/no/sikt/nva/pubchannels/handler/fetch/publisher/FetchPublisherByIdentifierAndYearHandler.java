@@ -1,11 +1,13 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static no.sikt.nva.pubchannels.dataporten.ChannelType.PUBLISHER;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.dataporten.ChannelType;
+import no.sikt.nva.pubchannels.dataporten.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -38,10 +40,19 @@ public class FetchPublisherByIdentifierAndYearHandler extends
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
 
         var requestYear = request.getYear();
+        var publisher = fetchPublisher(request, requestYear);
         return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                                               (ThirdPartyPublisher) publicationChannelClient.getChannel(
-                                                   ChannelType.PUBLISHER,
-                                                   request.getIdentifier(),
-                                                   requestYear), requestYear);
+                                               (ThirdPartyPublisher) publisher, requestYear);
+    }
+
+    private ThirdPartyPublicationChannel fetchPublisher(FetchByIdAndYearRequest request, String requestYear)
+        throws ApiGatewayException {
+        try {
+            return publicationChannelClient.getChannel(PUBLISHER, request.getIdentifier(), requestYear);
+        } catch (PublicationChannelMovedException movedException) {
+            throw new PublicationChannelMovedException(
+                "Publisher moved",
+                constructNewLocation(PUBLISHER_PATH_ELEMENT, movedException.getLocation(), requestYear));
+        }
     }
 }

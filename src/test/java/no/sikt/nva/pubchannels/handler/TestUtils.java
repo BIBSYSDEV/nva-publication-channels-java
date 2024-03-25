@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
@@ -75,6 +76,17 @@ public class TestUtils {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(responseBody)));
+    }
+
+    public static void mockRedirectedClient(String requestedIdentifier, String location, String year,
+                                            String path) {
+        stubFor(
+            get(path + requestedIdentifier + "/" + year)
+                .withHeader(ACCEPT, equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_MOVED_PERM)
+                        .withHeader("Location", location)));
     }
 
     public static int randomYear() {
@@ -321,6 +333,12 @@ public class TestUtils {
                 .collect(Collectors.toList());
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildDataportenSearchResponse(results, entityResult);
+    }
+
+    public static String constructExpectedLocation(String newIdentifier, String year, String channelPath) {
+        return UriWrapper.fromHost(LOCALHOST)
+                   .addChild(CUSTOM_DOMAIN_BASE_PATH, channelPath, newIdentifier, year)
+                   .toString();
     }
 
     private static String currentYear() {

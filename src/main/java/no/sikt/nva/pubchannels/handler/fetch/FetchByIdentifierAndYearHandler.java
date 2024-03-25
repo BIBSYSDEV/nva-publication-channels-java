@@ -53,6 +53,14 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
                    .getUri();
     }
 
+    protected URI constructNewLocation(String pathElement, URI channelRegistryLocation, String year) {
+        var newIdentifier = UriWrapper.fromUri(channelRegistryLocation).getPath().getPathElementByIndexFromEnd(1);
+        return UriWrapper.fromUri(constructPublicationChannelIdBaseUri(pathElement))
+                   .addChild(newIdentifier)
+                   .addChild(year)
+                   .getUri();
+    }
+
     @Override
     protected List<MediaType> listSupportedMediaTypes() {
         return List.of(

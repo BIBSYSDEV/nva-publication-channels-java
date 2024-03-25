@@ -23,6 +23,9 @@ import nva.commons.core.SingletonCollector;
 
 public class PublicationChannelMockClient {
 
+    public static final String ACCEPT = "Accept";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String CHANNEL_REGISTRY_JOURNAL_PATH = "/findjournal/";
     private final Map<String, FetchByIdAndYearResponse> journalsByIdentifier = new ConcurrentHashMap<>();
 
     public void notFoundJournal(String identifier, String year) {
@@ -71,10 +74,20 @@ public class PublicationChannelMockClient {
         return identifier;
     }
 
+    public void redirect(String requestedIdentifier, String location, String year) {
+        stubFor(
+            get(CHANNEL_REGISTRY_JOURNAL_PATH + requestedIdentifier + "/" + year)
+                .withHeader(ACCEPT, equalTo(APPLICATION_JSON))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_MOVED_PERM)
+                        .withHeader("Location", location)));
+    }
+
     private static void mockDataporten(int year, String identifier, String responseBody) {
         stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
+            get(CHANNEL_REGISTRY_JOURNAL_PATH + identifier + "/" + year)
+                .withHeader(ACCEPT, equalTo(APPLICATION_JSON))
                 .willReturn(
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_OK)
