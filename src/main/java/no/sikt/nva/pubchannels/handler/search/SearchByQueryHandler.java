@@ -15,7 +15,6 @@ import java.time.Year;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import no.sikt.nva.pubchannels.dataporten.ChannelType;
 import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
@@ -33,7 +32,6 @@ import org.apache.commons.validator.routines.ISSNValidator;
 
 public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, PaginatedSearchResult<T>> {
 
-    private static final String PID_QUERY_PARAM = "pid";
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String QUERY_SIZE_PARAM = "size";
@@ -118,8 +116,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
             validateString(query, 4, 300, "Query");
             validatePagination(offset, size);
             return null;
-        })
-            .orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
+        }).orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
     }
 
     private ThirdPartySearchResponse searchChannel(String year, String query, int offset, int size)
@@ -142,8 +139,6 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
 
         if (isQueryParameterIssn(query)) {
             queryParams.put(ISSN_QUERY_PARAM, query.trim());
-        } else if (isQueryParameterUuid(query)) {
-            queryParams.put(PID_QUERY_PARAM, query.trim());
         } else {
             queryParams.put(NAME_QUERY_PARAM, query.trim());
         }
@@ -151,15 +146,6 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         queryParams.put(PAGENO_QUERY_PARAM, String.valueOf(offset / size));
         queryParams.put(PAGECOUNT_QUERY_PARAM, String.valueOf(size));
         return queryParams;
-    }
-
-    private boolean isQueryParameterUuid(String query) {
-        try {
-            UUID.fromString(query.trim());
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
     }
 
     private boolean isQueryParameterIssn(String query) {

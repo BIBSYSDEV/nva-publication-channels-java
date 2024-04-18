@@ -13,7 +13,6 @@ import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.MAX_LEVEL;
 import static no.sikt.nva.pubchannels.TestCommons.MIN_LEVEL;
 import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.PID_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
@@ -151,24 +150,6 @@ class SearchJournalByQueryHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-    }
-
-    @Test
-    void shouldReturnResultWithSuccessWhenQueryIsPid() throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var pid = UUID.randomUUID().toString();
-        var expectedSearchResult = getExpectedPaginatedSearchResultPidSearch(year, pid);
-
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", pid), MediaType.ANY_TYPE);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(),
-                                                       TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
@@ -449,26 +430,6 @@ class SearchJournalByQueryHandlerTest {
                                      DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
                                      DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
-    }
-
-    private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultPidSearch(int year, String pid)
-        throws UnprocessableContentException {
-        var printIssn = randomIssn();
-        var name = randomString();
-        var electronicIssn = randomIssn();
-        var level = randomLevel();
-        var landingPage = randomUri();
-        var dataportenJournalResult = List.of(
-            createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level)
-        );
-        var responseBody = getDataportenResponseBody(dataportenJournalResult, 0, 10);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
-                                     YEAR_QUERY_PARAM, String.valueOf(year),
-                                     DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
-                                     DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
-                                     PID_QUERY_PARAM, pid);
-
-        return getSingleHit(String.valueOf(year), printIssn, pid, name, electronicIssn, level, landingPage);
     }
 
     private PaginatedSearchResult<JournalResult> getSingleHit(
