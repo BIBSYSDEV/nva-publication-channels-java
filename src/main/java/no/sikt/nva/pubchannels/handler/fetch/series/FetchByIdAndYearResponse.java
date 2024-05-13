@@ -111,13 +111,13 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     }
 
     @Override
-    @JsonProperty
+    @JacocoGenerated
     public int hashCode() {
         return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs);
     }
 
     @Override
-    @JsonProperty
+    @JacocoGenerated
     public boolean equals(Object o) {
         if (this == o) {
             return true;
