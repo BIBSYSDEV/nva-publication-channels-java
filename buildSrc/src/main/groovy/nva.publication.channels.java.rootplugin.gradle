@@ -1,10 +1,27 @@
-plugins{
-    id 'nva.publication.channels.java.java-conventions'
+plugins {
+    id 'jacoco-report-aggregation'
+    id 'base'
+    id 'java-library'
     id 'nva.publication.channels.java.gradlelint'
-    id 'nva.publication.channels.java.jacoco-merge'
 }
 
 allprojects {
     //workaround for jacoco-merge to work
     apply plugin: 'nva.publication.channels.java.java-conventions'
+}
+
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.UNIT_TEST
+        }
+        integrationTestCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.INTEGRATION_TEST
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+    dependsOn tasks.named('integrationTestCodeCoverageReport', JacocoReport)
 }

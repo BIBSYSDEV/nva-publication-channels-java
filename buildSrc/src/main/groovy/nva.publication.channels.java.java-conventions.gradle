@@ -2,12 +2,10 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'pmd'
-    id 'jacoco'
-    id 'base'
+    id 'jacoco-report-aggregation'
 }
 
 group 'no.sikt.nva'
-version '1.0-SNAPSHOT'
 
 dependencies {
     testImplementation libs.bundles.testing
@@ -20,8 +18,8 @@ dependencies {
     implementation libs.commons.validator
 }
 
-sourceCompatibility = JavaVersion.VERSION_11  // source-code version and must be <= targetCompatibility
-targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
+sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility
+targetCompatibility = JavaVersion.VERSION_21 // bytecode target version
 
 repositories {
     mavenCentral()
@@ -34,10 +32,6 @@ tasks.named('test') {
     testLogging {
         events 'skipped', 'passed', 'failed'
     }
-    finalizedBy jacocoTestReport
-}
-
-test {
 }
 
 pmd {
@@ -52,10 +46,10 @@ checkstyle {
     showViolations = true
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
-        xml.enabled true
-        html.enabled true
+        xml.required
+        html.required
         html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
     }
 }
