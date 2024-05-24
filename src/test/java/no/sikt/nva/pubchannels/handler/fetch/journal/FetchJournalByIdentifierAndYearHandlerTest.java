@@ -2,6 +2,9 @@ package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -288,7 +291,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
         var expectedLocation = constructExpectedLocation(newIdentifier, year);
-        assertEquals(expectedLocation, response.getHeaders().get("Location"));
+        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
+        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     private static String constructExpectedLocation(String newIdentifier, String year) {
