@@ -16,7 +16,6 @@ phases:
     commands:
       # Use AWS SAM to build and package the application by using AWS CloudFormation
       - sam build --debug
-      # gradle build
       - sam package --s3-bucket $S3_BUCKET --output-template-file packaged.yaml
 
 artifacts:
