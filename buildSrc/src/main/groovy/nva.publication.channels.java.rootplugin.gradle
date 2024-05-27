@@ -23,5 +23,4 @@ reporting {
 
 tasks.named('check') {
     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
-    dependsOn tasks.named('integrationTestCodeCoverageReport', JacocoReport)
 }
