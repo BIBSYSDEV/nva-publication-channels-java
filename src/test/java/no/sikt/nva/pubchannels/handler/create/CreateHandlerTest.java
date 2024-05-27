@@ -9,7 +9,6 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.apigateway.AccessRight;
 import org.junit.jupiter.api.AfterEach;
 
 import java.io.ByteArrayOutputStream;
@@ -75,7 +74,6 @@ public abstract class CreateHandlerTest {
         var customerId = randomUri();
         return new HandlerRequestBuilder<T>(dtoObjectMapper)
                 .withCurrentCustomer(customerId)
-                .withAccessRights(customerId, AccessRight.USER.toString())
                 .withBody(body)
                 .build();
     }

@@ -1,6 +1,9 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
@@ -265,7 +268,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
         var expectedLocation = TestUtils.constructExpectedLocation(newIdentifier, year, SERIES_PATH);
-        assertEquals(expectedLocation, response.getHeaders().get("Location"));
+        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
+        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     private static Stream<String> invalidYearsProvider() {
