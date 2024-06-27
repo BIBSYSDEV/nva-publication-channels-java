@@ -4,7 +4,6 @@ import static no.sikt.nva.pubchannels.dataporten.ChannelType.PUBLISHER;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIsbnPrefix;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
-import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -12,6 +11,7 @@ import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
 import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -32,28 +32,34 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
     }
 
     @Override
-    protected CreatePublisherResponse processInput(CreatePublisherRequest input, RequestInfo requestInfo,
-                                                    Context context) throws ApiGatewayException {
+    protected void validateRequest(CreatePublisherRequest createPublisherRequest, RequestInfo requestInfo,
+                                   Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        var validInput = attempt(() -> validate(input))
-                             .map(CreatePublisherHandler::getClientRequest)
-                             .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
-        var createResponse = publicationChannelClient.createPublisher(validInput);
-        var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, createResponse.getPid());
+        validate(createPublisherRequest);
+    }
+
+    @Override
+    protected CreatePublisherResponse processInput(CreatePublisherRequest input, RequestInfo requestInfo,
+                                                   Context context) throws ApiGatewayException {
+        var response = publicationChannelClient.createPublisher(getClientRequest(input));
+        var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, response.getPid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreatePublisherResponse.create(
             createdUri,
-            (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, createResponse.getPid(), getYear()));
+            (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, response.getPid(), getYear()));
     }
 
     private static DataportenCreatePublisherRequest getClientRequest(CreatePublisherRequest request) {
-        return new DataportenCreatePublisherRequest(request.getName(), request.getIsbnPrefix(), request.getHomepage());
+        return new DataportenCreatePublisherRequest(request.name(), request.isbnPrefix(), request.homepage());
     }
 
-    private CreatePublisherRequest validate(CreatePublisherRequest input) {
-        validateString(input.getName(), 5, 300, "Name");
-        validateOptionalIsbnPrefix(input.getIsbnPrefix(), "Isbn prefix");
-        validateOptionalUrl(input.getHomepage(), "Homepage");
-        return input;
+    private void validate(CreatePublisherRequest input) throws BadRequestException {
+        try {
+            validateString(input.name(), 5, 300, "Name");
+            validateOptionalIsbnPrefix(input.isbnPrefix(), "Isbn prefix");
+            validateOptionalUrl(input.homepage(), "Homepage");
+        } catch (ValidationException exception) {
+            throw new BadRequestException(exception.getMessage());
+        }
     }
 }

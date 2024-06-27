@@ -73,6 +73,11 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     @Override
+    protected void validateRequest(Void unused, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+
+    }
+
+    @Override
     protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo,
                                                     Context context) throws ApiGatewayException {
         var year = requestInfo.getQueryParameter(YEAR_QUERY_PARAM);
