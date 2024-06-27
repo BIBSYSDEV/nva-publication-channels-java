@@ -34,11 +34,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
 
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
-    private static final String QUERY_SIZE_PARAM = "size";
-    private static final String QUERY_OFFSET_PARAM = "offset";
     private static final String ISSN_QUERY_PARAM = "issn";
-    private static final int DEFAULT_QUERY_SIZE = 10;
-    private static final int DEFAULT_OFFSET_SIZE = 0;
     private static final String YEAR_QUERY_PARAM = "year";
     private static final String QUERY_PARAM = "query";
     private static final String NAME_QUERY_PARAM = "name";
@@ -73,25 +69,23 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     @Override
+    protected void validateRequest(Void unused, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+        validate(requestInfo);
+    }
+
+    @Override
     protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo,
                                                     Context context) throws ApiGatewayException {
-        var year = requestInfo.getQueryParameter(YEAR_QUERY_PARAM);
-        var query = requestInfo.getQueryParameter(QUERY_PARAM);
-        int offset = requestInfo.getQueryParameterOpt(QUERY_OFFSET_PARAM).map(Integer::parseInt)
-                         .orElse(DEFAULT_OFFSET_SIZE);
-        int size = requestInfo.getQueryParameterOpt(QUERY_SIZE_PARAM).map(Integer::parseInt).orElse(DEFAULT_QUERY_SIZE);
-
-        validate(year, query, offset, size);
-
-        var searchResult = searchChannel(year, query, offset, size);
+        var searchParameters = SearchParameters.fromRequestInfo(requestInfo);
+        var searchResult = searchChannel(searchParameters);
 
         return PaginatedSearchResult.create(
             constructBaseUri(),
-            offset,
-            size,
+            searchParameters.offset(),
+            searchParameters.size(),
             searchResult.getPageInformation().getTotalResults(),
-            getHits(constructBaseUri(), searchResult, year),
-            Map.of(QUERY_PARAM, query, YEAR_QUERY_PARAM, year)
+            getHits(constructBaseUri(), searchResult, searchParameters.year()),
+            Map.of(QUERY_PARAM, searchParameters.query(), YEAR_QUERY_PARAM, searchParameters.year())
         );
     }
 
@@ -110,18 +104,19 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
                    .getUri();
     }
 
-    private void validate(String year, String query, int offset, int size) throws BadRequestException {
+    private void validate(RequestInfo requestInfo) throws BadRequestException {
         attempt(() -> {
-            validateYear(year, Year.of(1900), "Year");
-            validateString(query, 4, 300, "Query");
-            validatePagination(offset, size);
+            var parameters = SearchParameters.fromRequestInfo(requestInfo);
+            validateYear(parameters.year(), Year.of(1900), "Year");
+            validateString(parameters.query(), 4, 300, "Query");
+            validatePagination(parameters.offset(), parameters.size());
             return null;
         }).orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
     }
 
-    private ThirdPartySearchResponse searchChannel(String year, String query, int offset, int size)
+    private ThirdPartySearchResponse searchChannel(SearchParameters searchParameters)
         throws ApiGatewayException {
-        var queryParams = getQueryParams(year, query, offset, size);
+        var queryParams = getQueryParams(searchParameters);
         return publicationChannelClient.searchChannel(channelType, queryParams);
     }
 
@@ -133,18 +128,19 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
                    .collect(Collectors.toList());
     }
 
-    private Map<String, String> getQueryParams(String year, String query, int offset, int size) {
+    private Map<String, String> getQueryParams(SearchParameters parameters) {
         var queryParams = new HashMap<String, String>();
-        queryParams.put(YEAR_QUERY_PARAM, year);
+        queryParams.put(YEAR_QUERY_PARAM, parameters.year());
 
+        var query = parameters.query();
         if (isQueryParameterIssn(query)) {
             queryParams.put(ISSN_QUERY_PARAM, query.trim());
         } else {
             queryParams.put(NAME_QUERY_PARAM, query.trim());
         }
 
-        queryParams.put(PAGENO_QUERY_PARAM, String.valueOf(offset / size));
-        queryParams.put(PAGECOUNT_QUERY_PARAM, String.valueOf(size));
+        queryParams.put(PAGENO_QUERY_PARAM, String.valueOf(parameters.offset() / parameters.size()));
+        queryParams.put(PAGECOUNT_QUERY_PARAM, String.valueOf(parameters.size()));
         return queryParams;
     }
 
