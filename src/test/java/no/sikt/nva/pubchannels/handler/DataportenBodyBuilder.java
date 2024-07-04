@@ -4,8 +4,8 @@ import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
-import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
+import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistryEntityPageInformation;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
@@ -51,7 +51,7 @@ public class DataportenBodyBuilder {
         return this;
     }
 
-    public DataportenBodyBuilder withLevel(DataportenLevel level) {
+    public DataportenBodyBuilder withLevel(ChannelRegistryLevel level) {
         if (nonNull(level)) {
             bodyMap.put("levelElementDto", level);
         }
@@ -63,7 +63,7 @@ public class DataportenBodyBuilder {
         return this;
     }
 
-    public DataportenBodyBuilder withEntityPageInformation(DataPortenEntityPageInformation pageInformation) {
+    public DataportenBodyBuilder withEntityPageInformation(ChannelRegistryEntityPageInformation pageInformation) {
         bodyMap.put("entityPageInformationDto", pageInformation);
         return this;
     }

@@ -49,10 +49,10 @@ public class CreatePublisherResponse {
 
     public static CreatePublisherResponse create(URI id, ThirdPartyPublisher publisher) {
         return new CreatePublisherResponse(id,
-                                           publisher.getName(),
-                                           publisher.getIsbnPrefix(),
+                                           publisher.name(),
+                                           publisher.isbnPrefix(),
                                            publisher.getScientificValue(),
-                                           publisher.getHomepage());
+                                           publisher.homepage());
     }
 
     public String getType() {

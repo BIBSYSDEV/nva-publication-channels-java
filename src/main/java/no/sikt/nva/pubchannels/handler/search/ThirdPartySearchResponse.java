@@ -4,7 +4,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 
 public interface ThirdPartySearchResponse {
 
-    ThirdPartyResultSet<? extends ThirdPartyPublicationChannel> getResultSet();
+    ThirdPartyResultSet<? extends ThirdPartyPublicationChannel> resultSet();
 
-    ThirdPartyPageInformation getPageInformation();
+    ThirdPartyPageInformation pageInformation();
 }

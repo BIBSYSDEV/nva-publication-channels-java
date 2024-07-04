@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten.mapper;
+package no.sikt.nva.pubchannels.channelRegistry.mapper;
 
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.handler.ScientificValue.LEVEL_ONE;

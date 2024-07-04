@@ -65,15 +65,15 @@ public final class JournalResult implements JsonSerializable {
     public static JournalResult create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
         var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(journal.getIdentifier(), year)
+                     .addChild(journal.identifier(), year)
                      .getUri();
         return new JournalResult(id,
-                                 journal.getIdentifier(),
-                                 journal.getName(),
-                                 journal.getOnlineIssn(),
-                                 journal.getPrintIssn(),
+                                 journal.identifier(),
+                                 journal.name(),
+                                 journal.onlineIssn(),
+                                 journal.printIssn(),
                                  journal.getScientificValue(),
-                                 journal.getHomepage());
+                                 journal.homepage());
     }
 
     public String getType() {

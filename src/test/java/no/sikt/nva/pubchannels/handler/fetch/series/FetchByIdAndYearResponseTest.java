@@ -30,7 +30,7 @@ class FetchByIdAndYearResponseTest {
         var series = new ThirdPartySeries() {
 
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return randomString();
             }
 
@@ -40,7 +40,7 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return randomString();
             }
 
@@ -50,17 +50,17 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return randomUri();
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String onlineIssn() {
                 return randomString();
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return randomString();
             }
         };

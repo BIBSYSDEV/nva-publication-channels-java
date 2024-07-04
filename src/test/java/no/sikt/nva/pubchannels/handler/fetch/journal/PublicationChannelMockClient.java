@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
+import no.sikt.nva.pubchannels.channelRegistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
@@ -101,7 +101,7 @@ public class PublicationChannelMockClient {
         var selfUriBase = URI.create("https://localhost/publication-channels/journal");
         var journal = new ThirdPartyJournal() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -111,7 +111,7 @@ public class PublicationChannelMockClient {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -121,17 +121,17 @@ public class PublicationChannelMockClient {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
             }
         };
@@ -174,7 +174,7 @@ public class PublicationChannelMockClient {
                    .withOriginalTitle(name)
                    .withEissn(electronicIssn)
                    .withPissn(issn)
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
                    .withKurl(landingPage.toString())
                    .build();
     }

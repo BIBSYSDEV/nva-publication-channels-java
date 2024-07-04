@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -73,8 +73,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient, URI.create(dataportenBaseUri),
-                                                                              null);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(dataportenBaseUri),
+                                                                 null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
@@ -183,7 +183,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var dataportenBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, dataportenBaseUri, null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 
         var identifier = UUID.randomUUID().toString();
@@ -213,8 +213,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
         var dataportenBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient,
-                                                                              dataportenBaseUri, null);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient,
+                                                                 dataportenBaseUri, null);
 
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 

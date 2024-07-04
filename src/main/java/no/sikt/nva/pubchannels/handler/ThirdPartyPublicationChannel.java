@@ -4,13 +4,13 @@ import java.net.URI;
 
 public interface ThirdPartyPublicationChannel {
 
-    String getIdentifier();
+    String identifier();
 
     String getYear();
 
-    String getName();
+    String name();
 
     ScientificValue getScientificValue();
 
-    URI getHomepage();
+    URI homepage();
 }

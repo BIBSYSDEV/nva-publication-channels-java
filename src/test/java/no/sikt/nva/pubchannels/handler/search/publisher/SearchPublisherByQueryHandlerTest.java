@@ -53,8 +53,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenPublisher;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -90,7 +90,7 @@ class SearchPublisherByQueryHandlerTest {
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, dataportenBaseUri, null);
 
         this.handlerUnderTest = new SearchPublisherByQueryHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
@@ -381,7 +381,7 @@ class SearchPublisherByQueryHandlerTest {
         return dataportenResults
                    .stream()
                    .map(result -> attempt(
-                       () -> objectMapper.readValue(result, DataportenPublisher.class)).orElseThrow())
+                       () -> objectMapper.readValue(result, ChannelRegistryPublisher.class)).orElseThrow())
                    .map(publisher -> toPublisherResult(publisher, requestedYear))
                    .collect(Collectors.toList());
     }

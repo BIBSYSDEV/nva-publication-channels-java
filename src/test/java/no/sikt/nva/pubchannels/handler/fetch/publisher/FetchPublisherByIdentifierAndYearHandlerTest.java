@@ -36,7 +36,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;
@@ -75,8 +75,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
         dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, URI.create(dataportenBaseUri),
-                                                                              null);
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(dataportenBaseUri),
+                                                                 null);
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
@@ -235,7 +235,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     @Test
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
-        DataportenPublicationChannelClient publicationChannelClient = setupInterruptedClient();
+        ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
 

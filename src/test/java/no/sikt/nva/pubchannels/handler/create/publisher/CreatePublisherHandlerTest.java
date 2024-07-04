@@ -25,10 +25,10 @@ import java.time.Year;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelRegistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
@@ -64,7 +64,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
         var publicationChannelSource =
-            new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, dataportenAuthSource);
+            new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
         handlerUnderTest = new CreatePublisherHandler(environment, publicationChannelSource);
     }
@@ -72,7 +72,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedPublisherWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+        var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
@@ -94,7 +94,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+        var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
 
@@ -114,7 +114,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+        var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
         setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
 
@@ -130,7 +130,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
-        var request = new DataportenCreatePublisherRequest(VALID_NAME, null, null);
+        var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -150,7 +150,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new DataportenCreatePublisherRequest(VALID_NAME, null, null),
+        setupStub(null, new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null),
                   HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -258,7 +258,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldCreatePublisherWithNameAndIsbnPrefix() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var isbnPrefix = String.valueOf(validIsbnPrefix());
-        var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, isbnPrefix, null);
+        var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, isbnPrefix, null);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -278,7 +278,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldCreatePublisherWithNameAndHomepage() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var homepage = "https://a.valid.url.com";
-        var clientRequest = new DataportenCreatePublisherRequest(VALID_NAME, null, homepage);
+        var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, homepage);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -327,18 +327,18 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private void setupStub(
         String expectedPid,
-        DataportenCreatePublisherRequest request,
+        ChannelRegistryCreatePublisherRequest request,
         int clientAuthResponseHttpCode,
         int clientResponseHttpCode)
         throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
-                     dtoObjectMapper.writeValueAsString(new DataportenCreatePublisherResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, DataportenCreatePublisherRequest request,
+    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreatePublisherRequest request,
                                      int clientAuthResponseHttpCode,
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);

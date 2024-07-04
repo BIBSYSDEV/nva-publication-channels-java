@@ -54,11 +54,11 @@ public class CreateJournalResponse {
 
     public static CreateJournalResponse create(URI id, ThirdPartyJournal journal) {
         return new CreateJournalResponse(id,
-                                         journal.getName(),
-                                         journal.getOnlineIssn(),
-                                         journal.getPrintIssn(),
+                                         journal.name(),
+                                         journal.onlineIssn(),
+                                         journal.printIssn(),
                                          journal.getScientificValue(),
-                                         journal.getHomepage());
+                                         journal.homepage());
     }
 
     public String getType() {

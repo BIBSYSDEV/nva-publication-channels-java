@@ -1,14 +1,14 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
-import static no.sikt.nva.pubchannels.dataporten.ChannelType.SERIES;
+import static no.sikt.nva.pubchannels.channelRegistry.ChannelType.SERIES;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
@@ -27,7 +27,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
         super(CreateSeriesRequest.class, new Environment());
     }
 
-    public CreateSeriesHandler(Environment environment, DataportenPublicationChannelClient client) {
+    public CreateSeriesHandler(Environment environment, ChannelRegistryClient client) {
         super(CreateSeriesRequest.class, environment, client);
     }
 
@@ -42,15 +42,15 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
     protected CreateSeriesResponse processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createSeries(getClientRequest(input));
-        var createdUri = constructIdUri(SERIES_PATH_ELEMENT, response.getPid());
+        var createdUri = constructIdUri(SERIES_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateSeriesResponse.create(
             createdUri,
-            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, response.getPid(), getYear()));
+            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, response.pid(), getYear()));
     }
 
-    private static DataportenCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {
-        return new DataportenCreateSeriesRequest(
+    private static ChannelRegistryCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {
+        return new ChannelRegistryCreateSeriesRequest(
             request.name(),
             request.printIssn(),
             request.onlineIssn(),

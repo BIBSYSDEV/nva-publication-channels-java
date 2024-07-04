@@ -63,14 +63,14 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
         var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(journal.getIdentifier(), year)
+                     .addChild(journal.identifier(), year)
                      .getUri();
         return new FetchByIdAndYearResponse(id,
-                                            journal.getIdentifier(),
-                                            journal.getName(),
-                                            journal.getOnlineIssn(),
-                                            journal.getPrintIssn(),
-                                            journal.getScientificValue(), journal.getHomepage());
+                                            journal.identifier(),
+                                            journal.name(),
+                                            journal.onlineIssn(),
+                                            journal.printIssn(),
+                                            journal.getScientificValue(), journal.homepage());
     }
 
     public String getType() {

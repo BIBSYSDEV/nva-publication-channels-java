@@ -37,10 +37,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
-import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
+import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelRegistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistryEntityPageInformation;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
@@ -148,7 +148,7 @@ public class TestUtils {
 
         return new ThirdPartyJournal() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -158,7 +158,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -168,17 +168,17 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
             }
         };
@@ -195,7 +195,7 @@ public class TestUtils {
 
         return new ThirdPartySeries() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -205,7 +205,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -215,17 +215,17 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
             }
         };
@@ -241,7 +241,7 @@ public class TestUtils {
 
         return new ThirdPartyPublisher() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -251,7 +251,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -261,24 +261,24 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getIsbnPrefix() {
+            public String isbnPrefix() {
                 return isbnPrefix;
             }
         };
     }
 
-    public static DataportenPublicationChannelClient setupInterruptedClient() throws IOException, InterruptedException {
+    public static ChannelRegistryClient setupInterruptedClient() throws IOException, InterruptedException {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
         var dataportenBaseUri = URI.create("https://localhost:9898");
 
-        return new DataportenPublicationChannelClient(httpClient,
-                                                      dataportenBaseUri, null);
+        return new ChannelRegistryClient(httpClient,
+                                         dataportenBaseUri, null);
     }
 
     public static void mockResponseWithHttpStatus(String pathParameter, String identifier, String year,
@@ -299,7 +299,7 @@ public class TestUtils {
                    .withEissn(eissn)
                    .withPissn(pissn)
                    .withKurl(kurl.toString())
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
                    .build();
     }
 
@@ -310,7 +310,7 @@ public class TestUtils {
                    .withName(name)
                    .withIsbnPrefix(isbnPrefix)
                    .withKurl(kurl.toString())
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
                    .build();
     }
 
@@ -347,7 +347,7 @@ public class TestUtils {
 
     private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {
         return new DataportenBodyBuilder()
-                   .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
+                   .withEntityPageInformation(new ChannelRegistryEntityPageInformation(results.size()))
                    .withEntityResultSet(entityResult)
                    .build();
     }
