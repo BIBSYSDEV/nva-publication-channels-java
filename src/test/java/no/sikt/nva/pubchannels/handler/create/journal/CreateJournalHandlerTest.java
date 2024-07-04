@@ -26,7 +26,7 @@ import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateJournalRequest;
 import no.sikt.nva.pubchannels.channelRegistry.model.create.CreateChannelResponse;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -360,7 +360,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                                                                      "application/json"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
                                     .withHeader("Content-Type", "application/json;charset=UTF-8")
-                                    .withBody(nonNull(expectedPid) ? new DataportenBodyBuilder().withType("Journal")
+                                    .withBody(nonNull(expectedPid) ? new ChannelRegistryBodyBuilder().withType("Journal")
                                                                          .withPid(expectedPid)
                                                                          .withOriginalTitle(VALID_NAME)
                                                                          .build() : null)));

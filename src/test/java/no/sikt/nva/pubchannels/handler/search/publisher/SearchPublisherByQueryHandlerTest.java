@@ -444,11 +444,12 @@ class SearchPublisherByQueryHandlerTest {
         String isbnPrefix,
         String level,
         URI landingPage) throws UnprocessableContentException {
+        var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
 
         var expectedHits = List.of(
             PublisherResult.create(
                 constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null),
-                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage), year
+                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage, discontinued), year
             ));
 
         return PaginatedSearchResult.create(

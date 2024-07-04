@@ -23,25 +23,19 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private static final String PRINT_ISSN_FIELD = "printIssn";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
-
+    private static final String DISCONTINUED_FIELD = "discontinued";
     @JsonProperty(TYPE_FIELD)
     private static final String type = "Journal";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
-    @JsonProperty(ID_FIELD)
     private final URI id;
-    @JsonProperty(IDENTIFIER_FIELD)
     private final String identifier;
-    @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(ONLINE_ISSN_FIELD)
     private final String onlineIssn;
-    @JsonProperty(PRINT_ISSN_FIELD)
     private final String printIssn;
-    @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
-    @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
+    private final String discontinued;
 
     @JsonCreator
     public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
@@ -50,7 +44,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                                     @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
                                     @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                                     @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+                                    @JsonProperty(SAME_AS_FIELD) URI sameAs,
+                                    @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
@@ -58,6 +53,7 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         this.printIssn = printIssn;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
+        this.discontinued = discontinued;
     }
 
     public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
@@ -70,7 +66,9 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                                             journal.name(),
                                             journal.onlineIssn(),
                                             journal.printIssn(),
-                                            journal.getScientificValue(), journal.homepage());
+                                            journal.getScientificValue(),
+                                            journal.homepage(),
+                                            journal.discontinued());
     }
 
     public String getType() {
@@ -112,7 +110,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs);
+        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
+                            discontinued);
     }
 
     @Override
@@ -132,7 +131,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                && Objects.equals(onlineIssn, that.onlineIssn)
                && Objects.equals(printIssn, that.printIssn)
                && scientificValue == that.scientificValue
-               && Objects.equals(sameAs, that.sameAs);
+               && Objects.equals(sameAs, that.sameAs)
+               && Objects.equals(discontinued, that.discontinued);
     }
 
     @Override

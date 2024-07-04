@@ -58,6 +58,11 @@ class FetchByIdAndYearResponseTest {
             public URI homepage() {
                 return randomUri();
             }
+
+            @Override
+            public String discontinued() {
+                return randomString();
+            }
         };
         return FetchByIdAndYearResponse.create(randomUri(), publisher, randomString());
     }

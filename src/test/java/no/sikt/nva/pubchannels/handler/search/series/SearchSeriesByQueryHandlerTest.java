@@ -441,11 +441,13 @@ class SearchSeriesByQueryHandlerTest {
         String electronicIssn,
         String level,
         URI landingPage) throws UnprocessableContentException {
+        var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
 
         var expectedHits = List.of(
             SeriesResult.create(
                 constructPublicationChannelUri(PATH_ELEMENT, null),
-                createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage),
+                createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage,
+                             discontinued),
                 year));
 
         return PaginatedSearchResult.create(

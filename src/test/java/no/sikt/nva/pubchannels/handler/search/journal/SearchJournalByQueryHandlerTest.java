@@ -389,20 +389,21 @@ class SearchJournalByQueryHandlerTest {
     }
 
     private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultIssnSearch(
-        int year,
-        String printIssn)
+        int year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
         var name = randomString();
         var electronicIssn = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
+        int discontinued = Integer.parseInt(String.valueOf(year)) - 1;
 
         var dataportenEntityResult = List.of(
             createDataportenJournalResponse(year, name, pid, electronicIssn, printIssn, landingPage, level));
         mockDataportenResponse(String.valueOf(year), printIssn, dataportenEntityResult);
 
-        return getSingleHit(String.valueOf(year), printIssn, pid, name, electronicIssn, level, landingPage);
+        return getSingleHit(String.valueOf(year), printIssn, pid, name, electronicIssn, level, landingPage,
+                            String.valueOf(discontinued));
     }
 
     private PaginatedSearchResult<JournalResult> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
@@ -414,12 +415,14 @@ class SearchJournalByQueryHandlerTest {
         var electronicIssn = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
+        int discontinued = Integer.parseInt(String.valueOf(year)) - 1;
 
         var dataportenEntityResult = List.of(
             createDataportenJournalResponse(null, name, pid, electronicIssn, printIssn, landingPage, level));
         mockDataportenResponse(year, printIssn, dataportenEntityResult);
 
-        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage);
+        return getSingleHit(year, printIssn, pid, name, electronicIssn, level, landingPage,
+                            String.valueOf(discontinued));
     }
 
     private void mockDataportenResponse(String year, String printIssn, List<String> dataportenEntityResult) {
@@ -439,12 +442,14 @@ class SearchJournalByQueryHandlerTest {
         String name,
         String electronicIssn,
         String level,
-        URI landingPage) throws UnprocessableContentException {
+        URI landingPage,
+        String discontinued) throws UnprocessableContentException {
 
         var expectedHits = List.of(
             JournalResult.create(
                 constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null),
-                createJournal(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage),
+                createJournal(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage,
+                              discontinued),
                 year
             ));
 

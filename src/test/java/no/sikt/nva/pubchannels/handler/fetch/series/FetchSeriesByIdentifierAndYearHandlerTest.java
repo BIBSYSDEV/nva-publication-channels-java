@@ -316,6 +316,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         String issn,
         ScientificValue scientificValue,
         URI landingPage) {
+        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
 
         var selfUriBase = URI.create(SELF_URI_BASE);
         var series = createSeries(
@@ -325,7 +326,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
             electronicIssn,
             issn,
             scientificValue,
-            landingPage);
+            landingPage,
+            discontinued);
 
         return FetchByIdAndYearResponse.create(selfUriBase, series, year);
     }

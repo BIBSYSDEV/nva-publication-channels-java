@@ -144,7 +144,8 @@ public class TestUtils {
         String electronicIssn,
         String issn,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartyJournal() {
             @Override
@@ -173,6 +174,11 @@ public class TestUtils {
             }
 
             @Override
+            public String discontinued() {
+                return discontinued;
+            }
+
+            @Override
             public String onlineIssn() {
                 return electronicIssn;
             }
@@ -191,7 +197,8 @@ public class TestUtils {
         String electronicIssn,
         String issn,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartySeries() {
             @Override
@@ -220,6 +227,11 @@ public class TestUtils {
             }
 
             @Override
+            public String discontinued() {
+                return discontinued;
+            }
+
+            @Override
             public String onlineIssn() {
                 return electronicIssn;
             }
@@ -237,7 +249,8 @@ public class TestUtils {
         String name,
         String isbnPrefix,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartyPublisher() {
             @Override
@@ -263,6 +276,11 @@ public class TestUtils {
             @Override
             public URI homepage() {
                 return landingPage;
+            }
+
+            @Override
+            public String discontinued() {
+                return discontinued;
             }
 
             @Override
@@ -293,7 +311,7 @@ public class TestUtils {
 
     public static String createDataportenJournalResponse(Integer year, String originalTitle, String pid, String eissn,
                                                          String pissn, URI kurl, String level) {
-        return new DataportenBodyBuilder()
+        return new ChannelRegistryBodyBuilder()
                    .withPid(pid)
                    .withOriginalTitle(originalTitle)
                    .withEissn(eissn)
@@ -305,7 +323,7 @@ public class TestUtils {
 
     public static String createDataportenPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
                                                            URI kurl, String level) {
-        return new DataportenBodyBuilder()
+        return new ChannelRegistryBodyBuilder()
                    .withPid(pid)
                    .withName(name)
                    .withIsbnPrefix(isbnPrefix)
@@ -346,7 +364,7 @@ public class TestUtils {
     }
 
     private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {
-        return new DataportenBodyBuilder()
+        return new ChannelRegistryBodyBuilder()
                    .withEntityPageInformation(new ChannelRegistryEntityPageInformation(results.size()))
                    .withEntityResultSet(entityResult)
                    .build();

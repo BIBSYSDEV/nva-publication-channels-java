@@ -55,6 +55,11 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
+            public String discontinued() {
+                return randomString();
+            }
+
+            @Override
             public String onlineIssn() {
                 return randomString();
             }

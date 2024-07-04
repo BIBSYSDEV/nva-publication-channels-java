@@ -9,66 +9,71 @@ import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistryEntit
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 
-public class DataportenBodyBuilder {
+public class ChannelRegistryBodyBuilder {
 
     private final Map<String, Object> bodyMap = new ConcurrentHashMap<>();
 
-    public DataportenBodyBuilder() {
+    public ChannelRegistryBodyBuilder() {
     }
 
-    public DataportenBodyBuilder withType(String type) {
+    public ChannelRegistryBodyBuilder withType(String type) {
         bodyMap.put("type", type);
         return this;
     }
 
-    public DataportenBodyBuilder withPid(String pid) {
+    public ChannelRegistryBodyBuilder withPid(String pid) {
         bodyMap.put("pid", pid);
         return this;
     }
 
-    public DataportenBodyBuilder withName(String name) {
+    public ChannelRegistryBodyBuilder withName(String name) {
         bodyMap.put("name", name);
         return this;
     }
 
-    public DataportenBodyBuilder withOriginalTitle(String originalTitle) {
+    public ChannelRegistryBodyBuilder withOriginalTitle(String originalTitle) {
         bodyMap.put("originalTitle", originalTitle);
         return this;
     }
 
-    public DataportenBodyBuilder withEissn(String eissn) {
+    public ChannelRegistryBodyBuilder withEissn(String eissn) {
         bodyMap.put("eissn", eissn);
         return this;
     }
 
-    public DataportenBodyBuilder withPissn(String pissn) {
+    public ChannelRegistryBodyBuilder withPissn(String pissn) {
         bodyMap.put("pissn", pissn);
         return this;
     }
 
-    public DataportenBodyBuilder withIsbnPrefix(String isbnPrefix) {
+    public ChannelRegistryBodyBuilder withIsbnPrefix(String isbnPrefix) {
         bodyMap.put("isbnprefix", isbnPrefix);
         return this;
     }
 
-    public DataportenBodyBuilder withLevel(ChannelRegistryLevel level) {
+    public ChannelRegistryBodyBuilder withLevel(ChannelRegistryLevel level) {
         if (nonNull(level)) {
             bodyMap.put("levelElementDto", level);
         }
         return this;
     }
 
-    public DataportenBodyBuilder withKurl(String kurl) {
+    public ChannelRegistryBodyBuilder withCeased(String ceased) {
+        bodyMap.put("ceased", ceased);
+        return this;
+    }
+
+    public ChannelRegistryBodyBuilder withKurl(String kurl) {
         bodyMap.put("kurl", kurl);
         return this;
     }
 
-    public DataportenBodyBuilder withEntityPageInformation(ChannelRegistryEntityPageInformation pageInformation) {
+    public ChannelRegistryBodyBuilder withEntityPageInformation(ChannelRegistryEntityPageInformation pageInformation) {
         bodyMap.put("entityPageInformationDto", pageInformation);
         return this;
     }
 
-    public DataportenBodyBuilder withEntityResultSet(ObjectNode entityResultSet) {
+    public ChannelRegistryBodyBuilder withEntityResultSet(ObjectNode entityResultSet) {
         bodyMap.put("entityResultSetDto", entityResultSet);
         return this;
     }

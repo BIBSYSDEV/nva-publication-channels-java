@@ -313,6 +313,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         String isbnPrefix,
         ScientificValue scientificValue,
         URI landingPage) {
+        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
 
         var selfUriBase = URI.create(SELF_URI_BASE);
         var publisher = createPublisher(
@@ -321,7 +322,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
             name,
             isbnPrefix,
             scientificValue,
-            landingPage);
+            landingPage,
+            discontinued);
 
         return FetchByIdAndYearResponse.create(selfUriBase, publisher, year);
     }

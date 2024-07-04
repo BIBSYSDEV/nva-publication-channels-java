@@ -13,4 +13,6 @@ public interface ThirdPartyPublicationChannel {
     ScientificValue getScientificValue();
 
     URI homepage();
+
+    String discontinued();
 }

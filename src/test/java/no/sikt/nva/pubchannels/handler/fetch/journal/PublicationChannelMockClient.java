@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.channelRegistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryLevel;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.testutils.RandomDataGenerator;
@@ -47,13 +47,14 @@ public class PublicationChannelMockClient {
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
+        var discontinued = String.valueOf(year - 1);
 
         var responseBody = getDataportenResponseBody(year, identifier, name, electronicIssn, issn, scientificValue,
-                                                     landingPage);
+                                                     landingPage, discontinued);
 
         mockDataporten(year, identifier, responseBody);
 
-        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage, discontinued);
 
         return identifier;
     }
@@ -65,12 +66,14 @@ public class PublicationChannelMockClient {
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
+        var discontinued = String.valueOf(year - 1);
 
         var responseBody = getDataportenResponseBody(null, identifier, name, electronicIssn, issn, scientificValue,
-                                                     landingPage);
+                                                     landingPage, discontinued);
 
         mockDataporten(year, identifier, responseBody);
-        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage,
+                                 discontinued);
         return identifier;
     }
 
@@ -97,7 +100,7 @@ public class PublicationChannelMockClient {
 
     private void createJournalAndAddToMap(Integer year, String identifier, String name, String electronicIssn,
                                           String issn,
-                                          ScientificValue scientificValue, URI landingPage) {
+                                          ScientificValue scientificValue, URI landingPage, String discontinued) {
         var selfUriBase = URI.create("https://localhost/publication-channels/journal");
         var journal = new ThirdPartyJournal() {
             @Override
@@ -134,6 +137,11 @@ public class PublicationChannelMockClient {
             public String printIssn() {
                 return issn;
             }
+
+            @Override
+            public String discontinued() {
+                return discontinued;
+            }
         };
 
         var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal, String.valueOf(year));
@@ -165,10 +173,10 @@ public class PublicationChannelMockClient {
                                              String electronicIssn,
                                              String issn,
                                              ScientificValue scientificValue,
-                                             URI landingPage) {
+                                             URI landingPage, String discontinued) {
 
         var level = scientificValueToLevel(scientificValue);
-        return new DataportenBodyBuilder()
+        return new ChannelRegistryBodyBuilder()
                    .withType("Journal")
                    .withPid(identifier)
                    .withOriginalTitle(name)
@@ -176,6 +184,7 @@ public class PublicationChannelMockClient {
                    .withPissn(issn)
                    .withLevel(new ChannelRegistryLevel(year, level))
                    .withKurl(landingPage.toString())
+                   .withCeased(discontinued)
                    .build();
     }
 
