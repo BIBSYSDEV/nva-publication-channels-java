@@ -7,13 +7,14 @@ import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
 public class FetchPublisherByIdentifierAndYearHandler extends
-                                                      FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
+                                                      FetchByIdentifierAndYearHandler<Void, PublisherDto> {
 
     private static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
@@ -28,16 +29,16 @@ public class FetchPublisherByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo,
-                                                    Context context)
+    protected PublisherDto processInput(Void input, RequestInfo requestInfo,
+                                        Context context)
         throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
 
         var requestYear = request.getYear();
         var publisher = fetchPublisher(request, requestYear);
-        return FetchByIdAndYearResponse.create(publisherIdBaseUri,
-                                               (ThirdPartyPublisher) publisher, requestYear);
+        return PublisherDto.create(publisherIdBaseUri,
+                                   (ThirdPartyPublisher) publisher, requestYear);
     }
 
     private ThirdPartyPublicationChannel fetchPublisher(FetchByIdAndYearRequest request, String requestYear)

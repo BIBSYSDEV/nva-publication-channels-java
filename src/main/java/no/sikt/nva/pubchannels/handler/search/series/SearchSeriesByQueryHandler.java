@@ -5,11 +5,12 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesResult> {
+public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesDto> {
 
     private static final String PATH_ELEMENT = "series";
     private static final ChannelType CHANNEL_TYPE = ChannelType.SERIES;
@@ -24,7 +25,7 @@ public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesResul
     }
 
     @Override
-    protected SeriesResult createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
-        return SeriesResult.create(baseUri, (ThirdPartySeries) entityResult, requestedYear);
+    protected SeriesDto createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
+        return SeriesDto.create(baseUri, (ThirdPartySeries) entityResult, requestedYear);
     }
 }

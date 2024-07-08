@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.series;
+package no.sikt.nva.pubchannels.handler.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,27 +6,25 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public class FetchByIdAndYearResponse implements JsonSerializable {
+public class PublisherDto implements JsonSerializable {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
     private static final String IDENTIFIER_FIELD = "identifier";
     private static final String NAME_FIELD = "name";
-    private static final String ONLINE_ISSN_FIELD = "onlineIssn";
-    private static final String PRINT_ISSN_FIELD = "printIssn";
+    private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
     private static final String DISCONTINUED_FIELD = "discontinued";
-
     @JsonProperty(TYPE_FIELD)
-    private static final String TYPE = "Series";
+    private static final String TYPE = "Publisher";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
@@ -35,10 +33,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private final String identifier;
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(ONLINE_ISSN_FIELD)
-    private final String onlineIssn;
-    @JsonProperty(PRINT_ISSN_FIELD)
-    private final String printIssn;
+    @JsonProperty(ISBN_PREFIX_FIELD)
+    private final String isbnPrefix;
     @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
     @JsonProperty(SAME_AS_FIELD)
@@ -47,37 +43,35 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private final String discontinued;
 
     @JsonCreator
-    public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
-                                    @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                    @JsonProperty(NAME_FIELD) String name,
-                                    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                    @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                    @JsonProperty(SAME_AS_FIELD) URI sameAs,
-                                    @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
+    public PublisherDto(@JsonProperty(ID_FIELD) URI id,
+                        @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                        @JsonProperty(NAME_FIELD) String name,
+                        @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
+                        @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                        @JsonProperty(SAME_AS_FIELD) URI sameAs,
+                        @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
-        this.onlineIssn = onlineIssn;
-        this.printIssn = printIssn;
+        this.isbnPrefix = isbnPrefix;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
         this.discontinued = discontinued;
     }
 
-    public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartySeries series, String requestedYear) {
-        var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
+    public static PublisherDto create(URI selfUriBase, ThirdPartyPublisher publisher,
+                                      String requestedYear) {
+        var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(series.identifier(), year)
+                     .addChild(publisher.identifier(), year)
                      .getUri();
-        return new FetchByIdAndYearResponse(id,
-                                            series.identifier(),
-                                            series.name(),
-                                            series.onlineIssn(),
-                                            series.printIssn(),
-                                            series.getScientificValue(),
-                                            series.homepage(),
-                                            series.discontinued());
+        return new PublisherDto(id,
+                                publisher.identifier(),
+                                publisher.name(),
+                                publisher.isbnPrefix(),
+                                publisher.getScientificValue(),
+                                publisher.homepage(),
+                                publisher.discontinued());
     }
 
     public String getType() {
@@ -100,12 +94,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         return name;
     }
 
-    public String getOnlineIssn() {
-        return onlineIssn;
-    }
-
-    public String getPrintIssn() {
-        return printIssn;
+    public String getIsbnPrefix() {
+        return isbnPrefix;
     }
 
     public ScientificValue getScientificValue() {
@@ -123,8 +113,7 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
-                            discontinued);
+        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued);
     }
 
     @Override
@@ -136,23 +125,15 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FetchByIdAndYearResponse that = (FetchByIdAndYearResponse) o;
+        PublisherDto that = (PublisherDto) o;
         return Objects.equals(context, that.context)
                && Objects.equals(id, that.id)
                && Objects.equals(identifier, that.identifier)
                && Objects.equals(name, that.name)
-               && Objects.equals(onlineIssn, that.onlineIssn)
-               && Objects.equals(printIssn, that.printIssn)
+               && Objects.equals(isbnPrefix, that.isbnPrefix)
                && scientificValue == that.scientificValue
                && Objects.equals(sameAs, that.sameAs)
                && Objects.equals(discontinued, that.discontinued);
     }
-
-    @Override
-    @JacocoGenerated
-    public String toString() {
-        return toJsonString();
-    }
 }
-
 

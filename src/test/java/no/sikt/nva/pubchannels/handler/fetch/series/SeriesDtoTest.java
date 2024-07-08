@@ -11,9 +11,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import org.junit.jupiter.api.Test;
 
-class FetchByIdAndYearResponseTest {
+class SeriesDtoTest {
 
     @Test
     void canSerializeDeserializeSeriesWithoutLossOfData() throws JsonProcessingException {
@@ -21,12 +22,12 @@ class FetchByIdAndYearResponseTest {
 
         var serializedSeries = dtoObjectMapper.writeValueAsString(series);
 
-        var deserializedSeries = dtoObjectMapper.readValue(serializedSeries, FetchByIdAndYearResponse.class);
+        var deserializedSeries = dtoObjectMapper.readValue(serializedSeries, SeriesDto.class);
 
         assertThat(deserializedSeries, is(equalTo(series)));
     }
 
-    private static FetchByIdAndYearResponse randomSeries() {
+    private static SeriesDto randomSeries() {
         var series = new ThirdPartySeries() {
 
             @Override
@@ -69,6 +70,6 @@ class FetchByIdAndYearResponseTest {
                 return randomString();
             }
         };
-        return FetchByIdAndYearResponse.create(randomUri(), series, randomString());
+        return SeriesDto.create(randomUri(), series, randomString());
     }
 }

@@ -33,6 +33,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -93,14 +94,14 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
 
-        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualJournal = response.getBodyObject(JournalDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
@@ -113,12 +114,12 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualJournal = response.getBodyObject(JournalDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
@@ -131,12 +132,12 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualJournal = response.getBodyObject(JournalDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }

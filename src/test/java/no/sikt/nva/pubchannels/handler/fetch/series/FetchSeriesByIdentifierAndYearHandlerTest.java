@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.RandomDataGenerator;
@@ -96,12 +97,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
@@ -120,9 +121,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
-        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -141,12 +142,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualSeries = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
@@ -277,7 +278,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private FetchByIdAndYearResponse mockSeriesFound(int year, String identifier) {
+    private SeriesDto mockSeriesFound(int year, String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
@@ -295,7 +296,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
                                            landingPage, discontinued);
     }
 
-    private FetchByIdAndYearResponse mockSeriesFoundYearValueNull(String year, String identifier) {
+    private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
         var name = randomString();
         var electronicIssn = randomIssn();
         var issn = randomIssn();
@@ -312,7 +313,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
                                            landingPage, discontinued);
     }
 
-    private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
+    private SeriesDto getFetchByIdAndYearResponse(
         String year,
         String identifier,
         String name,
@@ -332,6 +333,6 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
             landingPage,
             discontinued);
 
-        return FetchByIdAndYearResponse.create(selfUriBase, series, year);
+        return SeriesDto.create(selfUriBase, series, year);
     }
 }

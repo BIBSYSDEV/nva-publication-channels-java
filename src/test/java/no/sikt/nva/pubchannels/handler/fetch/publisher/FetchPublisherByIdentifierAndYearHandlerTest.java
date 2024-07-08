@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
@@ -97,12 +98,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
     }
 
@@ -121,9 +122,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
-        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -142,12 +143,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, FetchByIdAndYearResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
 
-        var actualPublisher = response.getBodyObject(FetchByIdAndYearResponse.class);
+        var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
     }
 
@@ -278,7 +279,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private FetchByIdAndYearResponse mockPublisherFound(int year, String identifier) {
+    private PublisherDto mockPublisherFound(int year, String identifier) {
         var name = randomString();
         var isbnPrefix = String.valueOf(validIsbnPrefix());
         var scientificValue = randomElement(ScientificValue.values());
@@ -294,7 +295,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                                            landingPage, String.valueOf(Integer.parseInt(String.valueOf(year)) - 1));
     }
 
-    private FetchByIdAndYearResponse mockPublisherFoundYearValueNull(String year, String identifier) {
+    private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
         var name = randomString();
         var isbnPrefix = String.valueOf(validIsbnPrefix());
         var scientificValue = randomElement(ScientificValue.values());
@@ -309,7 +310,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                                            landingPage, discontinued);
     }
 
-    private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
+    private PublisherDto getFetchByIdAndYearResponse(
         String year,
         String identifier,
         String name,
@@ -327,6 +328,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
             landingPage,
             discontinued);
 
-        return FetchByIdAndYearResponse.create(selfUriBase, publisher, year);
+        return PublisherDto.create(selfUriBase, publisher, year);
     }
 }
