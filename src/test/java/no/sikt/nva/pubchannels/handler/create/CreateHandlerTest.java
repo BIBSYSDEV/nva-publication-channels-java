@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -57,7 +57,7 @@ public abstract class CreateHandlerTest {
         return Stream.of("httpss://whatever", "htp://", "fttp://");
     }
 
-    protected static DataportenPublicationChannelClient setupInteruptedClient()
+    protected static ChannelRegistryClient setupInteruptedClient()
             throws IOException, InterruptedException {
         var httpAuthClient = mock(HttpClient.class);
         when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
@@ -65,9 +65,9 @@ public abstract class CreateHandlerTest {
         var dataportenAuthClient =
                 new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
         var httpPublicationChannelClient = mock(HttpClient.class);
-        return new DataportenPublicationChannelClient(httpPublicationChannelClient,
-                dataportenAuthBaseUri,
-                dataportenAuthClient);
+        return new ChannelRegistryClient(httpPublicationChannelClient,
+                                         dataportenAuthBaseUri,
+                                         dataportenAuthClient);
     }
 
     protected static <T> InputStream constructRequest(T body) throws JsonProcessingException {

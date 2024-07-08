@@ -54,11 +54,11 @@ public class CreateSeriesResponse {
 
     public static CreateSeriesResponse create(URI id, ThirdPartySeries series) {
         return new CreateSeriesResponse(id,
-                                        series.getName(),
-                                        series.getOnlineIssn(),
-                                        series.getPrintIssn(),
+                                        series.name(),
+                                        series.onlineIssn(),
+                                        series.printIssn(),
                                         series.getScientificValue(),
-                                        series.getHomepage());
+                                        series.homepage());
     }
 
     public String getType() {

@@ -23,6 +23,7 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private static final String PRINT_ISSN_FIELD = "printIssn";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
+    private static final String DISCONTINUED_FIELD = "discontinued";
 
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Series";
@@ -42,6 +43,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private final ScientificValue scientificValue;
     @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
+    @JsonProperty(DISCONTINUED_FIELD)
+    private final String discontinued;
 
     @JsonCreator
     public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
@@ -50,7 +53,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                                     @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
                                     @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                                     @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+                                    @JsonProperty(SAME_AS_FIELD) URI sameAs,
+                                    @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
@@ -58,20 +62,22 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         this.printIssn = printIssn;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
+        this.discontinued = discontinued;
     }
 
     public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartySeries series, String requestedYear) {
         var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(series.getIdentifier(), year)
+                     .addChild(series.identifier(), year)
                      .getUri();
         return new FetchByIdAndYearResponse(id,
-                                            series.getIdentifier(),
-                                            series.getName(),
-                                            series.getOnlineIssn(),
-                                            series.getPrintIssn(),
+                                            series.identifier(),
+                                            series.name(),
+                                            series.onlineIssn(),
+                                            series.printIssn(),
                                             series.getScientificValue(),
-                                            series.getHomepage());
+                                            series.homepage(),
+                                            series.discontinued());
     }
 
     public String getType() {
@@ -110,10 +116,15 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         return sameAs;
     }
 
+    public String getDiscontinued() {
+        return discontinued;
+    }
+
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs);
+        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
+                            discontinued);
     }
 
     @Override
@@ -133,7 +144,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                && Objects.equals(onlineIssn, that.onlineIssn)
                && Objects.equals(printIssn, that.printIssn)
                && scientificValue == that.scientificValue
-               && Objects.equals(sameAs, that.sameAs);
+               && Objects.equals(sameAs, that.sameAs)
+               && Objects.equals(discontinued, that.discontinued);
     }
 
     @Override

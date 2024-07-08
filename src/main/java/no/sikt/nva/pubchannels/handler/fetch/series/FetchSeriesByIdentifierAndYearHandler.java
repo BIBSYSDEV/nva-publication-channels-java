@@ -1,8 +1,8 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
-import static no.sikt.nva.pubchannels.dataporten.ChannelType.SERIES;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.dataporten.PublicationChannelMovedException;
+import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;

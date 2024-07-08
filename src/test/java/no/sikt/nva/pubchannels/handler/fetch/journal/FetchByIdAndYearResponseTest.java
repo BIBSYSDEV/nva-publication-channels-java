@@ -7,6 +7,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
@@ -23,14 +24,14 @@ class FetchByIdAndYearResponseTest {
 
         var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, FetchByIdAndYearResponse.class);
 
-        assertThat(deserializedJournal, is(equalTo(journal)));
+        assertEquals(deserializedJournal, journal);
     }
 
     private static FetchByIdAndYearResponse randomJournal() {
         var journal = new ThirdPartyJournal() {
 
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return randomString();
             }
 
@@ -40,7 +41,7 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return randomString();
             }
 
@@ -50,17 +51,22 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return randomUri();
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String discontinued() {
                 return randomString();
             }
 
             @Override
-            public String getPrintIssn() {
+            public String onlineIssn() {
+                return randomString();
+            }
+
+            @Override
+            public String printIssn() {
                 return randomString();
             }
         };

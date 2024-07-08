@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.testutils.RandomDataGenerator;
@@ -47,13 +47,14 @@ public class PublicationChannelMockClient {
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
+        var discontinued = String.valueOf(year - 1);
 
         var responseBody = getDataportenResponseBody(year, identifier, name, electronicIssn, issn, scientificValue,
-                                                     landingPage);
+                                                     landingPage, discontinued);
 
         mockDataporten(year, identifier, responseBody);
 
-        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage, discontinued);
 
         return identifier;
     }
@@ -65,12 +66,14 @@ public class PublicationChannelMockClient {
         var issn = randomIssn();
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var landingPage = randomUri();
+        var discontinued = String.valueOf(year - 1);
 
         var responseBody = getDataportenResponseBody(null, identifier, name, electronicIssn, issn, scientificValue,
-                                                     landingPage);
+                                                     landingPage, discontinued);
 
         mockDataporten(year, identifier, responseBody);
-        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage);
+        createJournalAndAddToMap(year, identifier, name, electronicIssn, issn, scientificValue, landingPage,
+                                 discontinued);
         return identifier;
     }
 
@@ -97,11 +100,11 @@ public class PublicationChannelMockClient {
 
     private void createJournalAndAddToMap(Integer year, String identifier, String name, String electronicIssn,
                                           String issn,
-                                          ScientificValue scientificValue, URI landingPage) {
+                                          ScientificValue scientificValue, URI landingPage, String discontinued) {
         var selfUriBase = URI.create("https://localhost/publication-channels/journal");
         var journal = new ThirdPartyJournal() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -111,7 +114,7 @@ public class PublicationChannelMockClient {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -121,18 +124,23 @@ public class PublicationChannelMockClient {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
+            }
+
+            @Override
+            public String discontinued() {
+                return discontinued;
             }
         };
 
@@ -165,17 +173,18 @@ public class PublicationChannelMockClient {
                                              String electronicIssn,
                                              String issn,
                                              ScientificValue scientificValue,
-                                             URI landingPage) {
+                                             URI landingPage, String discontinued) {
 
         var level = scientificValueToLevel(scientificValue);
-        return new DataportenBodyBuilder()
+        return new ChannelRegistryBodyBuilder()
                    .withType("Journal")
                    .withPid(identifier)
                    .withOriginalTitle(name)
                    .withEissn(electronicIssn)
                    .withPissn(issn)
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
                    .withKurl(landingPage.toString())
+                   .withCeased(discontinued)
                    .build();
     }
 

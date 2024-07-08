@@ -7,7 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Year;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -35,8 +35,8 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
         var authBaseUri = URI.create(secretsReader.fetchSecret(SECRET_NAME, "authBaseUrl"));
         var pubChannelBaseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_PUBLICATION_CHANNEL_BASE_URI));
         var authClient = new DataportenAuthClient(HttpClient.newBuilder().build(), authBaseUri, clientId, clientSecret);
-        this.publicationChannelClient = new DataportenPublicationChannelClient(HttpClient.newBuilder().build(),
-                                                                               pubChannelBaseUri, authClient);
+        this.publicationChannelClient = new ChannelRegistryClient(HttpClient.newBuilder().build(),
+                                                                  pubChannelBaseUri, authClient);
     }
 
     protected CreateHandler(Class<I> requestClass, Environment environment, PublicationChannelClient client) {

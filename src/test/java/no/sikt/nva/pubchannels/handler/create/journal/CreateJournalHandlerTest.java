@@ -23,10 +23,10 @@ import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
+import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -60,15 +60,15 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
-        var publicationChannelSource = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri,
-                                                                              dataportenAuthSource);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, dataportenBaseUri,
+                                                                 dataportenAuthSource);
         handlerUnderTest = new CreateJournalHandler(environment, publicationChannelSource);
     }
 
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -87,7 +87,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
 
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
 
@@ -106,7 +106,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
 
         setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
 
@@ -122,7 +122,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
-        var request = new DataportenCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -141,7 +141,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new DataportenCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK,
+        setupStub(null, new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK,
                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -229,7 +229,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedWhenValidPrintIssn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setupStub(expectedPid, new DataportenCreateJournalRequest(VALID_NAME, issn, null, null),
+        setupStub(expectedPid, new ChannelRegistryCreateJournalRequest(VALID_NAME, issn, null, null),
                   HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
@@ -270,7 +270,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndPrintIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, printIssn, null, null);
+        var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, printIssn, null, null);
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(printIssn).build();
@@ -285,7 +285,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndOnlineIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var onlineIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, onlineIssn, null);
+        var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, onlineIssn, null);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -301,7 +301,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndHomepage() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var homepage = "https://a.valid.url.com";
-        var clientRequest = new DataportenCreateJournalRequest(VALID_NAME, null, null, homepage);
+        var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, homepage);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -336,16 +336,16 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         return new CreateJournalResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(String expectedPid, DataportenCreateJournalRequest request, int clientAuthResponseHttpCode,
+    private void setupStub(String expectedPid, ChannelRegistryCreateJournalRequest request, int clientAuthResponseHttpCode,
                            int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createjournal/createpid",
-                     dtoObjectMapper.writeValueAsString(new DataportenCreateJournalResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, DataportenCreateJournalRequest request,
+    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreateJournalRequest request,
                                      int clientAuthResponseHttpCode,
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
@@ -360,7 +360,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                                                                      "application/json"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
                                     .withHeader("Content-Type", "application/json;charset=UTF-8")
-                                    .withBody(nonNull(expectedPid) ? new DataportenBodyBuilder().withType("Journal")
+                                    .withBody(nonNull(expectedPid) ? new ChannelRegistryBodyBuilder().withType("Journal")
                                                                          .withPid(expectedPid)
                                                                          .withOriginalTitle(VALID_NAME)
                                                                          .build() : null)));

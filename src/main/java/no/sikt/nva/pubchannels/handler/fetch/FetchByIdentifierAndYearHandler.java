@@ -12,7 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
 import java.util.List;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -33,7 +33,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
-        this.publicationChannelClient = DataportenPublicationChannelClient.defaultInstance();
+        this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,

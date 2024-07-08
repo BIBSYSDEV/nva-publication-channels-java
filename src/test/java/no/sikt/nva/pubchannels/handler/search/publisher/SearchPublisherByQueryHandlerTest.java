@@ -5,8 +5,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_COUNT_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.DATAPORTEN_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_NO_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
 import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
@@ -15,10 +15,10 @@ import static no.sikt.nva.pubchannels.TestCommons.MIN_LEVEL;
 import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenPublisherResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryPublisherResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenResponseBody;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getDataportenSearchPublisherResult;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchPublisherResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
@@ -53,8 +53,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenPublisher;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -88,9 +88,9 @@ class SearchPublisherByQueryHandlerTest {
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
         when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
-        var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
+        var channelRegistryBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, null);
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
         this.handlerUnderTest = new SearchPublisherByQueryHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
@@ -165,13 +165,13 @@ class SearchPublisherByQueryHandlerTest {
         int maxNr = 30;
         int offset = 0;
         int size = 10;
-        var dataportenSearchResult = getDataportenSearchPublisherResult(year, name, maxNr);
-        var responseBody = getDataportenResponseBody(dataportenSearchResult, offset, size);
-        stubDataportenSearchResponse(
+        var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
+        var responseBody = getChannelRegistryResponseBody(result, offset, size);
+        stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
-            DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
-            DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM, DEFAULT_SIZE,
+            CHANNEL_REGISTRY_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
         var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
 
@@ -182,9 +182,9 @@ class SearchPublisherByQueryHandlerTest {
                                                        TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
+        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
         var expectedSearchresult = getExpectedPaginatedSearchPublisherResultNameSearch(
-            dataportenSearchResult, yearString, name, offset, size);
+            result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
@@ -196,13 +196,13 @@ class SearchPublisherByQueryHandlerTest {
         int offset = 10;
         int size = 10;
         int maxNr = 30;
-        var dataportenSearchResult = getDataportenSearchPublisherResult(year, name, maxNr);
-        stubDataportenSearchResponse(
-            getDataportenResponseBody(dataportenSearchResult, offset, size),
+        var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
+        stubChannelRegistrySearchResponse(
+            getChannelRegistryResponseBody(result, offset, size),
             HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
-            DATAPORTEN_PAGE_COUNT_PARAM, String.valueOf(size),
-            DATAPORTEN_PAGE_NO_PARAM, String.valueOf(offset / size),
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM, String.valueOf(size),
+            CHANNEL_REGISTRY_PAGE_NO_PARAM, String.valueOf(offset / size),
             NAME_QUERY_PARAM, name);
         var input = constructRequest(
             Map.of("year", yearString, "query", name,
@@ -215,9 +215,9 @@ class SearchPublisherByQueryHandlerTest {
                                                        TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(dataportenSearchResult.size())));
+        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
         var expectedSearchresult = getExpectedPaginatedSearchPublisherResultNameSearch(
-            dataportenSearchResult, yearString, name, offset, size);
+            result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
     }
 
@@ -326,13 +326,13 @@ class SearchPublisherByQueryHandlerTest {
         var yearString = String.valueOf(randomYear());
         var name = randomString();
         int maxNr = 30;
-        var dataportenSearchResult = getDataportenSearchPublisherResult(year, name, maxNr);
-        var responseBody = getDataportenResponseBody(dataportenSearchResult, 0, 10);
-        stubDataportenSearchResponse(
+        var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
+        var responseBody = getChannelRegistryResponseBody(result, 0, 10);
+        stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
             YEAR_QUERY_PARAM, yearString,
-            DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
-            DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM, DEFAULT_SIZE,
+            CHANNEL_REGISTRY_PAGE_NO_PARAM, DEFAULT_OFFSET,
             NAME_QUERY_PARAM, name);
         var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
 
@@ -361,11 +361,11 @@ class SearchPublisherByQueryHandlerTest {
     }
 
     private static PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchPublisherResultNameSearch(
-        List<String> dataportenResults,
+        List<String> results,
         String year,
         String name, int queryOffset, int querySize)
         throws UnprocessableContentException {
-        var expectedHits = mapToPublisherResults(dataportenResults, year);
+        var expectedHits = mapToPublisherResults(results, year);
 
         return PaginatedSearchResult.create(
             constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, Map.of("year", year, "query", name)),
@@ -377,11 +377,11 @@ class SearchPublisherByQueryHandlerTest {
                    "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private static List<PublisherResult> mapToPublisherResults(List<String> dataportenResults, String requestedYear) {
-        return dataportenResults
+    private static List<PublisherResult> mapToPublisherResults(List<String> results, String requestedYear) {
+        return results
                    .stream()
                    .map(result -> attempt(
-                       () -> objectMapper.readValue(result, DataportenPublisher.class)).orElseThrow())
+                       () -> objectMapper.readValue(result, ChannelRegistryPublisher.class)).orElseThrow())
                    .map(publisher -> toPublisherResult(publisher, requestedYear))
                    .collect(Collectors.toList());
     }
@@ -401,10 +401,11 @@ class SearchPublisherByQueryHandlerTest {
         var level = randomLevel();
         var landingPage = randomUri();
         var yearString = String.valueOf(year);
+        var discontinued = String.valueOf(year - 1);
 
-        var dataportenEntityResult = List.of(
-            createDataportenPublisherResponse(year, name, pid, isbnPrefix, landingPage, level));
-        mockDataportenResponse(yearString, printIssn, dataportenEntityResult);
+        var result = List.of(
+            createChannelRegistryPublisherResponse(year, name, pid, isbnPrefix, landingPage, level, discontinued));
+        mockChannelRegistryResponse(yearString, printIssn, result);
 
         return getSingleHit(yearString, printIssn, pid, name, isbnPrefix, level, landingPage);
     }
@@ -418,21 +419,22 @@ class SearchPublisherByQueryHandlerTest {
         var isbnPrefix = randomIssn();
         var level = randomLevel();
         var landingPage = randomUri();
+        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
 
-        var dataportenEntityResult = List.of(
-            createDataportenPublisherResponse(null, name, pid, isbnPrefix, landingPage, level));
-        mockDataportenResponse(year, printIssn, dataportenEntityResult);
+        var result = List.of(
+            createChannelRegistryPublisherResponse(null, name, pid, isbnPrefix, landingPage, level, discontinued));
+        mockChannelRegistryResponse(year, printIssn, result);
 
         return getSingleHit(year, printIssn, pid, name, isbnPrefix, level, landingPage);
     }
 
-    private void mockDataportenResponse(String year, String printIssn, List<String> dataportenEntityResult) {
-        var responseBody = getDataportenResponseBody(dataportenEntityResult, 0, 10);
-        stubDataportenSearchResponse(responseBody, HttpURLConnection.HTTP_OK,
-                                     ISSN_QUERY_PARAM, printIssn,
-                                     YEAR_QUERY_PARAM, year,
-                                     DATAPORTEN_PAGE_COUNT_PARAM, DEFAULT_SIZE,
-                                     DATAPORTEN_PAGE_NO_PARAM, DEFAULT_OFFSET
+    private void mockChannelRegistryResponse(String year, String printIssn, List<String> result) {
+        var responseBody = getChannelRegistryResponseBody(result, 0, 10);
+        stubChannelRegistrySearchResponse(responseBody, HttpURLConnection.HTTP_OK,
+                                          ISSN_QUERY_PARAM, printIssn,
+                                          YEAR_QUERY_PARAM, year,
+                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM, DEFAULT_SIZE,
+                                          CHANNEL_REGISTRY_PAGE_NO_PARAM, DEFAULT_OFFSET
         );
     }
 
@@ -444,11 +446,12 @@ class SearchPublisherByQueryHandlerTest {
         String isbnPrefix,
         String level,
         URI landingPage) throws UnprocessableContentException {
+        var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
 
         var expectedHits = List.of(
             PublisherResult.create(
                 constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null),
-                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage), year
+                createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage, discontinued), year
             ));
 
         return PaginatedSearchResult.create(
@@ -466,12 +469,12 @@ class SearchPublisherByQueryHandlerTest {
         return String.valueOf((int) Math.floor(Math.random() * (MAX_LEVEL - MIN_LEVEL + 1) + MIN_LEVEL));
     }
 
-    private void stubDataportenSearchResponse(String body, int status, String... queryValue) {
+    private void stubChannelRegistrySearchResponse(String body, int status, String... queryValue) {
         if (queryValue.length % 2 != 0) {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getDataPortenRequestUrl(queryValue);
+        var url = getChannelRegistryRequestUrl(queryValue);
 
         stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
                     .withQueryParams(queryParams)
@@ -490,7 +493,7 @@ class SearchPublisherByQueryHandlerTest {
         return queryParams;
     }
 
-    private StringBuilder getDataPortenRequestUrl(String... queryValue) {
+    private StringBuilder getChannelRegistryRequestUrl(String... queryValue) {
         var url = new StringBuilder("/findpublisher/channels");
         for (int i = 0; i < queryValue.length; i = i + 2) {
             url.append(i == 0 ? "?" : "&");

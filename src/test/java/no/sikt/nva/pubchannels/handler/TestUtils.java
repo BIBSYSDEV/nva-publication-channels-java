@@ -13,6 +13,7 @@ import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
@@ -37,10 +38,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.dataporten.model.DataportenLevel;
-import no.sikt.nva.pubchannels.dataporten.model.search.DataPortenEntityPageInformation;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
@@ -66,8 +67,8 @@ public class TestUtils {
         return mapper.map(level);
     }
 
-    public static void mockDataportenResponse(String dataportenPathElement, String year, String identifier,
-                                              String responseBody) {
+    public static void mockChannelRegistryResponse(String dataportenPathElement, String year, String identifier,
+                                                   String responseBody) {
         stubFor(
             get(dataportenPathElement + identifier + "/" + year)
                 .withHeader("Accept", WireMock.equalTo("application/json"))
@@ -121,19 +122,19 @@ public class TestUtils {
         return String.valueOf((int) Math.floor(Math.random() * (MAX_LEVEL - MIN_LEVEL + 1) + MIN_LEVEL));
     }
 
-    public static List<String> getDataportenSearchResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(
-                       i -> createDataportenJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
-                                                            randomIssn(), randomUri(), randomLevel()))
+                       i -> createChannelRegistryJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
+                                                                 randomIssn(), randomUri(), randomLevel(), randomString()))
                    .collect(Collectors.toList());
     }
 
-    public static List<String> getDataportenSearchPublisherResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchPublisherResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(i -> createDataportenPublisherResponse(year, name, UUID.randomUUID().toString(),
-                                                                    String.valueOf(validIsbnPrefix()),
-                                                                    randomUri(), randomLevel()))
+                   .mapToObj(i -> createChannelRegistryPublisherResponse(year, name, UUID.randomUUID().toString(),
+                                                                         String.valueOf(validIsbnPrefix()),
+                                                                         randomUri(), randomLevel(), randomString()))
                    .collect(Collectors.toList());
     }
 
@@ -144,11 +145,12 @@ public class TestUtils {
         String electronicIssn,
         String issn,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartyJournal() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -158,7 +160,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -168,17 +170,22 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String discontinued() {
+                return discontinued;
+            }
+
+            @Override
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
             }
         };
@@ -191,11 +198,12 @@ public class TestUtils {
         String electronicIssn,
         String issn,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartySeries() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -205,7 +213,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -215,17 +223,22 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getOnlineIssn() {
+            public String discontinued() {
+                return discontinued;
+            }
+
+            @Override
+            public String onlineIssn() {
                 return electronicIssn;
             }
 
             @Override
-            public String getPrintIssn() {
+            public String printIssn() {
                 return issn;
             }
         };
@@ -237,11 +250,12 @@ public class TestUtils {
         String name,
         String isbnPrefix,
         ScientificValue scientificValue,
-        URI landingPage) {
+        URI landingPage,
+        String discontinued) {
 
         return new ThirdPartyPublisher() {
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return identifier;
             }
 
@@ -251,7 +265,7 @@ public class TestUtils {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return name;
             }
 
@@ -261,24 +275,29 @@ public class TestUtils {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return landingPage;
             }
 
             @Override
-            public String getIsbnPrefix() {
+            public String discontinued() {
+                return discontinued;
+            }
+
+            @Override
+            public String isbnPrefix() {
                 return isbnPrefix;
             }
         };
     }
 
-    public static DataportenPublicationChannelClient setupInterruptedClient() throws IOException, InterruptedException {
+    public static ChannelRegistryClient setupInterruptedClient() throws IOException, InterruptedException {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
         var dataportenBaseUri = URI.create("https://localhost:9898");
 
-        return new DataportenPublicationChannelClient(httpClient,
-                                                      dataportenBaseUri, null);
+        return new ChannelRegistryClient(httpClient,
+                                         dataportenBaseUri, null);
     }
 
     public static void mockResponseWithHttpStatus(String pathParameter, String identifier, String year,
@@ -291,26 +310,28 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResponse(Integer year, String originalTitle, String pid, String eissn,
-                                                         String pissn, URI kurl, String level) {
-        return new DataportenBodyBuilder()
+    public static String createChannelRegistryJournalResponse(Integer year, String originalTitle, String pid, String eissn,
+                                                              String pissn, URI kurl, String level, String discontinued) {
+        return new ChannelRegistryBodyBuilder()
                    .withPid(pid)
                    .withOriginalTitle(originalTitle)
                    .withEissn(eissn)
                    .withPissn(pissn)
                    .withKurl(kurl.toString())
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
+                   .withCeased(discontinued)
                    .build();
     }
 
-    public static String createDataportenPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
-                                                           URI kurl, String level) {
-        return new DataportenBodyBuilder()
+    public static String createChannelRegistryPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
+                                                                URI kurl, String level, String discontinued) {
+        return new ChannelRegistryBodyBuilder()
+                   .withCeased(discontinued)
                    .withPid(pid)
                    .withName(name)
                    .withIsbnPrefix(isbnPrefix)
                    .withKurl(kurl.toString())
-                   .withLevel(new DataportenLevel(year, level))
+                   .withLevel(new ChannelRegistryLevel(year, level))
                    .build();
     }
 
@@ -324,7 +345,7 @@ public class TestUtils {
         return uri;
     }
 
-    public static String getDataportenResponseBody(List<String> results, int offset, int size) {
+    public static String getChannelRegistryResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize =
             results.stream()
                 .skip(offset)
@@ -346,8 +367,8 @@ public class TestUtils {
     }
 
     private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {
-        return new DataportenBodyBuilder()
-                   .withEntityPageInformation(new DataPortenEntityPageInformation(results.size()))
+        return new ChannelRegistryBodyBuilder()
+                   .withEntityPageInformation(new ChannelRegistryEntityPageInformation(results.size()))
                    .withEntityResultSet(entityResult)
                    .build();
     }

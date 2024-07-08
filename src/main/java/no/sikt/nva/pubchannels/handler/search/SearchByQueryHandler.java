@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import no.sikt.nva.pubchannels.dataporten.ChannelType;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
@@ -47,7 +47,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     @JacocoGenerated
     protected SearchByQueryHandler(String pathElement, ChannelType channelType) {
         super(Void.class, new Environment());
-        this.publicationChannelClient = DataportenPublicationChannelClient.defaultInstance();
+        this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
         this.pathElement = pathElement;
         this.channelType = channelType;
     }
@@ -83,7 +83,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
             constructBaseUri(),
             searchParameters.offset(),
             searchParameters.size(),
-            searchResult.getPageInformation().getTotalResults(),
+            searchResult.pageInformation().totalResults(),
             getHits(constructBaseUri(), searchResult, searchParameters.year()),
             Map.of(QUERY_PARAM, searchParameters.query(), YEAR_QUERY_PARAM, searchParameters.year())
         );
@@ -121,8 +121,8 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     private List<T> getHits(URI baseUri, ThirdPartySearchResponse searchResult, String requestedYear) {
-        return searchResult.getResultSet()
-                   .getPageResult()
+        return searchResult.resultSet()
+                   .pageResult()
                    .stream()
                    .map(result -> createResult(baseUri, result, requestedYear))
                    .collect(Collectors.toList());

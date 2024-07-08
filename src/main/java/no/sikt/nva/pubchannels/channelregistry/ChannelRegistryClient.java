@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten;
+package no.sikt.nva.pubchannels.channelregistry;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
@@ -18,12 +18,10 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Set;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalResponse;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreatePublisherResponse;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
@@ -38,27 +36,27 @@ import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataportenPublicationChannelClient implements PublicationChannelClient {
+public class ChannelRegistryClient implements PublicationChannelClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataportenPublicationChannelClient.class);
-    private static final String ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryClient.class);
+    private static final String ENV_CHANNEL_REGISTRY_BASE_URL = "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
     private static final Set<Integer> OK_STATUSES = Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
     private static final String SEARCH_PATH_ELEMENT = "channels";
     private final HttpClient httpClient;
-    private final URI dataportenBaseUri;
+    private final URI channelRegistryBaseUri;
     private final AuthClient authClient;
 
-    public DataportenPublicationChannelClient(HttpClient httpClient, URI dataportenBaseUri, AuthClient authClient) {
+    public ChannelRegistryClient(HttpClient httpClient, URI channelRegistryBaseUri, AuthClient authClient) {
         this.httpClient = httpClient;
-        this.dataportenBaseUri = dataportenBaseUri;
+        this.channelRegistryBaseUri = channelRegistryBaseUri;
         this.authClient = authClient;
     }
 
     @JacocoGenerated // only used when running on AWS
     public static PublicationChannelClient defaultInstance() {
         var environment = new Environment();
-        var baseUri = URI.create(environment.readEnv(ENV_DATAPORTEN_CHANNEL_REGISTRY_BASE_URL));
-        return new DataportenPublicationChannelClient(HttpClient.newBuilder().build(), baseUri, null);
+        var baseUri = URI.create(environment.readEnv(ENV_CHANNEL_REGISTRY_BASE_URL));
+        return new ChannelRegistryClient(HttpClient.newBuilder().build(), baseUri, null);
     }
 
     @Override
@@ -78,28 +76,28 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     @Override
-    public DataportenCreateJournalResponse createJournal(DataportenCreateJournalRequest body)
+    public CreateChannelResponse createJournal(ChannelRegistryCreateJournalRequest body)
         throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, body);
-        return attempt(() -> executeRequest(request, DataportenCreateJournalResponse.class))
+        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
                    .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
-    public DataportenCreatePublisherResponse createPublisher(DataportenCreatePublisherRequest body)
+    public CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest body)
         throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreatePublisherRequest(token, body);
-        return attempt(() -> executeRequest(request, DataportenCreatePublisherResponse.class))
+        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
                    .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     @Override
-    public DataportenCreateSeriesResponse createSeries(DataportenCreateSeriesRequest body) throws ApiGatewayException {
+    public CreateChannelResponse createSeries(ChannelRegistryCreateSeriesRequest body) throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateSeriesRequest(token, body);
-        return attempt(() -> executeRequest(request, DataportenCreateSeriesResponse.class))
+        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
                    .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
@@ -157,7 +155,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
                    .build();
     }
 
-    private HttpRequest createCreateJournalRequest(String token, DataportenCreateJournalRequest body) {
+    private HttpRequest createCreateJournalRequest(String token, ChannelRegistryCreateJournalRequest body) {
 
         var bodyAsJsonString =
             attempt(() -> dtoObjectMapper.writeValueAsString(body))
@@ -166,7 +164,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
         return getHttpRequest(token, bodyAsJsonString, "createjournal");
     }
 
-    private HttpRequest createCreatePublisherRequest(String token, DataportenCreatePublisherRequest request) {
+    private HttpRequest createCreatePublisherRequest(String token, ChannelRegistryCreatePublisherRequest request) {
         var bodyAsJsonString =
             attempt(() -> dtoObjectMapper.writeValueAsString(request))
                 .orElseThrow();
@@ -174,7 +172,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
         return getHttpRequest(token, bodyAsJsonString, "createpublisher");
     }
 
-    private HttpRequest createCreateSeriesRequest(String token, DataportenCreateSeriesRequest body) {
+    private HttpRequest createCreateSeriesRequest(String token, ChannelRegistryCreateSeriesRequest body) {
 
         var bodyAsJsonString =
             attempt(() -> dtoObjectMapper.writeValueAsString(body))
@@ -194,7 +192,7 @@ public class DataportenPublicationChannelClient implements PublicationChannelCli
     }
 
     private URI constructUri(String... children) {
-        return UriWrapper.fromUri(dataportenBaseUri)
+        return UriWrapper.fromUri(channelRegistryBaseUri)
                    .addChild(children)
                    .getUri();
     }

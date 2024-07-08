@@ -30,7 +30,7 @@ class FetchByIdAndYearResponseTest {
         var publisher = new ThirdPartyPublisher() {
 
             @Override
-            public String getIdentifier() {
+            public String identifier() {
                 return randomString();
             }
 
@@ -40,12 +40,12 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public String getName() {
+            public String name() {
                 return randomString();
             }
 
             @Override
-            public String getIsbnPrefix() {
+            public String isbnPrefix() {
                 return randomString();
             }
 
@@ -55,8 +55,13 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
-            public URI getHomepage() {
+            public URI homepage() {
                 return randomUri();
+            }
+
+            @Override
+            public String discontinued() {
+                return randomString();
             }
         };
         return FetchByIdAndYearResponse.create(randomUri(), publisher, randomString());

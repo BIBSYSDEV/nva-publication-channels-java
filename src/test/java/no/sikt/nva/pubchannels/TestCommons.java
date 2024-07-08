@@ -17,8 +17,8 @@ public class TestCommons {
     public static final double MIN_LEVEL = 0;
     public static final String DEFAULT_OFFSET = "0";
     public static final String DEFAULT_SIZE = "10";
-    public static final String DATAPORTEN_PAGE_NO_PARAM = "pageno";
-    public static final String DATAPORTEN_PAGE_COUNT_PARAM = "pagecount";
+    public static final String CHANNEL_REGISTRY_PAGE_NO_PARAM = "pageno";
+    public static final String CHANNEL_REGISTRY_PAGE_COUNT_PARAM = "pagecount";
     public static final String WILD_CARD = "*";
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String LOCATION = "Location";

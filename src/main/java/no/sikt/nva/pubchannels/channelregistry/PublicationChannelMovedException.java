@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.dataporten;
+package no.sikt.nva.pubchannels.channelregistry;
 
 import java.net.HttpURLConnection;
 import java.net.URI;

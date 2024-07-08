@@ -1,13 +1,13 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
-import static no.sikt.nva.pubchannels.dataporten.ChannelType.JOURNAL;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
@@ -42,16 +42,16 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Cr
     protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
                                                  Context context) throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
-        var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, response.getPid());
+        var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateJournalResponse.create(
             createdUri,
-            (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, response.getPid(), getYear()));
+            (ThirdPartyJournal) publicationChannelClient.getChannel(JOURNAL, response.pid(), getYear()));
     }
 
-    private static DataportenCreateJournalRequest getClientRequest(CreateJournalRequest request) {
-        return new DataportenCreateJournalRequest(request.name(), request.printIssn(), request.onlineIssn(),
-                                                  request.homepage());
+    private static ChannelRegistryCreateJournalRequest getClientRequest(CreateJournalRequest request) {
+        return new ChannelRegistryCreateJournalRequest(request.name(), request.printIssn(), request.onlineIssn(),
+                                                       request.homepage());
     }
 
     private void validate(CreateJournalRequest input) throws BadRequestException {

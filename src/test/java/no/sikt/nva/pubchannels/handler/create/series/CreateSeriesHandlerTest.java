@@ -22,11 +22,11 @@ import java.net.URI;
 import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.dataporten.DataportenPublicationChannelClient;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesRequest;
-import no.sikt.nva.pubchannels.dataporten.model.create.DataportenCreateSeriesResponse;
-import no.sikt.nva.pubchannels.handler.DataportenBodyBuilder;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
@@ -63,7 +63,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
         var publicationChannelSource =
-            new DataportenPublicationChannelClient(httpClient, dataportenBaseUri, dataportenAuthSource);
+            new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
         handlerUnderTest = new CreateSeriesHandler(environment, publicationChannelSource);
     }
@@ -71,7 +71,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnCreatedJournalWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
-        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
 
         setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
@@ -92,7 +92,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
 
@@ -112,7 +112,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
-        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
         setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
 
@@ -128,7 +128,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
-        var request = new DataportenCreateSeriesRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
         setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -148,7 +148,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new DataportenCreateSeriesRequest(VALID_NAME, null, null, null),
+        setupStub(null, new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null),
                   HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -239,7 +239,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setupStub(expectedPid, new DataportenCreateSeriesRequest(VALID_NAME, issn, null, null),
+        setupStub(expectedPid, new ChannelRegistryCreateSeriesRequest(VALID_NAME, issn, null, null),
                   HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateSeriesRequestBuilder()
@@ -290,7 +290,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndPrintIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, printIssn, null, null);
+        var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, printIssn, null, null);
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateSeriesRequestBuilder()
@@ -308,7 +308,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndOnlineIssn() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var onlineIssn = validIssn().findAny().get();
-        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, null, onlineIssn, null);
+        var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, onlineIssn, null);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -328,7 +328,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldCreateJournalWithNameAndHomepage() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var homepage = "https://a.valid.url.com";
-        var clientRequest = new DataportenCreateSeriesRequest(VALID_NAME, null, null, homepage);
+        var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, homepage);
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
@@ -373,18 +373,18 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     private void setupStub(
         String expectedPid,
-        DataportenCreateSeriesRequest request,
+        ChannelRegistryCreateSeriesRequest request,
         int clientAuthResponseHttpCode,
         int clientResponseHttpCode)
         throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
-                     dtoObjectMapper.writeValueAsString(new DataportenCreateSeriesResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, DataportenCreateSeriesRequest request,
+    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreateSeriesRequest request,
                                      int clientAuthResponseHttpCode,
                                      int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
@@ -402,7 +402,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(nonNull(expectedPid)
-                                      ? new DataportenBodyBuilder()
+                                      ? new ChannelRegistryBodyBuilder()
                                             .withType("Series")
                                             .withOriginalTitle(VALID_NAME)
                                             .withPid(expectedPid)
