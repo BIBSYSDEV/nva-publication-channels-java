@@ -61,7 +61,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     private PublicationChannelMockClient mockRegistry;
     private ByteArrayOutputStream output;
     private Environment environment;
-    private String dataportenBaseUri;
+    private String channelRegistryBaseUri;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -71,9 +71,9 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
-        dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
+        channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(dataportenBaseUri),
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri),
                                                                  null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockClient();
@@ -182,8 +182,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     @Test
     void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
         var httpClient = WiremockHttpClient.create();
-        var dataportenBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new ChannelRegistryClient(httpClient, dataportenBaseUri, null);
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 
         var identifier = UUID.randomUUID().toString();
@@ -212,9 +212,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
-        var dataportenBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new ChannelRegistryClient(httpClient,
-                                                                 dataportenBaseUri, null);
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
 
@@ -283,7 +282,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var year = randomYear();
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
-        var newChannelRegistryLocation = UriWrapper.fromHost(dataportenBaseUri)
+        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
                                              .addChild("findjournal", newIdentifier, year)
                                              .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);

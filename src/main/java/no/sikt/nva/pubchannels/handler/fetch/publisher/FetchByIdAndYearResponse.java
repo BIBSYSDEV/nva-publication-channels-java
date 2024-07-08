@@ -22,6 +22,7 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
+    private static final String DISCONTINUED_FIELD = "discontinued";
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Publisher";
     @JsonProperty(CONTEXT_FIELD)
@@ -38,6 +39,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private final ScientificValue scientificValue;
     @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
+    @JsonProperty(DISCONTINUED_FIELD)
+    private final String discontinued;
 
     @JsonCreator
     public FetchByIdAndYearResponse(@JsonProperty(ID_FIELD) URI id,
@@ -45,13 +48,15 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                                     @JsonProperty(NAME_FIELD) String name,
                                     @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
                                     @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                    @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+                                    @JsonProperty(SAME_AS_FIELD) URI sameAs,
+                                    @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
         this.isbnPrefix = isbnPrefix;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
+        this.discontinued = discontinued;
     }
 
     public static FetchByIdAndYearResponse create(URI selfUriBase, ThirdPartyPublisher publisher,
@@ -65,7 +70,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                                             publisher.name(),
                                             publisher.isbnPrefix(),
                                             publisher.getScientificValue(),
-                                            publisher.homepage());
+                                            publisher.homepage(),
+                                            publisher.discontinued());
     }
 
     public String getType() {
@@ -100,10 +106,14 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
         return sameAs;
     }
 
+    public String getDiscontinued() {
+        return discontinued;
+    }
+
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs);
+        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued);
     }
 
     @Override
@@ -122,13 +132,8 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
                && Objects.equals(name, that.name)
                && Objects.equals(isbnPrefix, that.isbnPrefix)
                && scientificValue == that.scientificValue
-               && Objects.equals(sameAs, that.sameAs);
-    }
-
-    @Override
-    @JacocoGenerated
-    public String toString() {
-        return toJsonString();
+               && Objects.equals(sameAs, that.sameAs)
+               && Objects.equals(discontinued, that.discontinued);
     }
 }
 

@@ -13,6 +13,7 @@ import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
@@ -66,8 +67,8 @@ public class TestUtils {
         return mapper.map(level);
     }
 
-    public static void mockDataportenResponse(String dataportenPathElement, String year, String identifier,
-                                              String responseBody) {
+    public static void mockChannelRegistryResponse(String dataportenPathElement, String year, String identifier,
+                                                   String responseBody) {
         stubFor(
             get(dataportenPathElement + identifier + "/" + year)
                 .withHeader("Accept", WireMock.equalTo("application/json"))
@@ -121,19 +122,19 @@ public class TestUtils {
         return String.valueOf((int) Math.floor(Math.random() * (MAX_LEVEL - MIN_LEVEL + 1) + MIN_LEVEL));
     }
 
-    public static List<String> getDataportenSearchResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(
-                       i -> createDataportenJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
-                                                            randomIssn(), randomUri(), randomLevel()))
+                       i -> createChannelRegistryJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
+                                                                 randomIssn(), randomUri(), randomLevel(), randomString()))
                    .collect(Collectors.toList());
     }
 
-    public static List<String> getDataportenSearchPublisherResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchPublisherResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(i -> createDataportenPublisherResponse(year, name, UUID.randomUUID().toString(),
-                                                                    String.valueOf(validIsbnPrefix()),
-                                                                    randomUri(), randomLevel()))
+                   .mapToObj(i -> createChannelRegistryPublisherResponse(year, name, UUID.randomUUID().toString(),
+                                                                         String.valueOf(validIsbnPrefix()),
+                                                                         randomUri(), randomLevel(), randomString()))
                    .collect(Collectors.toList());
     }
 
@@ -309,8 +310,8 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createDataportenJournalResponse(Integer year, String originalTitle, String pid, String eissn,
-                                                         String pissn, URI kurl, String level) {
+    public static String createChannelRegistryJournalResponse(Integer year, String originalTitle, String pid, String eissn,
+                                                              String pissn, URI kurl, String level, String discontinued) {
         return new ChannelRegistryBodyBuilder()
                    .withPid(pid)
                    .withOriginalTitle(originalTitle)
@@ -318,12 +319,14 @@ public class TestUtils {
                    .withPissn(pissn)
                    .withKurl(kurl.toString())
                    .withLevel(new ChannelRegistryLevel(year, level))
+                   .withCeased(discontinued)
                    .build();
     }
 
-    public static String createDataportenPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
-                                                           URI kurl, String level) {
+    public static String createChannelRegistryPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
+                                                                URI kurl, String level, String discontinued) {
         return new ChannelRegistryBodyBuilder()
+                   .withCeased(discontinued)
                    .withPid(pid)
                    .withName(name)
                    .withIsbnPrefix(isbnPrefix)
@@ -342,7 +345,7 @@ public class TestUtils {
         return uri;
     }
 
-    public static String getDataportenResponseBody(List<String> results, int offset, int size) {
+    public static String getChannelRegistryResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize =
             results.stream()
                 .skip(offset)

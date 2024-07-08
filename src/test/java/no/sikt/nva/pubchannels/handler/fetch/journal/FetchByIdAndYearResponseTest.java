@@ -7,6 +7,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
@@ -23,7 +24,7 @@ class FetchByIdAndYearResponseTest {
 
         var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, FetchByIdAndYearResponse.class);
 
-        assertThat(deserializedJournal, is(equalTo(journal)));
+        assertEquals(deserializedJournal, journal);
     }
 
     private static FetchByIdAndYearResponse randomJournal() {

@@ -28,13 +28,21 @@ public class FetchByIdAndYearResponse implements JsonSerializable {
     private static final String type = "Journal";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
+    @JsonProperty(ID_FIELD)
     private final URI id;
+    @JsonProperty(IDENTIFIER_FIELD)
     private final String identifier;
+    @JsonProperty(NAME_FIELD)
     private final String name;
+    @JsonProperty(ONLINE_ISSN_FIELD)
     private final String onlineIssn;
+    @JsonProperty(PRINT_ISSN_FIELD)
     private final String printIssn;
+    @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
+    @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
+    @JsonProperty(DISCONTINUED_FIELD)
     private final String discontinued;
 
     @JsonCreator

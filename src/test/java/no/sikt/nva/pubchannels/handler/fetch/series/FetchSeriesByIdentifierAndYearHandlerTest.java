@@ -5,9 +5,9 @@ import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createDataportenJournalResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockDataportenResponse;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
@@ -58,12 +58,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     public static final String SERIES_PATH = "series";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
-    private static final String DATAPORTEN_PATH_ELEMENT = "/findseries/";
+    private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
     private Environment environment;
-    private String dataportenBaseUri;
+    private String channelRegistryBaseUri;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -72,9 +72,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
 
-        dataportenBaseUri = runtimeInfo.getHttpsBaseUrl();
+        channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(dataportenBaseUri),
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri),
                                                                  null);
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
@@ -259,10 +259,10 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var year = String.valueOf(randomYear());
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
-        var newChannelRegistryLocation = UriWrapper.fromHost(dataportenBaseUri)
-                                             .addChild(DATAPORTEN_PATH_ELEMENT, newIdentifier, year)
+        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
                                              .toString();
-        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, DATAPORTEN_PATH_ELEMENT);
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
@@ -285,12 +285,14 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var yearString = String.valueOf(year);
-        var body = createDataportenJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level);
+        var discontinued = String.valueOf(year - 1);
+        var body = createChannelRegistryJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level,
+                                                        discontinued);
 
-        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, yearString, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, yearString, identifier, body);
 
         return getFetchByIdAndYearResponse(yearString, identifier, name, electronicIssn, issn, scientificValue,
-                                           landingPage);
+                                           landingPage, discontinued);
     }
 
     private FetchByIdAndYearResponse mockSeriesFoundYearValueNull(String year, String identifier) {
@@ -300,12 +302,14 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
         var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
-        var body = createDataportenJournalResponse(null, name, identifier, electronicIssn, issn, landingPage, level);
+        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
+        var body = createChannelRegistryJournalResponse(null, name, identifier, electronicIssn, issn, landingPage, level,
+                                                        discontinued);
 
-        mockDataportenResponse(DATAPORTEN_PATH_ELEMENT, year, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, body);
 
         return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue,
-                                           landingPage);
+                                           landingPage, discontinued);
     }
 
     private FetchByIdAndYearResponse getFetchByIdAndYearResponse(
@@ -315,8 +319,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         String electronicIssn,
         String issn,
         ScientificValue scientificValue,
-        URI landingPage) {
-        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
+        URI landingPage, String discontinued) {
 
         var selfUriBase = URI.create(SELF_URI_BASE);
         var series = createSeries(
