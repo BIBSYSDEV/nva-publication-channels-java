@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -76,7 +77,7 @@ class SearchPublisherByQueryHandlerTest {
 
     public static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private static final Context context = new FakeContext();
-    private static final TypeReference<PaginatedSearchResult<PublisherResult>> TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
     };
     private SearchPublisherByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
@@ -360,7 +361,7 @@ class SearchPublisherByQueryHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private static PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchPublisherResultNameSearch(
+    private static PaginatedSearchResult<PublisherDto> getExpectedPaginatedSearchPublisherResultNameSearch(
         List<String> results,
         String year,
         String name, int queryOffset, int querySize)
@@ -377,7 +378,7 @@ class SearchPublisherByQueryHandlerTest {
                    "offset", String.valueOf(queryOffset), "size", String.valueOf(querySize)));
     }
 
-    private static List<PublisherResult> mapToPublisherResults(List<String> results, String requestedYear) {
+    private static List<PublisherDto> mapToPublisherResults(List<String> results, String requestedYear) {
         return results
                    .stream()
                    .map(result -> attempt(
@@ -386,12 +387,12 @@ class SearchPublisherByQueryHandlerTest {
                    .collect(Collectors.toList());
     }
 
-    private static PublisherResult toPublisherResult(ThirdPartyPublisher publisher, String requestedYear) {
-        return PublisherResult.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null), publisher,
+    private static PublisherDto toPublisherResult(ThirdPartyPublisher publisher, String requestedYear) {
+        return PublisherDto.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null), publisher,
                                       requestedYear);
     }
 
-    private PaginatedSearchResult<PublisherResult> getExpectedPaginatedSearchResultIssnSearch(
+    private PaginatedSearchResult<PublisherDto> getExpectedPaginatedSearchResultIssnSearch(
         int year,
         String printIssn)
         throws UnprocessableContentException {
@@ -410,7 +411,7 @@ class SearchPublisherByQueryHandlerTest {
         return getSingleHit(yearString, printIssn, pid, name, isbnPrefix, level, landingPage);
     }
 
-    private PaginatedSearchResult<PublisherResult> getExpectedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+    private PaginatedSearchResult<PublisherDto> getExpectedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
         String year,
         String printIssn)
         throws UnprocessableContentException {
@@ -438,7 +439,7 @@ class SearchPublisherByQueryHandlerTest {
         );
     }
 
-    private PaginatedSearchResult<PublisherResult> getSingleHit(
+    private PaginatedSearchResult<PublisherDto> getSingleHit(
         String year,
         String printIssn,
         String pid,
@@ -449,7 +450,7 @@ class SearchPublisherByQueryHandlerTest {
         var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
 
         var expectedHits = List.of(
-            PublisherResult.create(
+            PublisherDto.create(
                 constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null),
                 createPublisher(year, pid, name, isbnPrefix, getScientificValue(level), landingPage, discontinued), year
             ));

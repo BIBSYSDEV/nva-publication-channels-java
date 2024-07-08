@@ -18,6 +18,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.core.SingletonCollector;
 
@@ -26,7 +27,7 @@ public class PublicationChannelMockClient {
     public static final String ACCEPT = "Accept";
     public static final String APPLICATION_JSON = "application/json";
     public static final String CHANNEL_REGISTRY_JOURNAL_PATH = "/findjournal/";
-    private final Map<String, FetchByIdAndYearResponse> journalsByIdentifier = new ConcurrentHashMap<>();
+    private final Map<String, JournalDto> journalsByIdentifier = new ConcurrentHashMap<>();
 
     public void notFoundJournal(String identifier, String year) {
         mockJournalNotFound(identifier, year);
@@ -36,7 +37,7 @@ public class PublicationChannelMockClient {
         mockJournalInternalServerError(identifier, year);
     }
 
-    public FetchByIdAndYearResponse getJournal(String identifier) {
+    public JournalDto getJournal(String identifier) {
         return journalsByIdentifier.get(identifier);
     }
 
@@ -144,7 +145,7 @@ public class PublicationChannelMockClient {
             }
         };
 
-        var journalDto = FetchByIdAndYearResponse.create(selfUriBase, journal, String.valueOf(year));
+        var journalDto = JournalDto.create(selfUriBase, journal, String.valueOf(year));
 
         journalsByIdentifier.put(identifier, journalDto);
     }

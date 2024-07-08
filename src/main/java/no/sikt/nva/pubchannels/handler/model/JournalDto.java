@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.search.publisher;
+package no.sikt.nva.pubchannels.handler.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,68 +6,77 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 
-public final class PublisherResult implements JsonSerializable {
+public class JournalDto implements JsonSerializable {
 
     private static final String TYPE_FIELD = "type";
     private static final String CONTEXT_FIELD = "@context";
     private static final String ID_FIELD = "id";
     private static final String IDENTIFIER_FIELD = "identifier";
     private static final String NAME_FIELD = "name";
-    private static final String ISBN_PREFIX_FIELD = "isbnPrefix";
+    private static final String ONLINE_ISSN_FIELD = "onlineIssn";
+    private static final String PRINT_ISSN_FIELD = "printIssn";
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
-
+    private static final String DISCONTINUED_FIELD = "discontinued";
     @JsonProperty(TYPE_FIELD)
-    private static final String type = "Publisher";
+    private static final String type = "Journal";
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     @JsonProperty(ID_FIELD)
     private final URI id;
-
     @JsonProperty(IDENTIFIER_FIELD)
     private final String identifier;
-
     @JsonProperty(NAME_FIELD)
     private final String name;
-    @JsonProperty(ISBN_PREFIX_FIELD)
-    private final String isbnPrefix;
+    @JsonProperty(ONLINE_ISSN_FIELD)
+    private final String onlineIssn;
+    @JsonProperty(PRINT_ISSN_FIELD)
+    private final String printIssn;
     @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
     @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
+    @JsonProperty(DISCONTINUED_FIELD)
+    private final String discontinued;
 
     @JsonCreator
-    private PublisherResult(@JsonProperty(ID_FIELD) URI id,
-                            @JsonProperty(IDENTIFIER_FIELD) String identifier,
-                            @JsonProperty(NAME_FIELD) String name,
-                            @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-                            @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                            @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    public JournalDto(@JsonProperty(ID_FIELD) URI id,
+                      @JsonProperty(IDENTIFIER_FIELD) String identifier,
+                      @JsonProperty(NAME_FIELD) String name,
+                      @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                      @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                      @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+                      @JsonProperty(SAME_AS_FIELD) URI sameAs,
+                      @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
-        this.isbnPrefix = isbnPrefix;
+        this.onlineIssn = onlineIssn;
+        this.printIssn = printIssn;
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
+        this.discontinued = discontinued;
     }
 
-    public static PublisherResult create(URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
-        var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
+    public static JournalDto create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
+        var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(publisher.identifier(), year)
+                     .addChild(journal.identifier(), year)
                      .getUri();
-        return new PublisherResult(id,
-                                   publisher.identifier(),
-                                   publisher.name(),
-                                   publisher.isbnPrefix(),
-                                   publisher.getScientificValue(),
-                                   publisher.homepage());
+        return new JournalDto(id,
+                              journal.identifier(),
+                              journal.name(),
+                              journal.onlineIssn(),
+                              journal.printIssn(),
+                              journal.getScientificValue(),
+                              journal.homepage(),
+                              journal.discontinued());
     }
 
     public String getType() {
@@ -90,8 +99,12 @@ public final class PublisherResult implements JsonSerializable {
         return name;
     }
 
-    public String getIsbnPrefix() {
-        return isbnPrefix;
+    public String getOnlineIssn() {
+        return onlineIssn;
+    }
+
+    public String getPrintIssn() {
+        return printIssn;
     }
 
     public ScientificValue getScientificValue() {
@@ -105,7 +118,8 @@ public final class PublisherResult implements JsonSerializable {
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs);
+        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
+                            discontinued);
     }
 
     @Override
@@ -117,14 +131,16 @@ public final class PublisherResult implements JsonSerializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PublisherResult that = (PublisherResult) o;
+        JournalDto that = (JournalDto) o;
         return Objects.equals(context, that.context)
                && Objects.equals(id, that.id)
                && Objects.equals(identifier, that.identifier)
                && Objects.equals(name, that.name)
-               && Objects.equals(isbnPrefix, that.isbnPrefix)
+               && Objects.equals(onlineIssn, that.onlineIssn)
+               && Objects.equals(printIssn, that.printIssn)
                && scientificValue == that.scientificValue
-               && Objects.equals(sameAs, that.sameAs);
+               && Objects.equals(sameAs, that.sameAs)
+               && Objects.equals(discontinued, that.discontinued);
     }
 
     @Override

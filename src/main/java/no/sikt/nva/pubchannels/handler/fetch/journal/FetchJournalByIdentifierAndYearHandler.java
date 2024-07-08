@@ -7,13 +7,14 @@ import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
 public class FetchJournalByIdentifierAndYearHandler extends
-                                                    FetchByIdentifierAndYearHandler<Void, FetchByIdAndYearResponse> {
+                                                    FetchByIdentifierAndYearHandler<Void, JournalDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -28,7 +29,7 @@ public class FetchJournalByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected FetchByIdAndYearResponse processInput(Void input, RequestInfo requestInfo, Context context)
+    protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
 
         var request = new FetchByIdAndYearRequest(requestInfo);
@@ -36,7 +37,7 @@ public class FetchJournalByIdentifierAndYearHandler extends
 
         var requestYear = request.getYear();
         var journal = fetchJournal(request, requestYear);
-        return FetchByIdAndYearResponse.create(journalIdBaseUri, (ThirdPartyJournal) journal, requestYear);
+        return JournalDto.create(journalIdBaseUri, (ThirdPartyJournal) journal, requestYear);
     }
 
     private ThirdPartyPublicationChannel fetchJournal(FetchByIdAndYearRequest request, String requestYear)

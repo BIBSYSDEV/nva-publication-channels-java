@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -75,12 +76,12 @@ class SearchSeriesByQueryHandlerTest {
 
     private static final String PATH_ELEMENT = "series";
     private static final Context context = new FakeContext();
-    private static final TypeReference<PaginatedSearchResult<SeriesResult>> TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<PaginatedSearchResult<SeriesDto>> TYPE_REF = new TypeReference<>() {
     };
     private SearchSeriesByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
 
-    public static PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultNameSearch(
+    public static PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultNameSearch(
         List<String> results,
         String year,
         String name, int queryOffset, int querySize)
@@ -373,7 +374,7 @@ class SearchSeriesByQueryHandlerTest {
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
-    private static List<SeriesResult> mapToSeriesResults(List<String> results, String requestedYear) {
+    private static List<SeriesDto> mapToSeriesResults(List<String> results, String requestedYear) {
         return results
                    .stream()
                    .map(result -> attempt(
@@ -382,11 +383,11 @@ class SearchSeriesByQueryHandlerTest {
                    .collect(Collectors.toList());
     }
 
-    private static SeriesResult toResult(ThirdPartySeries series, String requestedYear) {
-        return SeriesResult.create(constructPublicationChannelUri(PATH_ELEMENT, null), series, requestedYear);
+    private static SeriesDto toResult(ThirdPartySeries series, String requestedYear) {
+        return SeriesDto.create(constructPublicationChannelUri(PATH_ELEMENT, null), series, requestedYear);
     }
 
-    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultIssnSearch(
+    private PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultIssnSearch(
         int year,
         String printIssn)
         throws UnprocessableContentException {
@@ -407,7 +408,7 @@ class SearchSeriesByQueryHandlerTest {
         return getSingleHit(yearString, printIssn, pid, name, electronicIssn, level, landingPage, discontinued);
     }
 
-    private PaginatedSearchResult<SeriesResult> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+    private PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
         String year,
         String printIssn)
         throws UnprocessableContentException {
@@ -437,7 +438,7 @@ class SearchSeriesByQueryHandlerTest {
         );
     }
 
-    private PaginatedSearchResult<SeriesResult> getSingleHit(
+    private PaginatedSearchResult<SeriesDto> getSingleHit(
         String year,
         String printIssn,
         String pid,
@@ -447,7 +448,7 @@ class SearchSeriesByQueryHandlerTest {
         URI landingPage, String discontinued) throws UnprocessableContentException {
 
         var expectedHits = List.of(
-            SeriesResult.create(
+            SeriesDto.create(
                 constructPublicationChannelUri(PATH_ELEMENT, null),
                 createSeries(year, pid, name, electronicIssn, printIssn, getScientificValue(level), landingPage,
                              discontinued),

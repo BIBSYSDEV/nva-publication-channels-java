@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
@@ -7,28 +7,28 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import org.junit.jupiter.api.Test;
 
-class FetchByIdAndYearResponseTest {
+class SeriesDtoTest {
 
     @Test
-    void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {
-        var journal = randomJournal();
+    void canSerializeDeserializePublisherWithoutLossOfData() throws JsonProcessingException {
+        var publisher = randomPublisher();
 
-        var serializedJournal = dtoObjectMapper.writeValueAsString(journal);
+        var serializedPublisher = dtoObjectMapper.writeValueAsString(publisher);
 
-        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, FetchByIdAndYearResponse.class);
+        var deserializedPublisher = dtoObjectMapper.readValue(serializedPublisher, PublisherDto.class);
 
-        assertEquals(deserializedJournal, journal);
+        assertThat(deserializedPublisher, is(equalTo(publisher)));
     }
 
-    private static FetchByIdAndYearResponse randomJournal() {
-        var journal = new ThirdPartyJournal() {
+    private static PublisherDto randomPublisher() {
+        var publisher = new ThirdPartyPublisher() {
 
             @Override
             public String identifier() {
@@ -46,6 +46,11 @@ class FetchByIdAndYearResponseTest {
             }
 
             @Override
+            public String isbnPrefix() {
+                return randomString();
+            }
+
+            @Override
             public ScientificValue getScientificValue() {
                 return randomElement(ScientificValue.values());
             }
@@ -59,17 +64,7 @@ class FetchByIdAndYearResponseTest {
             public String discontinued() {
                 return randomString();
             }
-
-            @Override
-            public String onlineIssn() {
-                return randomString();
-            }
-
-            @Override
-            public String printIssn() {
-                return randomString();
-            }
         };
-        return FetchByIdAndYearResponse.create(randomUri(), journal, randomString());
+        return PublisherDto.create(randomUri(), publisher, randomString());
     }
 }
