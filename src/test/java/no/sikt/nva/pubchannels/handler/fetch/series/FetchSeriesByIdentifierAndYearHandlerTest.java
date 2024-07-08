@@ -33,7 +33,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;

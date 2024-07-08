@@ -1,7 +1,7 @@
 package no.sikt.nva.pubchannels.handler.search.publisher;
 
 import java.net.URI;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelType;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;

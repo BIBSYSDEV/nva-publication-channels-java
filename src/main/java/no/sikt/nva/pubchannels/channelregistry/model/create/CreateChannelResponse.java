@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.channelRegistry.model.create;
+package no.sikt.nva.pubchannels.channelregistry.model.create;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 

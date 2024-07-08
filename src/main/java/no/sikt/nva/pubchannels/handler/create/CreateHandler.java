@@ -7,7 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Year;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;

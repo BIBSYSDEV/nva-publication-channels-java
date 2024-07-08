@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;

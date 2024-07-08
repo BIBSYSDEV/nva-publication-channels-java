@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.channelRegistry;
+package no.sikt.nva.pubchannels.channelregistry;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
@@ -18,10 +18,10 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Set;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateJournalRequest;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreatePublisherRequest;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateSeriesRequest;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.CreateChannelResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;

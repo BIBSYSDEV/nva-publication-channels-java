@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.dataporten.model.TokenBodyResponse;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;

@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.channelRegistry.model.search;
+package no.sikt.nva.pubchannels.channelregistry.model.search;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

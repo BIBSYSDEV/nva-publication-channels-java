@@ -4,8 +4,8 @@ import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryLevel;
-import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistryEntityPageInformation;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.attempt.Try;
 

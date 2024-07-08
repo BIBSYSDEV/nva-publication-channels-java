@@ -1,11 +1,11 @@
-package no.sikt.nva.pubchannels.channelRegistry;
+package no.sikt.nva.pubchannels.channelregistry;
 
-import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryJournal;
-import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistryPublisher;
-import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistrySeries;
-import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistrySearchJournalResponse;
-import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistrySearchPublisherResponse;
-import no.sikt.nva.pubchannels.channelRegistry.model.search.ChannelRegistrySearchSeriesResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchJournalResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchPublisherResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchSeriesResponse;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 

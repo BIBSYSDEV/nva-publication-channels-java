@@ -12,7 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
 import java.util.List;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;

@@ -1,14 +1,12 @@
-package no.sikt.nva.pubchannels.channelRegistry.model.search;
+package no.sikt.nva.pubchannels.channelregistry.model.search;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import no.sikt.nva.pubchannels.channelRegistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
-@JsonSerialize
-public record ChannelRegistrySearchSeriesResponse(
+public record ChannelRegistrySearchJournalResponse(
     @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
-    @JsonProperty(ENTITY_RESULT_SET) ChannelRegistryEntityResultSet<ChannelRegistrySeries> resultSet)
+    @JsonProperty(ENTITY_RESULT_SET) ChannelRegistryEntityResultSet<ChannelRegistryJournal> resultSet)
     implements ThirdPartySearchResponse {
 
     private static final String ENTITY_RESULT_SET = "entityResultSetDto";

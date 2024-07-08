@@ -1,11 +1,11 @@
-package no.sikt.nva.pubchannels.channelRegistry.model;
+package no.sikt.nva.pubchannels.channelregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
-import no.sikt.nva.pubchannels.channelRegistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 

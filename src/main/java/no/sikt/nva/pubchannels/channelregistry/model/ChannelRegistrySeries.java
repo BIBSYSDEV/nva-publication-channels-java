@@ -1,33 +1,34 @@
-package no.sikt.nva.pubchannels.channelRegistry.model;
+package no.sikt.nva.pubchannels.channelregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
-import no.sikt.nva.pubchannels.channelRegistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 
 @JsonSerialize
-public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                       @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
-                                       @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-                                       @JsonProperty(NAME_FIELD) String name,
-                                       @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-                                       @JsonProperty(DISCONTINUED) String discontinued)
-    implements Immutable, ThirdPartyPublisher {
+public record ChannelRegistrySeries(@JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                    @JsonProperty(NAME_FIELD) String name,
+                                    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                    @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
+                                    @JsonProperty(HOMEPAGE_FIELD) URI homepage,
+                                    @JsonProperty(DISCONTINUED) String discontinued) implements Immutable, ThirdPartySeries {
 
     private static final String IDENTIFIER_FIELD = "pid";
-    private static final String NAME_FIELD = "name";
-    private static final String ISBN_PREFIX_FIELD = "isbnprefix";
+    private static final String NAME_FIELD = "originalTitle";
+    private static final String ONLINE_ISSN_FIELD = "eissn";
+    private static final String PRINT_ISSN_FIELD = "pissn";
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
     public static final String DISCONTINUED = "ceased";
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(channelRegistryLevel)
+        return Optional.ofNullable(channelRegistryLevel())
                    .map(ChannelRegistryLevel::year)
                    .map(String::valueOf)
                    .orElse(null);

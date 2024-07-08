@@ -1,11 +1,11 @@
 package no.sikt.nva.pubchannels.handler;
 
 import java.util.Map;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelType;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateJournalRequest;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.CreateChannelResponse;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreatePublisherRequest;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 

@@ -1,13 +1,13 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
-import static no.sikt.nva.pubchannels.channelRegistry.ChannelType.JOURNAL;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;

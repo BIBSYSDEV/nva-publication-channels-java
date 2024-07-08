@@ -1,14 +1,14 @@
 package no.sikt.nva.pubchannels.handler.create.publisher;
 
-import static no.sikt.nva.pubchannels.channelRegistry.ChannelType.PUBLISHER;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.PUBLISHER;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIsbnPrefix;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.channelRegistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelRegistry.model.create.ChannelRegistryCreatePublisherRequest;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
