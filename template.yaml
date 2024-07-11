@@ -14,7 +14,7 @@ Globals:
       - x86_64
     Environment:
       Variables:
-        ALLOWED_ORIGIN: '*'
+        ALLOWED_ORIGIN: !Ref AllowedOrigins
         COGNITO_HOST: !Ref CognitoAuthorizationUri
         API_HOST: !Ref ApiDomain
         API_DOMAIN: !Ref ApiDomain
@@ -45,6 +45,10 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Description: Reference to Cognito UserPool for the stage
     Default: CognitoAuthorizerArn
+  AllowedOrigins:
+    Type: String
+    Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
+    Default: '*'
 
 Resources:
 
