@@ -585,6 +585,9 @@ components:
           description: The ISSN of the print edition of the Journal
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
+        year:
+          type: string
+          nullable: true
         sameAs:
           type: string
           nullable: true
@@ -648,6 +651,9 @@ components:
           pattern: ^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
+        year:
+          type: string
+          nullable: true
         sameAs:
           type: string
           nullable: true
@@ -711,6 +717,9 @@ components:
           description: The ISSN of the print edition of the Series
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
+        year:
+          type: string
+          nullable: true
         sameAs:
           type: string
           nullable: true
@@ -799,6 +808,7 @@ components:
         onlineIssn: '1234-1234'
         printIssn: '4321-4321'
         scientificValue: 'LEVEL_1'
+        year: '1900'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample journal
     CreateJournalExample:
@@ -837,6 +847,7 @@ components:
         name: 'The publisher of eternal fury'
         isbnPrefix: '12345-1234567'
         scientificValue: 'LEVEL_1'
+        year: '1900'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample publisher
     PaginatedSeriesExample:
@@ -863,6 +874,7 @@ components:
         onlineIssn: '1234-1234'
         printIssn: '4321-4321'
         scientificValue: 'LEVEL_1'
+        year: '1900'
         sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       summary: A sample series
     CreateSeriesExample:

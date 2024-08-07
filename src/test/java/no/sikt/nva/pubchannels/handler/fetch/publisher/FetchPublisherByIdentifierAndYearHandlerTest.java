@@ -76,8 +76,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri),
-                                                                 null);
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
@@ -105,6 +104,23 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
+    }
+
+    @Test
+    void shouldIncludeYearInResponse() throws IOException {
+        // Arrange
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        mockPublisherFound(year, identifier);
+
+        // Act
+        handlerUnderTest.handleRequest(input, output, context);
+
+        // Assert
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+        var actualYear = response.getBodyObject(PublisherDto.class).getYear();
+        assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
     @ParameterizedTest
@@ -154,8 +170,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -167,14 +182,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(containsString("Year")));
+        assertThat(problem.getDetail(), is(containsString("Year")));
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
     @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
 
         var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
 
@@ -186,8 +199,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(containsString("Pid")));
+        assertThat(problem.getDetail(), is(containsString("Pid")));
     }
 
     @Test
@@ -215,7 +227,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT,
+                                   identifier,
+                                   year,
+                                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -230,8 +245,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -262,10 +276,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
+                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                                   .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
-        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output,
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
+                                       output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
@@ -286,13 +301,23 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var level = scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
-        var body = createChannelRegistryPublisherResponse(year, name, identifier, isbnPrefix, landingPage, level,
+        var body = createChannelRegistryPublisherResponse(year,
+                                                          name,
+                                                          identifier,
+                                                          isbnPrefix,
+                                                          landingPage,
+                                                          level,
                                                           discontinued);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(String.valueOf(year), identifier, name, isbnPrefix, scientificValue,
-                                           landingPage, String.valueOf(Integer.parseInt(String.valueOf(year)) - 1));
+        return getFetchByIdAndYearResponse(String.valueOf(year),
+                                           identifier,
+                                           name,
+                                           isbnPrefix,
+                                           scientificValue,
+                                           landingPage,
+                                           String.valueOf(Integer.parseInt(String.valueOf(year)) - 1));
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
@@ -302,31 +327,35 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var level = scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var discontinued = String.valueOf(Integer.parseInt(year) - 1);
-        var body = createChannelRegistryPublisherResponse(null, name, identifier, isbnPrefix, landingPage, level, discontinued);
+        var body = createChannelRegistryPublisherResponse(null,
+                                                          name,
+                                                          identifier,
+                                                          isbnPrefix,
+                                                          landingPage,
+                                                          level,
+                                                          discontinued);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, body);
 
-        return getFetchByIdAndYearResponse(year, identifier, name, isbnPrefix, scientificValue,
-                                           landingPage, discontinued);
+        return getFetchByIdAndYearResponse(year,
+                                           identifier,
+                                           name,
+                                           isbnPrefix,
+                                           scientificValue,
+                                           landingPage,
+                                           discontinued);
     }
 
-    private PublisherDto getFetchByIdAndYearResponse(
-        String year,
-        String identifier,
-        String name,
-        String isbnPrefix,
-        ScientificValue scientificValue,
-        URI landingPage, String discontinued) {
+    private PublisherDto getFetchByIdAndYearResponse(String year,
+                                                     String identifier,
+                                                     String name,
+                                                     String isbnPrefix,
+                                                     ScientificValue scientificValue,
+                                                     URI landingPage,
+                                                     String discontinued) {
 
         var selfUriBase = URI.create(SELF_URI_BASE);
-        var publisher = createPublisher(
-            year,
-            identifier,
-            name,
-            isbnPrefix,
-            scientificValue,
-            landingPage,
-            discontinued);
+        var publisher = createPublisher(year, identifier, name, isbnPrefix, scientificValue, landingPage, discontinued);
 
         return PublisherDto.create(selfUriBase, publisher, year);
     }

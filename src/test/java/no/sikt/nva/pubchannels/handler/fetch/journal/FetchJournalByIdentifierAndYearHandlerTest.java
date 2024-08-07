@@ -74,8 +74,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri),
-                                                                 null);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
@@ -85,9 +84,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     @DisplayName("Should return requested media type")
     @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-        final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
-                                          ? MediaType.JSON_UTF_8.toString()
-                                          : mediaType.toString();
+        final var expectedMediaType =
+            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
         var year = TestUtils.randomYear();
         var identifier = mockRegistry.randomJournal(year);
         var input = constructRequest(String.valueOf(year), identifier, mediaType);
@@ -125,6 +123,22 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
+    void shouldIncludeYearInResponse() throws IOException {
+        // Arrange
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.randomJournal(year);
+        var input = constructRequest(String.valueOf(year), identifier);
+
+        // Act
+        handlerUnderTest.handleRequest(input, output, context);
+
+        // Assert
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var actualYear = response.getBodyObject(JournalDto.class).getYear();
+        assertThat(actualYear, is(equalTo(String.valueOf(year))));
+    }
+
+    @Test
     void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
         var year = TestUtils.randomYear();
         var identifier = mockRegistry.randomJournalWithThirdPartyYearValueNull(year);
@@ -144,8 +158,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString());
 
@@ -157,14 +170,12 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(containsString("Year")));
+        assertThat(problem.getDetail(), is(containsString("Year")));
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
     @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
 
         var input = constructRequest(randomYear(), identifier);
 
@@ -176,8 +187,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(containsString("Pid")));
+        assertThat(problem.getDetail(), is(containsString("Pid")));
     }
 
     @Test
@@ -205,8 +215,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unable to reach upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test
@@ -274,8 +283,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -284,8 +292,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild("findjournal", newIdentifier, year)
-                                             .toString();
+                                                   .addChild("findjournal", newIdentifier, year)
+                                                   .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
@@ -297,19 +305,18 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static String constructExpectedLocation(String newIdentifier, String year) {
         return UriWrapper.fromHost(API_DOMAIN)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
-                   .toString();
+                         .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
+                         .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
         throws JsonProcessingException {
-        return new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                   .withPathParameters(Map.of(
-                       "identifier", identifier,
-                       "year", year
-                   ))
-                   .build();
+        return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
+                                                               .withPathParameters(Map.of("identifier",
+                                                                                          identifier,
+                                                                                          "year",
+                                                                                          year))
+                                                               .build();
     }
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {

@@ -23,6 +23,8 @@ public class PublisherDto implements JsonSerializable {
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
     private static final String DISCONTINUED_FIELD = "discontinued";
+    private static final String YEAR_FIELD = "year";
+
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Publisher";
     @JsonProperty(CONTEXT_FIELD)
@@ -41,6 +43,8 @@ public class PublisherDto implements JsonSerializable {
     private final URI sameAs;
     @JsonProperty(DISCONTINUED_FIELD)
     private final String discontinued;
+    @JsonProperty(YEAR_FIELD)
+    private final String year;
 
     @JsonCreator
     public PublisherDto(@JsonProperty(ID_FIELD) URI id,
@@ -49,7 +53,7 @@ public class PublisherDto implements JsonSerializable {
                         @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
                         @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
                         @JsonProperty(SAME_AS_FIELD) URI sameAs,
-                        @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
+                        @JsonProperty(DISCONTINUED_FIELD) String discontinued, @JsonProperty(YEAR_FIELD) String year) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
@@ -57,21 +61,20 @@ public class PublisherDto implements JsonSerializable {
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
         this.discontinued = discontinued;
+        this.year = year;
     }
 
-    public static PublisherDto create(URI selfUriBase, ThirdPartyPublisher publisher,
-                                      String requestedYear) {
+    public static PublisherDto create(URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
         var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
-        var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(publisher.identifier(), year)
-                     .getUri();
+        var id = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier(), year).getUri();
         return new PublisherDto(id,
                                 publisher.identifier(),
                                 publisher.name(),
                                 publisher.isbnPrefix(),
                                 publisher.getScientificValue(),
                                 publisher.homepage(),
-                                publisher.discontinued());
+                                publisher.discontinued(),
+                                year);
     }
 
     public String getType() {
@@ -110,10 +113,14 @@ public class PublisherDto implements JsonSerializable {
         return discontinued;
     }
 
+    public String getYear() {
+        return year;
+    }
+
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued);
+        return Objects.hash(context, id, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued, year);
     }
 
     @Override
@@ -128,12 +135,14 @@ public class PublisherDto implements JsonSerializable {
         PublisherDto that = (PublisherDto) o;
         return Objects.equals(context, that.context)
                && Objects.equals(id, that.id)
-               && Objects.equals(identifier, that.identifier)
+               && Objects.equals(identifier,
+                                 that.identifier)
                && Objects.equals(name, that.name)
                && Objects.equals(isbnPrefix, that.isbnPrefix)
                && scientificValue == that.scientificValue
                && Objects.equals(sameAs, that.sameAs)
-               && Objects.equals(discontinued, that.discontinued);
+               && Objects.equals(discontinued, that.discontinued)
+               && Objects.equals(year, that.year);
     }
 }
 
