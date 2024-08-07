@@ -139,7 +139,8 @@ public class SeriesDto implements JsonSerializable {
                             printIssn,
                             scientificValue,
                             sameAs,
-                            discontinued);
+                            discontinued,
+                            year);
     }
 
     @Override
@@ -161,7 +162,8 @@ public class SeriesDto implements JsonSerializable {
                && Objects.equals(printIssn, that.printIssn)
                && scientificValue == that.scientificValue
                && Objects.equals(sameAs, that.sameAs)
-               && Objects.equals(discontinued, that.discontinued);
+               && Objects.equals(discontinued, that.discontinued)
+               && Objects.equals(year, that.year);
     }
 
     @Override
