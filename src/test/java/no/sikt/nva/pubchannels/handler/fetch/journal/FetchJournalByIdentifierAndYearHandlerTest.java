@@ -124,15 +124,12 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     @Test
     void shouldIncludeYearInResponse() throws IOException {
-        // Arrange
         var year = TestUtils.randomYear();
         var identifier = mockRegistry.randomJournal(year);
         var input = constructRequest(String.valueOf(year), identifier);
 
-        // Act
         handlerUnderTest.handleRequest(input, output, context);
 
-        // Assert
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
         var actualYear = response.getBodyObject(JournalDto.class).getYear();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));

@@ -108,16 +108,13 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     @Test
     void shouldIncludeYearInResponse() throws IOException {
-        // Arrange
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
         mockPublisherFound(year, identifier);
 
-        // Act
         handlerUnderTest.handleRequest(input, output, context);
 
-        // Assert
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
         var actualYear = response.getBodyObject(PublisherDto.class).getYear();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
