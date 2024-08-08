@@ -24,6 +24,7 @@ public class SeriesDto implements JsonSerializable {
     private static final String SCIENTIFIC_VALUE_FIELD = "scientificValue";
     private static final String SAME_AS_FIELD = "sameAs";
     private static final String DISCONTINUED_FIELD = "discontinued";
+    private static final String YEAR_FIELD = "year";
 
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Series";
@@ -45,6 +46,8 @@ public class SeriesDto implements JsonSerializable {
     private final URI sameAs;
     @JsonProperty(DISCONTINUED_FIELD)
     private final String discontinued;
+    @JsonProperty(YEAR_FIELD)
+    private final String year;
 
     @JsonCreator
     public SeriesDto(@JsonProperty(ID_FIELD) URI id,
@@ -54,7 +57,8 @@ public class SeriesDto implements JsonSerializable {
                      @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                      @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
                      @JsonProperty(SAME_AS_FIELD) URI sameAs,
-                     @JsonProperty(DISCONTINUED_FIELD) String discontinued) {
+                     @JsonProperty(DISCONTINUED_FIELD) String discontinued,
+                     @JsonProperty(YEAR_FIELD) String year) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
@@ -63,13 +67,12 @@ public class SeriesDto implements JsonSerializable {
         this.scientificValue = scientificValue;
         this.sameAs = sameAs;
         this.discontinued = discontinued;
+        this.year = year;
     }
 
     public static SeriesDto create(URI selfUriBase, ThirdPartySeries series, String requestedYear) {
         var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
-        var id = UriWrapper.fromUri(selfUriBase)
-                     .addChild(series.identifier(), year)
-                     .getUri();
+        var id = UriWrapper.fromUri(selfUriBase).addChild(series.identifier(), year).getUri();
         return new SeriesDto(id,
                              series.identifier(),
                              series.name(),
@@ -77,7 +80,8 @@ public class SeriesDto implements JsonSerializable {
                              series.printIssn(),
                              series.getScientificValue(),
                              series.homepage(),
-                             series.discontinued());
+                             series.discontinued(),
+                             year);
     }
 
     public String getType() {
@@ -120,11 +124,23 @@ public class SeriesDto implements JsonSerializable {
         return discontinued;
     }
 
+    public String getYear() {
+        return year;
+    }
+
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(context, id, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
-                            discontinued);
+        return Objects.hash(context,
+                            id,
+                            identifier,
+                            name,
+                            onlineIssn,
+                            printIssn,
+                            scientificValue,
+                            sameAs,
+                            discontinued,
+                            year);
     }
 
     @Override
@@ -139,13 +155,15 @@ public class SeriesDto implements JsonSerializable {
         SeriesDto that = (SeriesDto) o;
         return Objects.equals(context, that.context)
                && Objects.equals(id, that.id)
-               && Objects.equals(identifier, that.identifier)
+               && Objects.equals(identifier,
+                                 that.identifier)
                && Objects.equals(name, that.name)
                && Objects.equals(onlineIssn, that.onlineIssn)
                && Objects.equals(printIssn, that.printIssn)
                && scientificValue == that.scientificValue
                && Objects.equals(sameAs, that.sameAs)
-               && Objects.equals(discontinued, that.discontinued);
+               && Objects.equals(discontinued, that.discontinued)
+               && Objects.equals(year, that.year);
     }
 
     @Override

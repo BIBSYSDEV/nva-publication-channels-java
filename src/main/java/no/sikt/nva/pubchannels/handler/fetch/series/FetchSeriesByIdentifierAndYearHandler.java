@@ -13,8 +13,7 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchSeriesByIdentifierAndYearHandler extends
-                                                   FetchByIdentifierAndYearHandler<Void, SeriesDto> {
+public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SeriesDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -29,8 +28,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected SeriesDto processInput(Void input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
+    protected SeriesDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
 
@@ -44,9 +42,10 @@ public class FetchSeriesByIdentifierAndYearHandler extends
         try {
             return publicationChannelClient.getChannel(SERIES, request.getIdentifier(), requestYear);
         } catch (PublicationChannelMovedException movedException) {
-            throw new PublicationChannelMovedException(
-                "Series moved",
-                constructNewLocation(SERIES_PATH_ELEMENT, movedException.getLocation(), requestYear));
+            throw new PublicationChannelMovedException("Series moved",
+                                                       constructNewLocation(SERIES_PATH_ELEMENT,
+                                                                            movedException.getLocation(),
+                                                                            requestYear));
         }
     }
 }

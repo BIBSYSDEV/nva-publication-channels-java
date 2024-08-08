@@ -75,8 +75,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri),
-                                                                 null);
+        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
     }
@@ -104,6 +103,20 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
+    }
+
+    @Test
+    void shouldIncludeYearInResponse() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        mockSeriesFound(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var actualYear = response.getBodyObject(SeriesDto.class).getYear();
+        assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
     @ParameterizedTest
@@ -153,8 +166,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -166,14 +178,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(containsString("Year")));
+        assertThat(problem.getDetail(), is(containsString("Year")));
     }
 
     @ParameterizedTest(name = "identifier \"{0}\" is invalid")
     @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier)
-        throws IOException {
+    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
 
         var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
 
@@ -213,8 +223,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus("/findseries/", identifier, year,
-                                   HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -229,8 +238,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -261,10 +269,11 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
+                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                                   .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
-        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output,
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
+                                       output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
@@ -287,13 +296,25 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var landingPage = randomUri();
         var yearString = String.valueOf(year);
         var discontinued = String.valueOf(year - 1);
-        var body = createChannelRegistryJournalResponse(year, name, identifier, electronicIssn, issn, landingPage, level,
+        var body = createChannelRegistryJournalResponse(year,
+                                                        name,
+                                                        identifier,
+                                                        electronicIssn,
+                                                        issn,
+                                                        landingPage,
+                                                        level,
                                                         discontinued);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, yearString, identifier, body);
 
-        return getFetchByIdAndYearResponse(yearString, identifier, name, electronicIssn, issn, scientificValue,
-                                           landingPage, discontinued);
+        return getFetchByIdAndYearResponse(yearString,
+                                           identifier,
+                                           name,
+                                           electronicIssn,
+                                           issn,
+                                           scientificValue,
+                                           landingPage,
+                                           discontinued);
     }
 
     private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
@@ -304,34 +325,45 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var level = TestUtils.scientificValueToLevel(scientificValue);
         var landingPage = randomUri();
         var discontinued = String.valueOf(Integer.parseInt(year) - 1);
-        var body = createChannelRegistryJournalResponse(null, name, identifier, electronicIssn, issn, landingPage, level,
+        var body = createChannelRegistryJournalResponse(null,
+                                                        name,
+                                                        identifier,
+                                                        electronicIssn,
+                                                        issn,
+                                                        landingPage,
+                                                        level,
                                                         discontinued);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, body);
 
-        return getFetchByIdAndYearResponse(year, identifier, name, electronicIssn, issn, scientificValue,
-                                           landingPage, discontinued);
+        return getFetchByIdAndYearResponse(year,
+                                           identifier,
+                                           name,
+                                           electronicIssn,
+                                           issn,
+                                           scientificValue,
+                                           landingPage,
+                                           discontinued);
     }
 
-    private SeriesDto getFetchByIdAndYearResponse(
-        String year,
-        String identifier,
-        String name,
-        String electronicIssn,
-        String issn,
-        ScientificValue scientificValue,
-        URI landingPage, String discontinued) {
+    private SeriesDto getFetchByIdAndYearResponse(String year,
+                                                  String identifier,
+                                                  String name,
+                                                  String electronicIssn,
+                                                  String issn,
+                                                  ScientificValue scientificValue,
+                                                  URI landingPage,
+                                                  String discontinued) {
 
         var selfUriBase = URI.create(SELF_URI_BASE);
-        var series = createSeries(
-            year,
-            identifier,
-            name,
-            electronicIssn,
-            issn,
-            scientificValue,
-            landingPage,
-            discontinued);
+        var series = createSeries(year,
+                                  identifier,
+                                  name,
+                                  electronicIssn,
+                                  issn,
+                                  scientificValue,
+                                  landingPage,
+                                  discontinued);
 
         return SeriesDto.create(selfUriBase, series, year);
     }

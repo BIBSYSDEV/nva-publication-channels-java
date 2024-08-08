@@ -13,8 +13,7 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchJournalByIdentifierAndYearHandler extends
-                                                    FetchByIdentifierAndYearHandler<Void, JournalDto> {
+public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, JournalDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -29,8 +28,7 @@ public class FetchJournalByIdentifierAndYearHandler extends
     }
 
     @Override
-    protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
+    protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
 
         var request = new FetchByIdAndYearRequest(requestInfo);
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
@@ -45,8 +43,10 @@ public class FetchJournalByIdentifierAndYearHandler extends
         try {
             return publicationChannelClient.getChannel(ChannelType.JOURNAL, request.getIdentifier(), requestYear);
         } catch (PublicationChannelMovedException movedException) {
-            throw new PublicationChannelMovedException(
-                "Journal moved", constructNewLocation(JOURNAL_PATH_ELEMENT, movedException.getLocation(), requestYear));
+            throw new PublicationChannelMovedException("Journal moved",
+                                                       constructNewLocation(JOURNAL_PATH_ELEMENT,
+                                                                            movedException.getLocation(),
+                                                                            requestYear));
         }
     }
 }
