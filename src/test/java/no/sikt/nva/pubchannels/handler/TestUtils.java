@@ -377,7 +377,7 @@ public class TestUtils {
         var entityResult = objectMapper.createObjectNode();
         var arrayNode = objectMapper.createArrayNode();
         results.forEach(arrayNode::add);
-        entityResult.put(PAGERESULT_FIELD, arrayNode);
+        entityResult.set(PAGERESULT_FIELD, arrayNode);
         return entityResult;
     }
 }
