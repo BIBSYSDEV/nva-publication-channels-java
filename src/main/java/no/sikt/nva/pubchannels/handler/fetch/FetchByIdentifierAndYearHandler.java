@@ -28,7 +28,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
-    protected PublicationChannelClient publicationChannelClient;
+    protected final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {

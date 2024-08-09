@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.handler.create.series;
 
-import no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherRequest;
 
 public class CreateSeriesRequestBuilder {
     private String name;

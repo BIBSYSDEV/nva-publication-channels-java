@@ -60,13 +60,17 @@ public final class Validator {
     }
 
     public static void validateYear(String value, Year minAcceptableYear, String name) {
-        Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
-        var year = attempt(() -> Year.parse(value))
-                       .orElseThrow(failure -> new ValidationException(format("%s field is not a valid year.", name)));
-        var now = Year.now();
-        if (year.isBefore(minAcceptableYear) || year.isAfter(now.plusYears(1))) {
-            throw new ValidationException(
-                format("%s is not between the year %d and %d", name, minAcceptableYear.getValue(), now.getValue()));
+        if (value != null) {
+            var year = attempt(() -> Year.parse(value)).orElseThrow(failure -> new ValidationException(format(
+                "%s field is not a valid year.",
+                name)));
+            var now = Year.now();
+            if (year.isBefore(minAcceptableYear) || year.isAfter(now.plusYears(1))) {
+                throw new ValidationException(format("%s is not between the year %d and %d",
+                                                     name,
+                                                     minAcceptableYear.getValue(),
+                                                     now.getValue()));
+            }
         }
     }
 

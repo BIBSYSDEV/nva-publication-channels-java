@@ -17,7 +17,7 @@ public record SearchParameters(String query, int offset, int size, String year) 
             requestInfo.getQueryParameter(QUERY_PARAM),
             requestInfo.getQueryParameterOpt(QUERY_OFFSET_PARAM).map(Integer::parseInt).orElse(DEFAULT_OFFSET_SIZE),
             requestInfo.getQueryParameterOpt(QUERY_SIZE_PARAM).map(Integer::parseInt).orElse(DEFAULT_QUERY_SIZE),
-            requestInfo.getQueryParameter(YEAR_QUERY_PARAM)
+            requestInfo.getQueryParameterOpt(YEAR_QUERY_PARAM).orElse(null)
         );
     }
 }
