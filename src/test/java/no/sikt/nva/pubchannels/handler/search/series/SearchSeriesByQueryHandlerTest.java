@@ -16,7 +16,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChan
 import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchPublisherResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomLevel;
@@ -212,7 +211,7 @@ class SearchSeriesByQueryHandlerTest {
         int maxNr = 30;
         int offset = 0;
         int size = 10;
-        var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
+        var result = getChannelRegistrySearchResult(year, name, maxNr);
         var responseBody = getChannelRegistryResponseBody(result, offset, size);
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
