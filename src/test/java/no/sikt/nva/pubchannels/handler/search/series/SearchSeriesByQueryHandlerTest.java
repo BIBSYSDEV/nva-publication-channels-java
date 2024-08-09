@@ -16,6 +16,7 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChan
 import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryJournalResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchPublisherResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getScientificValue;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomLevel;
@@ -198,9 +199,40 @@ class SearchSeriesByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchresult = getExpectedPaginatedSearchResultNameSearch(
+        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(
             result, yearString, name, offset, size);
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchresult.getHits().toArray()));
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithSuccessWhenQueryOmitsYear() throws IOException, UnprocessableContentException {
+        var year = randomYear();
+        var yearString = String.valueOf(year);
+        var name = randomString();
+        int maxNr = 30;
+        int offset = 0;
+        int size = 10;
+        var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
+        var responseBody = getChannelRegistryResponseBody(result, offset, size);
+        stubChannelRegistrySearchResponse(responseBody,
+                                          HttpURLConnection.HTTP_OK,
+                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
+                                          DEFAULT_SIZE,
+                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
+                                          DEFAULT_OFFSET,
+                                          NAME_QUERY_PARAM,
+                                          name);
+        var input = constructRequest(Map.of("query", name), MediaType.ANY_TYPE);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
+        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(result, yearString, name, offset, size);
+        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
     @Test
@@ -251,21 +283,6 @@ class SearchSeriesByQueryHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), is(containsString("Year")));
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenMissingQueryParamYear() throws IOException {
-        var input = constructRequest(Map.of("query", randomString()), MediaType.ANY_TYPE);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("year")));
     }
 
     @Test
