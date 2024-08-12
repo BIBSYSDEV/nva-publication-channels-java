@@ -79,10 +79,12 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         var searchParameters = SearchParameters.fromRequestInfo(requestInfo);
         var searchResult = searchChannel(searchParameters);
 
-        // Create query params for pagination, with offset and size handled separately
-        var baseQueryParameters = getQueryParams(searchParameters);
-        baseQueryParameters.remove(PAGENO_QUERY_PARAM);
-        baseQueryParameters.remove(PAGECOUNT_QUERY_PARAM);
+        // Create map of query parameters excluding the pagination parameters (offset and size)
+        var baseQueryParameters = new HashMap<String, String>();
+        baseQueryParameters.put(QUERY_PARAM, searchParameters.query());
+        if (searchParameters.year() != null) {
+            baseQueryParameters.put(YEAR_QUERY_PARAM, searchParameters.year());
+        }
 
         return PaginatedSearchResult.create(
             constructBaseUri(),
