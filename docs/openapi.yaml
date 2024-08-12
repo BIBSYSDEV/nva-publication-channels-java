@@ -97,7 +97,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Journal
-      summary: Search for journal by pid, name or issn and year
+      summary: Search for journal by pid, name, issn, or year
       description: Returns a list of Journals
       operationId: SearchJournalByQuery
       parameters:
@@ -106,7 +106,7 @@ paths:
           schema:
             type: integer
           description: The year you want the NVI for
-          required: true
+          required: false
         - in: query
           name: query
           schema:
@@ -258,7 +258,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Publisher
-      summary: Search for publisher by pid, name or issn and year
+      summary: Search for publisher by pid, name, issn, or year
       description: Returns a list of Publishers
       operationId: SearchPublisherByQuery
       parameters:
@@ -267,7 +267,7 @@ paths:
           schema:
             type: integer
           description: The year you want the NVI for
-          required: true
+          required: false
         - in: query
           name: query
           schema:
@@ -419,7 +419,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Series
-      summary: Search for series by pid, name or issn and year
+      summary: Search for series by pid, name, issn, or year
       description: Returns a list of Series
       operationId: SearchSeriesByQuery
       parameters:
@@ -428,7 +428,7 @@ paths:
           schema:
             type: integer
           description: The year you want the NVI for
-          required: true
+          required: false
         - in: query
           name: query
           schema:

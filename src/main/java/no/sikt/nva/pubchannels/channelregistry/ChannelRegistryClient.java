@@ -121,7 +121,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
             throw new BadRequestException(response.body());
         }
         if (HTTP_MOVED_PERM == statusCode) {
-            var location = response.headers().map().get("Location").get(0);
+            var location = response.headers().map().get("Location").getFirst();
             LOGGER.info("Publication channel moved permanently to: {}", location);
             throw new PublicationChannelMovedException("Publication channel moved permanently!", URI.create(location));
         }

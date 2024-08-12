@@ -130,7 +130,7 @@ public class TestUtils {
                    .collect(Collectors.toList());
     }
 
-    public static List<String> getChannelRegistrySearchPublisherResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
                    .mapToObj(i -> createChannelRegistryPublisherResponse(year, name, UUID.randomUUID().toString(),
                                                                          String.valueOf(validIsbnPrefix()),
@@ -377,7 +377,7 @@ public class TestUtils {
         var entityResult = objectMapper.createObjectNode();
         var arrayNode = objectMapper.createArrayNode();
         results.forEach(arrayNode::add);
-        entityResult.put(PAGERESULT_FIELD, arrayNode);
+        entityResult.set(PAGERESULT_FIELD, arrayNode);
         return entityResult;
     }
 }

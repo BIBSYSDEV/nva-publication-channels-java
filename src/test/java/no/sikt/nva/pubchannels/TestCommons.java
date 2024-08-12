@@ -16,7 +16,9 @@ public class TestCommons {
     public static final int MAX_LEVEL = 2;
     public static final double MIN_LEVEL = 0;
     public static final String DEFAULT_OFFSET = "0";
+    public static final int DEFAULT_OFFSET_INT = 0;
     public static final String DEFAULT_SIZE = "10";
+    public static final int DEFAULT_SIZE_INT = 10;
     public static final String CHANNEL_REGISTRY_PAGE_NO_PARAM = "pageno";
     public static final String CHANNEL_REGISTRY_PAGE_COUNT_PARAM = "pagecount";
     public static final String WILD_CARD = "*";

@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
@@ -79,13 +79,20 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         var searchParameters = SearchParameters.fromRequestInfo(requestInfo);
         var searchResult = searchChannel(searchParameters);
 
+        // Create map of query parameters excluding the pagination parameters (offset and size)
+        var baseQueryParameters = new HashMap<String, String>();
+        baseQueryParameters.put(QUERY_PARAM, searchParameters.query());
+        if (searchParameters.year() != null) {
+            baseQueryParameters.put(YEAR_QUERY_PARAM, searchParameters.year());
+        }
+
         return PaginatedSearchResult.create(
             constructBaseUri(),
             searchParameters.offset(),
             searchParameters.size(),
             searchResult.pageInformation().totalResults(),
             getHits(constructBaseUri(), searchResult, searchParameters.year()),
-            Map.of(QUERY_PARAM, searchParameters.query(), YEAR_QUERY_PARAM, searchParameters.year())
+            baseQueryParameters
         );
     }
 
@@ -130,9 +137,12 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
 
     private Map<String, String> getQueryParams(SearchParameters parameters) {
         var queryParams = new HashMap<String, String>();
-        queryParams.put(YEAR_QUERY_PARAM, parameters.year());
-
         var query = parameters.query();
+
+        if (parameters.year() != null) {
+            queryParams.put(YEAR_QUERY_PARAM, parameters.year());
+        }
+
         if (isQueryParameterIssn(query)) {
             queryParams.put(ISSN_QUERY_PARAM, query.trim());
         } else {

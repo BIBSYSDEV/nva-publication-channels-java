@@ -6,8 +6,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Year;
-import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -24,7 +24,7 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
     private static final String CURRENT_YEAR = Year.now().toString();
-    protected PublicationChannelClient publicationChannelClient;
+    protected final PublicationChannelClient publicationChannelClient;
 
     @JacocoGenerated
     protected CreateHandler(Class<I> iclass, Environment environment) {
