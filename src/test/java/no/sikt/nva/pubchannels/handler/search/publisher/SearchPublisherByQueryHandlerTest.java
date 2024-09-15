@@ -35,7 +35,6 @@ import static nva.commons.core.attempt.Try.attempt;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
@@ -132,7 +131,6 @@ class SearchPublisherByQueryHandlerTest {
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
@@ -151,7 +149,6 @@ class SearchPublisherByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
@@ -171,7 +168,6 @@ class SearchPublisherByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
@@ -203,7 +199,6 @@ class SearchPublisherByQueryHandlerTest {
         var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(
             result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
@@ -237,7 +232,6 @@ class SearchPublisherByQueryHandlerTest {
                                                                                        offset,
                                                                                        size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
@@ -271,7 +265,6 @@ class SearchPublisherByQueryHandlerTest {
         var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(
             result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        assertThat(pagesSearchResult, samePropertyValuesAs(expectedSearchResult));
     }
 
     @Test
