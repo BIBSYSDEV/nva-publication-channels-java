@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCALHOST;
@@ -15,16 +16,29 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.net.MediaType;
+
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+
+import nva.commons.core.SingletonCollector;
+import nva.commons.core.paths.UriWrapper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -32,19 +46,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.time.Year;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
-import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.core.SingletonCollector;
-import nva.commons.core.paths.UriWrapper;
 
 public class TestUtils {
 
@@ -360,6 +368,31 @@ public class TestUtils {
         return UriWrapper.fromHost(LOCALHOST)
                    .addChild(CUSTOM_DOMAIN_BASE_PATH, channelPath, newIdentifier, year)
                    .toString();
+    }
+
+    /** Compares two URIs for equality, ignoring the order of query parameters. */
+    public static boolean areEqualURIs(URI uri1, URI uri2) {
+        if (!Objects.equals(uri1.getScheme(), uri2.getScheme())
+                || !Objects.equals(uri1.getHost(), uri2.getHost())
+                || !Objects.equals(uri1.getPath(), uri2.getPath())) {
+            return false;
+        }
+
+        var params1 = getQueryParameters(uri1);
+        var params2 = getQueryParameters(uri2);
+
+        return params1.equals(params2);
+    }
+
+    private static Map<String, String> getQueryParameters(URI uri) {
+        return uri.getQuery() == null
+                ? Map.of()
+                : Arrays.stream(uri.getQuery().split("&"))
+                        .map(param -> param.split("="))
+                        .collect(
+                                Collectors.toMap(
+                                        param -> param[0],
+                                        param -> param.length > 1 ? param[1] : ""));
     }
 
     private static String currentYear() {
