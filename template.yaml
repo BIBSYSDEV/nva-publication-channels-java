@@ -49,6 +49,9 @@ Parameters:
     Type: String
     Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
     Default: '*'
+  SlackSnsArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/NVA/Monitoring/SlackSnsArn'
 
 Resources:
 
@@ -337,3 +340,35 @@ Resources:
       FunctionName: !GetAtt CreateSeriesFunction.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
+
+  DataportenChannelRegistryHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Port: 443
+        Type: HTTPS
+        ResourcePath: /health
+        FullyQualifiedDomainName: !Select [2, !Split ["/", !Ref DataportenChannelRegistryBaseUrl]] # Extracts the domain name from the URL
+        RequestInterval: 30
+        FailureThreshold: 2
+        EnableSNI: true
+
+  DataportenChannelRegistryHealthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub External-Dataporten-Channel-Registry-API-HealthCheck-${PublicationChannelsApi} # PublicationChannelsApi is here just to make the name unique
+      AlarmDescription: Check if external Dataporten Channel Registry API is healthy
+      Namespace: AWS/Route53
+      MetricName: HealthCheckStatus
+      Dimensions:
+        - Name: HealthCheckId
+          Value: !GetAtt DataportenChannelRegistryHealthCheck.HealthCheckId
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+      TreatMissingData: notBreaching
