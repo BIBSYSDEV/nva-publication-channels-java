@@ -3,11 +3,10 @@
 
 name: Java CI with Gradle
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -30,6 +29,12 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build --info
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: build/reports/tests/test
 
       - name: Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@v1
