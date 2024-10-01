@@ -130,12 +130,12 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     }
 
     private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
-        LOGGER.error("Unable to reach upstream: {}", uri, e);
         if (e instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         } else if (e instanceof ApiGatewayException) {
             return (ApiGatewayException) e;
         }
+        LOGGER.error("Unable to reach upstream: {}", uri, e);
         return new BadGatewayException("Unable to reach upstream!");
     }
 
