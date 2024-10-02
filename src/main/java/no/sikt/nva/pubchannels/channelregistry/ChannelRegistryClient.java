@@ -132,6 +132,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
 
     private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
         if (e instanceof InterruptedException) {
+            LOGGER.error("Thread interrupted when fetching: {}", uri, e);
             Thread.currentThread().interrupt();
         } else if (e instanceof ApiGatewayException) {
             return (ApiGatewayException) e;
