@@ -115,7 +115,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     private void handleError(URI requestedUri, HttpResponse<String> response) throws ApiGatewayException {
         var statusCode = response.statusCode();
         if (HTTP_NOT_FOUND == statusCode) {
-            LOGGER.error("Publication channel not found: {} {}", requestedUri, response.body());
+            LOGGER.info("Publication channel not found: {} {}", requestedUri, response.body());
             throw new NotFoundException("Publication channel not found!");
         }
         if (HTTP_BAD_REQUEST == statusCode) {
