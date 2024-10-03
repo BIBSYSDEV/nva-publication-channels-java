@@ -66,15 +66,15 @@ Resources:
       MethodSettings:
         - HttpMethod: 'GET'
           ResourcePath: '/~1journal~1{identifier}~1{year}'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: 3600
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1series~1{identifier}~1{year}'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: 3600
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1publisher~1{identifier}~1{year}'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: 3600
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1journal'
