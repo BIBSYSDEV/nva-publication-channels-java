@@ -234,7 +234,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Error fetching publication channel: 500"));
+        assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
+        assertThat(appender.getMessages(), containsString("500"));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 

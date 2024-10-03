@@ -106,15 +106,16 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         var response = httpClient.send(request, BodyHandlers.ofString());
 
         if (!OK_STATUSES.contains(response.statusCode())) {
-            handleError(response);
+            handleError(request.uri(), response);
         }
 
         return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
     }
 
-    private void handleError(HttpResponse<String> response) throws ApiGatewayException {
+    private void handleError(URI requestedUri, HttpResponse<String> response) throws ApiGatewayException {
         var statusCode = response.statusCode();
         if (HTTP_NOT_FOUND == statusCode) {
+            LOGGER.error("Publication channel not found: {} {}", requestedUri, response.body());
             throw new NotFoundException("Publication channel not found!");
         }
         if (HTTP_BAD_REQUEST == statusCode) {
@@ -122,20 +123,21 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         }
         if (HTTP_MOVED_PERM == statusCode) {
             var location = response.headers().map().get("Location").getFirst();
-            LOGGER.info("Publication channel moved permanently to: {}", location);
+            LOGGER.info("Publication channel {} moved permanently to: {}", requestedUri, location);
             throw new PublicationChannelMovedException("Publication channel moved permanently!", URI.create(location));
         }
-        LOGGER.error("Error fetching publication channel: {} {}", statusCode, response.body());
+        LOGGER.error("Error fetching publication channel: {} {} {}", requestedUri, statusCode, response.body());
         throw new BadGatewayException("Unexpected response from upstream!");
     }
 
     private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
-        LOGGER.error("Unable to reach upstream: {}", uri, e);
         if (e instanceof InterruptedException) {
+            LOGGER.error("Thread interrupted when fetching: {}", uri, e);
             Thread.currentThread().interrupt();
         } else if (e instanceof ApiGatewayException) {
             return (ApiGatewayException) e;
         }
+        LOGGER.error("Unable to reach upstream: {}", uri, e);
         return new BadGatewayException("Unable to reach upstream!");
     }
 
