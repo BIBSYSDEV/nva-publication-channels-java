@@ -1,9 +1,11 @@
 name: Test composite action
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   reused:
     uses: BIBSYSDEV/nva-github-workflows/.github/workflows/java.yml@v1
     with:
       magic_string: "12345"
+    secrets:
+      codacy_token: ${{ secrets.CODACY_PROJECT_TOKEN }}
