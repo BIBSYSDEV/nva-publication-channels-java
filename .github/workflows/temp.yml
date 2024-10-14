@@ -4,7 +4,6 @@ on: [push,pull_request]
 
 jobs:
   reused:
-    uses: LarsV123/example-action/.github/workflows/shared_workflow.yml@v1
+    uses: BIBSYSDEV/.github/workflows/java.yml@v1
     with:
-      magic_string: "bar"
-      
+      magic_string: "12345"
