@@ -4,6 +4,6 @@ on: [push,pull_request]
 
 jobs:
   reused:
-    uses: BIBSYSDEV/nva-github-workflows/java.yml@v1
+    uses: BIBSYSDEV/nva-github-workflows/.github/workflows/java.yml@v1
     with:
       magic_string: "12345"
