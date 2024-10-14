@@ -3,11 +3,8 @@ name: Test composite action
 on: [push,pull_request]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: LarsV123/example-action/.github/workflows/shared_workflow.yml@v1
-        with:
-          magic_string: "bar"
+  reused:
+    uses: LarsV123/example-action/.github/workflows/shared_workflow.yml@v1
+    with:
+      magic_string: "bar"
+      
