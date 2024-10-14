@@ -8,6 +8,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: LarsV123/example-action/shared_workflow.yml@v1
+      - uses: LarsV123/example-action/.github/workflows/shared_workflow.yml@v1
         with:
           magic_string: "bar"
