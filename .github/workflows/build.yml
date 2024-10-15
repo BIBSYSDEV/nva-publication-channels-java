@@ -1,4 +1,4 @@
-name: Build123
+name: Build
 
 on:
   push:
@@ -7,9 +7,7 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  reused:
+  build:
     uses: BIBSYSDEV/nva-github-workflows/.github/workflows/java.yml@v1
-    with:
-      java_version: "21"
     secrets:
       codacy_token: ${{ secrets.CODACY_PROJECT_TOKEN }}
