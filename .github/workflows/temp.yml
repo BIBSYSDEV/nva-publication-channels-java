@@ -1,4 +1,4 @@
-name: Test composite action
+name: Build123
 
 on: [push, pull_request]
 
