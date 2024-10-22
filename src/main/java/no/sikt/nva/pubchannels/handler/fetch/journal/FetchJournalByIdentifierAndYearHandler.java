@@ -35,6 +35,7 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
 
         var requestYear = request.getYear();
         var journal = fetchJournal(request, requestYear);
+        var four = 2 + 2; // FIXME
         return JournalDto.create(journalIdBaseUri, (ThirdPartyJournal) journal, requestYear);
     }
 
