@@ -165,59 +165,6 @@ public class TestUtils {
         return url;
     }
 
-    public static ThirdPartyJournal createJournal(
-        String year,
-        String identifier,
-        String name,
-        String electronicIssn,
-        String issn,
-        ScientificValue scientificValue,
-        URI landingPage,
-        String discontinued) {
-
-        return new ThirdPartyJournal() {
-            @Override
-            public String identifier() {
-                return identifier;
-            }
-
-            @Override
-            public String getYear() {
-                return year;
-            }
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public ScientificValue getScientificValue() {
-                return scientificValue;
-            }
-
-            @Override
-            public URI homepage() {
-                return landingPage;
-            }
-
-            @Override
-            public String discontinued() {
-                return discontinued;
-            }
-
-            @Override
-            public String onlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String printIssn() {
-                return issn;
-            }
-        };
-    }
-
     public static ThirdPartySeries createSeries(
         String year,
         String identifier,

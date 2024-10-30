@@ -12,7 +12,6 @@ public class TestCommons {
     public static final String NAME_QUERY_PARAM = "name";
     public static final String YEAR_QUERY_PARAM = "year";
     public static final String ISSN_QUERY_PARAM = "issn";
-    public static final String PID_QUERY_PARAM = "pid";
     public static final int MAX_LEVEL = 2;
     public static final double MIN_LEVEL = 0;
     public static final String DEFAULT_OFFSET = "0";

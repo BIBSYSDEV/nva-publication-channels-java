@@ -7,18 +7,11 @@ import static no.sikt.nva.pubchannels.TestCommons.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryPublisherResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static no.sikt.nva.pubchannels.handler.TestUtils.scientificValueToLevel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
-import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
-import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -38,7 +31,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestData;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
@@ -60,6 +52,7 @@ import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 class FetchPublisherByIdentifierAndYearHandlerTest {
+
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
     private static final Context context = new FakeContext();
@@ -274,8 +267,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                                   .toString();
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
