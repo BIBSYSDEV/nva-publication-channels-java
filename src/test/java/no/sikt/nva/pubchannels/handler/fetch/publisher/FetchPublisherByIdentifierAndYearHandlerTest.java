@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestData;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
@@ -286,7 +286,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
-        var testData = new TestData(year, identifier);
+        var testData = new TestChannel(year, identifier);
         var body = testData.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
@@ -295,7 +295,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
-        var testData = new TestData(null, identifier);
+        var testData = new TestChannel(null, identifier);
         var body = testData.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);

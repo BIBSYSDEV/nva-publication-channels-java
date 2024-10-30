@@ -9,7 +9,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import no.sikt.nva.pubchannels.handler.TestData;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 
 public class PublicationChannelMockClient {
@@ -34,7 +34,7 @@ public class PublicationChannelMockClient {
 
     public String randomJournal(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testData = new TestData(year, identifierString);
+        var testData = new TestChannel(year, identifierString);
 
         mockChannelRegistry(year, identifierString, testData.asChannelRegistryJournalBody());
         journalsByIdentifier.put(identifierString, testData.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
@@ -44,7 +44,7 @@ public class PublicationChannelMockClient {
 
     public String randomJournalWithThirdPartyYearValueNull(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testData = new TestData(null, identifierString);
+        var testData = new TestChannel(null, identifierString);
 
         mockChannelRegistry(year, identifierString, testData.asChannelRegistryJournalBody());
         journalsByIdentifier.put(identifierString, testData.asJournalDto(SELF_URI_BASE, String.valueOf(year)));

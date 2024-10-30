@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
-import no.sikt.nva.pubchannels.handler.TestData;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
@@ -468,7 +468,7 @@ class SearchJournalByQueryHandlerTest {
     }
 
     private static PaginatedSearchResult<JournalDto> getExpectedSearchResult(Integer year, String printIssn,
-                                                                             TestData testData)
+                                                                             TestChannel testChannel)
         throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", printIssn);
@@ -476,7 +476,7 @@ class SearchJournalByQueryHandlerTest {
             expectedParams.put("year", String.valueOf(year));
         }
 
-        var expectedHits = List.of(testData.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+        var expectedHits = List.of(testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
 
         return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, expectedParams),
                                             DEFAULT_OFFSET_INT,
@@ -488,7 +488,7 @@ class SearchJournalByQueryHandlerTest {
     private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearch(Integer year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestData(year, pid).withPrintIssn(printIssn);
+        var testData = new TestChannel(year, pid).withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year), printIssn, List.of(testData.asChannelRegistryJournalBody()));
 
@@ -499,7 +499,7 @@ class SearchJournalByQueryHandlerTest {
         Integer year,
         String printIssn) throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestData(null, pid).withPrintIssn(printIssn);
+        var testData = new TestChannel(null, pid).withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year), printIssn, List.of(testData.asChannelRegistryJournalBody()));
 
@@ -521,7 +521,7 @@ class SearchJournalByQueryHandlerTest {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getChannelRegistryRequestUrl(queryValue);
+        var url = getChannelRegistryRequestUrl("findJournal", queryValue);
 
         stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
                     .withQueryParams(queryParams)

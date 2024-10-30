@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
-import no.sikt.nva.pubchannels.handler.TestData;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
@@ -75,8 +75,6 @@ import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 class SearchPublisherByQueryHandlerTest {
-
-    public static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
@@ -442,7 +440,7 @@ class SearchPublisherByQueryHandlerTest {
             expectedParams.put("year", year);
         }
 
-        return PaginatedSearchResult.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null),
+        return PaginatedSearchResult.create(constructPublicationChannelUri(PUBLISHER_PATH, null),
                                             queryOffset,
                                             querySize,
                                             expectedHits.size(),
@@ -463,14 +461,14 @@ class SearchPublisherByQueryHandlerTest {
     }
 
     private static PublisherDto toPublisherResult(ThirdPartyPublisher publisher, String requestedYear) {
-        return PublisherDto.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, null), publisher,
+        return PublisherDto.create(constructPublicationChannelUri(PUBLISHER_PATH, null), publisher,
                                    requestedYear);
     }
 
     private PaginatedSearchResult<PublisherDto> getExpectedPaginatedSearchResultIssnSearch(int year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestData(year, pid).withPrintIssn(printIssn);
+        var testData = new TestChannel(year, pid).withPrintIssn(printIssn);
 
         var result = List.of(testData.asChannelRegistryPublisherBody());
         mockChannelRegistryResponse(String.valueOf(year), printIssn, result);
@@ -485,7 +483,7 @@ class SearchPublisherByQueryHandlerTest {
         String year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestData(null, pid).withPrintIssn(printIssn);
+        var testData = new TestChannel(null, pid).withPrintIssn(printIssn);
 
         var result = List.of(testData.asChannelRegistryPublisherBody());
         mockChannelRegistryResponse(String.valueOf(year), printIssn, result);
@@ -510,7 +508,7 @@ class SearchPublisherByQueryHandlerTest {
                                                              Map<String, String> queryParameters)
         throws UnprocessableContentException {
         var expectedHits = List.of(publisherDto);
-        return PaginatedSearchResult.create(constructPublicationChannelUri(PUBLISHER_PATH_ELEMENT, queryParameters),
+        return PaginatedSearchResult.create(constructPublicationChannelUri(PUBLISHER_PATH, queryParameters),
                                             DEFAULT_OFFSET_INT,
                                             DEFAULT_SIZE_INT,
                                             expectedHits.size(),
@@ -522,7 +520,7 @@ class SearchPublisherByQueryHandlerTest {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getChannelRegistryRequestUrl(queryValue);
+        var url = getChannelRegistryRequestUrl("findpublisher", queryValue);
 
         stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
                     .withQueryParams(queryParams)

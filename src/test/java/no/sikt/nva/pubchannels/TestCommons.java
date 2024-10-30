@@ -24,6 +24,7 @@ public class TestCommons {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String LOCATION = "Location";
     public static final String PUBLISHER_PATH = "publisher";
+    public static final String SERIES_PATH = "series";
 
     private TestCommons() {
     }

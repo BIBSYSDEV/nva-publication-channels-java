@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels.handler.fetch.series;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
+import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryJournalResponse;
@@ -35,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
@@ -57,7 +59,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest {
 
-    public static final String SERIES_PATH = "series";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
@@ -270,8 +271,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                                   .toString();
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
@@ -289,33 +290,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     }
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
-        var name = randomString();
-        var electronicIssn = randomIssn();
-        var issn = randomIssn();
-        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = TestUtils.scientificValueToLevel(scientificValue);
-        var landingPage = randomUri();
-        var yearString = String.valueOf(year);
-        var discontinued = String.valueOf(year - 1);
-        var body = createChannelRegistryJournalResponse(year,
-                                                        name,
-                                                        identifier,
-                                                        electronicIssn,
-                                                        issn,
-                                                        landingPage,
-                                                        level,
-                                                        discontinued);
+        var testData = new TestChannel(year, identifier);
+        var body = testData.asChannelRegistrySeriesBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, yearString, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(yearString,
-                                           identifier,
-                                           name,
-                                           electronicIssn,
-                                           issn,
-                                           scientificValue,
-                                           landingPage,
-                                           discontinued);
+        return testData.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {

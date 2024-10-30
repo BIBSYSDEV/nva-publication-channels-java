@@ -156,8 +156,8 @@ public class TestUtils {
         return queryParams;
     }
 
-    public static StringBuilder getChannelRegistryRequestUrl(String... queryValue) {
-        var url = new StringBuilder("/findpublisher/channels");
+    public static StringBuilder getChannelRegistryRequestUrl(String channelRegistryPath, String... queryValue) {
+        var url = new StringBuilder("/" + channelRegistryPath + "/channels");
         for (int i = 0; i < queryValue.length; i = i + 2) {
             url.append(i == 0 ? "?" : "&");
             url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
