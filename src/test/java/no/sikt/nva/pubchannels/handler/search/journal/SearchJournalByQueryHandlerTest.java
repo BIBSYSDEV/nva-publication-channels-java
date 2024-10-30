@@ -17,8 +17,10 @@ import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryRequestUrl;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getStringStringValuePatternHashMap;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
@@ -38,7 +40,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -146,7 +147,7 @@ class SearchJournalByQueryHandlerTest {
         throws IOException, UnprocessableContentException {
         var year = randomYear();
         var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
+        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
 
         var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), MediaType.ANY_TYPE);
 
@@ -337,26 +338,27 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
-        var input = constructRequest(Map.of("year", String.valueOf(randomYear()), "query", "Lorem Ipsum "
-                                                                                           + "is simply dummy text of"
-                                                                                           + " the "
-                                                                                           + "printing and "
-                                                                                           + "typesetting industry."
-                                                                                           + " Lorem Ipsum has been "
-                                                                                           + "the "
-                                                                                           + "industry's standard "
-                                                                                           + "dummy text "
-                                                                                           + "ever since the 1500s, "
-                                                                                           + "when an "
-                                                                                           + "unknown printer took a "
-                                                                                           + "galley "
-                                                                                           + "of type and scrambled "
-                                                                                           + "it to make a"
-                                                                                           + " type specimen book. It"
-                                                                                           + " has "
-                                                                                           + "survived not only five "
-                                                                                           + "centuries,"
-                                                                                           + " but also the l"),
+        var input = constructRequest(Map.of("year", String.valueOf(randomYear()),
+                                            "query", "Lorem Ipsum "
+                                                     + "is simply dummy text of"
+                                                     + " the "
+                                                     + "printing and "
+                                                     + "typesetting industry."
+                                                     + " Lorem Ipsum has been "
+                                                     + "the "
+                                                     + "industry's standard "
+                                                     + "dummy text "
+                                                     + "ever since the 1500s, "
+                                                     + "when an "
+                                                     + "unknown printer took a "
+                                                     + "galley "
+                                                     + "of type and scrambled "
+                                                     + "it to make a"
+                                                     + " type specimen book. It"
+                                                     + " has "
+                                                     + "survived not only five "
+                                                     + "centuries,"
+                                                     + " but also the l"),
                                      MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
@@ -528,24 +530,5 @@ class SearchJournalByQueryHandlerTest {
                                     .withBody(body)
                     )
         );
-    }
-
-    private Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
-        var queryParams = new HashMap<String, StringValuePattern>();
-        for (int i = 0; i < queryValue.length; i = i + 2) {
-            if (nonNull(queryValue[i + 1])){
-                queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
-            }
-        }
-        return queryParams;
-    }
-
-    private StringBuilder getChannelRegistryRequestUrl(String... queryValue) {
-        var url = new StringBuilder("/findjournal/channels");
-        for (int i = 0; i < queryValue.length; i = i + 2) {
-            url.append(i == 0 ? "?" : "&");
-            url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
-        }
-        return url;
     }
 }

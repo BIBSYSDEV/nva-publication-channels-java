@@ -28,8 +28,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
 
+import java.util.HashMap;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -144,6 +146,23 @@ public class TestUtils {
                                                                          String.valueOf(validIsbnPrefix()),
                                                                          randomUri(), randomLevel(), randomString()))
                    .collect(Collectors.toList());
+    }
+
+    public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
+        var queryParams = new HashMap<String, StringValuePattern>();
+        for (int i = 0; i < queryValue.length; i = i + 2) {
+            queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
+        }
+        return queryParams;
+    }
+
+    public static StringBuilder getChannelRegistryRequestUrl(String... queryValue) {
+        var url = new StringBuilder("/findpublisher/channels");
+        for (int i = 0; i < queryValue.length; i = i + 2) {
+            url.append(i == 0 ? "?" : "&");
+            url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
+        }
+        return url;
     }
 
     public static ThirdPartyJournal createJournal(
