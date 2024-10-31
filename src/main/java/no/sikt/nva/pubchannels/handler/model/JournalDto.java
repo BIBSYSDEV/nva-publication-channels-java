@@ -40,7 +40,7 @@ public record JournalDto(URI id,
                               journal.homepage(),
                               journal.discontinued(),
                               year,
-                              null);
+                              journal.reviewNotice());
     }
 
     @JsonProperty("context")

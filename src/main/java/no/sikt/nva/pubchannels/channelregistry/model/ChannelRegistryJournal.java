@@ -1,8 +1,10 @@
 package no.sikt.nva.pubchannels.channelregistry.model;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
@@ -50,9 +52,19 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
     public ScientificValueReviewNotice reviewNotice() {
         return Optional.ofNullable(channelRegistryLevel)
                    .filter(level -> CHANNEL_REGISTRY_REVIEW_MARK.equals(level.levelDisplay()))
-                   .map(level -> new ScientificValueReviewNotice(Map.of(NORWEGIAN, level.decisionNO(),
-                                                                        ENGLISH, level.decision())))
+                   .map(level -> new ScientificValueReviewNotice(mapLanguages(level)))
                    .orElse(null);
+    }
+
+    private static Map<String, String> mapLanguages(ChannelRegistryLevel level) {
+        var decisionMap = new HashMap<String, String>();
+        if (nonNull(level.decision())) {
+            decisionMap.put(ENGLISH, level.decision());
+        }
+        if (nonNull(level.decisionNO())) {
+            decisionMap.put(NORWEGIAN, level.decisionNO());
+        }
+        return decisionMap;
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
