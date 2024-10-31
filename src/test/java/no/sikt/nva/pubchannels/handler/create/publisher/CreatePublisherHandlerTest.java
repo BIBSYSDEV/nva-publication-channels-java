@@ -121,7 +121,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
-        setupBadRequestStub(null, request);
+        setupBadRequestStub(request);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -341,13 +341,13 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreatePublisherRequest request)
+    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
-        stubFetchResponse(expectedPid);
+        stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String pid) {

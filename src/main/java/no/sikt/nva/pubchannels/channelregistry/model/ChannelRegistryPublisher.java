@@ -24,7 +24,7 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     private static final String ISBN_PREFIX_FIELD = "isbnprefix";
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
-    public static final String DISCONTINUED = "ceased";
+    private static final String DISCONTINUED = "ceased";
 
     @Override
     public String getYear() {

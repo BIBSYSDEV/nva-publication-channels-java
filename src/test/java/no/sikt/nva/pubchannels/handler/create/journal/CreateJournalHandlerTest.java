@@ -112,7 +112,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
 
-        setupBadRequestStub(null, request);
+        setupBadRequestStub(request);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -349,13 +349,13 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreateJournalRequest request)
+    private void setupBadRequestStub(ChannelRegistryCreateJournalRequest request)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createjournal/createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
-        stubFetchResponse(expectedPid);
+        stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String expectedPid) {

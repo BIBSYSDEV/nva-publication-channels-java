@@ -203,8 +203,9 @@ public class TestUtils {
                    .asChannelRegistryPublisherBody();
     }
 
-    private static String generateChannelRegistryJournalBody(int year, String name) {
-        return generateChannelRegistryPublisherBody(year, name);
+    private static String generateChannelRegistryJournalBody(Integer year, String name) {
+        return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
+                   .asChannelRegistryJournalBody();
     }
 
     private static Map<String, String> getQueryParameters(URI uri) {
