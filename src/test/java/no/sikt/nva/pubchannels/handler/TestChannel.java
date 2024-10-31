@@ -17,6 +17,7 @@ import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import nva.commons.core.paths.UriWrapper;
 
 public class TestChannel {
+
     private final String identifier;
     private final Integer year;
     private final String isbnPrefix;
@@ -53,13 +54,13 @@ public class TestChannel {
         return this;
     }
 
-    public TestChannel withOnlineIssn(String onlineIssn) {
-        this.onlineIssn = onlineIssn;
+    public TestChannel withPrintIssn(String printIssn) {
+        this.printIssn = printIssn;
         return this;
     }
 
-    public TestChannel withPrintIssn(String printIssn) {
-        this.printIssn = printIssn;
+    public TestChannel withOriginalTitle(String originalTitle) {
+        this.name = originalTitle;
         return this;
     }
 

@@ -20,7 +20,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, CreateJournalResponse> {
 
-    private static final String JOURNAL_PATH_ELEMENT = "journal";
+    private static final String JOURNAL_PATH = "journal";
 
     @JacocoGenerated
     public CreateJournalHandler() {
@@ -42,7 +42,7 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Cr
     protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
                                                  Context context) throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
-        var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, response.pid());
+        var createdUri = constructIdUri(JOURNAL_PATH, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateJournalResponse.create(
             createdUri,

@@ -2,9 +2,12 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
 import static no.sikt.nva.pubchannels.TestCommons.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.*;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
@@ -64,9 +67,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
         environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
@@ -275,7 +278,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = TestUtils.constructExpectedLocation(newIdentifier, year, PUBLISHER_PATH);
+        var expectedLocation = createPublicationChannelUri(newIdentifier, PUBLISHER_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
@@ -286,20 +289,20 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
-        var testData = new TestChannel(year, identifier);
-        var body = testData.asChannelRegistryPublisherBody();
+        var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return testData.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+        return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
-        var testData = new TestChannel(null, identifier);
-        var body = testData.asChannelRegistryPublisherBody();
+        var testChannel = new TestChannel(null, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return testData.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+        return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 }

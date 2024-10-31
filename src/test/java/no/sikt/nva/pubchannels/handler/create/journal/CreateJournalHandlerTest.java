@@ -4,7 +4,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -22,11 +27,11 @@ import java.net.URI;
 import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
-import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
+import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -45,7 +50,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateJournalHandlerTest extends CreateHandlerTest {
 
-    public static final String JOURNAL_PATH_ELEMENT = "journal";
     public static final String PROBLEM = "Some problem";
     private transient CreateJournalHandler handlerUnderTest;
     private Environment environment;
@@ -53,9 +57,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
         this.environment = mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
@@ -70,7 +74,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
-        setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, CreateJournalResponse.class);
@@ -78,7 +82,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, JOURNAL_PATH_ELEMENT))));
+        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, JOURNAL_PATH, currentYear()))));
 
         var expectedJournal = constructExpectedJournal(expectedPid);
         assertThat(response.getBodyObject(CreateJournalResponse.class), is(equalTo(expectedJournal)));
@@ -89,7 +93,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
 
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
+        setupStub(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -123,7 +127,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
         var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        setupStub(null, request, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -141,7 +145,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null), HttpURLConnection.HTTP_OK,
+        setupStub(null, new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null),
                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -230,7 +234,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         setupStub(expectedPid, new ChannelRegistryCreateJournalRequest(VALID_NAME, issn, null, null),
-                  HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
+                  HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -271,7 +275,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, printIssn, null, null);
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(printIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -287,7 +291,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var onlineIssn = validIssn().findAny().get();
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, onlineIssn, null);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(onlineIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -303,7 +307,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, homepage);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateJournalRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
@@ -328,17 +332,17 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
     private CreateJournalResponse constructExpectedJournal(String pid) {
         var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("journal")
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(JOURNAL_PATH)
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
         return new CreateJournalResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(String expectedPid, ChannelRegistryCreateJournalRequest request, int clientAuthResponseHttpCode,
+    private void setupStub(String expectedPid, ChannelRegistryCreateJournalRequest request,
                            int clientResponseHttpCode) throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
+        stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode, "/createjournal/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
@@ -360,9 +364,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                                                                      "application/json"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
                                     .withHeader("Content-Type", "application/json;charset=UTF-8")
-                                    .withBody(nonNull(expectedPid) ? new ChannelRegistryBodyBuilder().withType("Journal")
-                                                                         .withPid(expectedPid)
-                                                                         .withOriginalTitle(VALID_NAME)
-                                                                         .build() : null)));
+                                    .withBody(nonNull(expectedPid)
+                                                  ? new ChannelRegistryJournal(expectedPid, VALID_NAME, null, null,
+                                                                               null, null, null).toJsonString()
+                                                  : null)));
     }
 }

@@ -34,20 +34,20 @@ public class PublicationChannelMockClient {
 
     public String randomJournal(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testData = new TestChannel(year, identifierString);
+        var testChannel = new TestChannel(year, identifierString);
 
-        mockChannelRegistry(year, identifierString, testData.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(identifierString, testData.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+        mockChannelRegistry(year, identifierString, testChannel.asChannelRegistryJournalBody());
+        journalsByIdentifier.put(identifierString, testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
 
         return identifierString;
     }
 
     public String randomJournalWithThirdPartyYearValueNull(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testData = new TestChannel(null, identifierString);
+        var testChannel = new TestChannel(null, identifierString);
 
-        mockChannelRegistry(year, identifierString, testData.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(identifierString, testData.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+        mockChannelRegistry(year, identifierString, testChannel.asChannelRegistryJournalBody());
+        journalsByIdentifier.put(identifierString, testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
 
         return identifierString;
     }

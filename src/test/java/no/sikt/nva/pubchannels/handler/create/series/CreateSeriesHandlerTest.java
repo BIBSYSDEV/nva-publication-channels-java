@@ -4,7 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -22,12 +26,14 @@ import java.net.URI;
 import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.TestCommons;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
-import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -46,7 +52,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateSeriesHandlerTest extends CreateHandlerTest {
 
-    public static final String SERIES_PATH_ELEMENT = "series";
     private static final String PROBLEM = "Some problem";
     private transient CreateSeriesHandler handlerUnderTest;
 
@@ -55,9 +60,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
         this.environment = mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
@@ -83,7 +88,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, SERIES_PATH,
+                                                                          TestUtils.currentYear()))));
 
         var expectedSeries = constructExpectedSeries(expectedPid);
         assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
@@ -363,19 +369,18 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     private CreateSeriesResponse constructExpectedSeries(String pid) {
         var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("series")
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(SERIES_PATH)
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
         return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(
-        String expectedPid,
-        ChannelRegistryCreateSeriesRequest request,
-        int clientAuthResponseHttpCode,
-        int clientResponseHttpCode)
+    private void setupStub(String expectedPid,
+                           ChannelRegistryCreateSeriesRequest request,
+                           int clientAuthResponseHttpCode,
+                           int clientResponseHttpCode)
         throws JsonProcessingException {
         stubAuth(clientAuthResponseHttpCode);
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
@@ -402,11 +407,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(nonNull(expectedPid)
-                                      ? new ChannelRegistryBodyBuilder()
-                                            .withType("Series")
-                                            .withOriginalTitle(VALID_NAME)
-                                            .withPid(expectedPid)
-                                            .build()
+                                      ? new ChannelRegistrySeries(expectedPid, VALID_NAME, null, null, null, null, null)
+                                            .toJsonString()
                                       : null)));
     }
 }

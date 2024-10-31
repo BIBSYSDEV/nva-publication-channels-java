@@ -5,8 +5,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
@@ -14,11 +16,12 @@ import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryRequestUrl;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getStringStringValuePatternHashMap;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
@@ -111,9 +114,9 @@ class SearchSeriesByQueryHandlerTest {
     void setup(WireMockRuntimeInfo runtimeInfo) {
 
         Environment environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         var channelRegistryBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
@@ -190,7 +193,7 @@ class SearchSeriesByQueryHandlerTest {
         int offset = 0;
         int size = 10;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(result, offset, size);
+        var responseBody = getChannelRegistrySearchResponseBody(result, offset, size);
         stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
@@ -219,7 +222,7 @@ class SearchSeriesByQueryHandlerTest {
         int offset = 0;
         int size = 10;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(result, offset, size);
+        var responseBody = getChannelRegistrySearchResponseBody(result, offset, size);
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
@@ -251,7 +254,7 @@ class SearchSeriesByQueryHandlerTest {
         int maxNr = 30;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
-            getChannelRegistryResponseBody(result, offset, size),
+            getChannelRegistrySearchResponseBody(result, offset, size),
             HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
             CHANNEL_REGISTRY_PAGE_COUNT_PARAM, String.valueOf(size),
@@ -284,7 +287,7 @@ class SearchSeriesByQueryHandlerTest {
         int maxNr = 30;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
-            getChannelRegistryResponseBody(result, offset, size),
+            getChannelRegistrySearchResponseBody(result, offset, size),
             HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM,
             yearString,
@@ -411,7 +414,7 @@ class SearchSeriesByQueryHandlerTest {
         var name = randomString();
         int maxNr = 30;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(result, 0, 10);
+        var responseBody = getChannelRegistrySearchResponseBody(result, 0, 10);
         stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
             YEAR_QUERY_PARAM, String.valueOf(year),
@@ -489,7 +492,7 @@ class SearchSeriesByQueryHandlerTest {
     }
 
     private void mockChannelRegistryResponse(String year, String printIssn, List<String> result) {
-        var responseBody = getChannelRegistryResponseBody(result, 0, 10);
+        var responseBody = getChannelRegistrySearchResponseBody(result, 0, 10);
         stubChannelRegistrySearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                                           ISSN_QUERY_PARAM, printIssn,
                                           YEAR_QUERY_PARAM, year,

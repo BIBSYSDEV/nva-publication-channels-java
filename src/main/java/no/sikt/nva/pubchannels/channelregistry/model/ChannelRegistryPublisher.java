@@ -8,6 +8,7 @@ import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
+import no.unit.nva.commons.json.JsonSerializable;
 
 @JsonSerialize
 public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String identifier,
@@ -16,7 +17,7 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
                                        @JsonProperty(NAME_FIELD) String name,
                                        @JsonProperty(HOMEPAGE_FIELD) URI homepage,
                                        @JsonProperty(DISCONTINUED) String discontinued)
-    implements Immutable, ThirdPartyPublisher {
+    implements Immutable, ThirdPartyPublisher, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
     private static final String NAME_FIELD = "name";

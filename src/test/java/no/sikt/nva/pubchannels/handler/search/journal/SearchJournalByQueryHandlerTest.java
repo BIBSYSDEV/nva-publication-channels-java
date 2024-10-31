@@ -6,19 +6,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
 import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryRequestUrl;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryResponseBody;
+import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getStringStringValuePatternHashMap;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
@@ -77,9 +81,10 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest {
 
-    public static final String JOURNAL_PATH_ELEMENT = "journal";
-    private static final URI SELF_URI_BASE =
-        UriWrapper.fromUri("https://localhost/publication-channels/").addChild(JOURNAL_PATH_ELEMENT).getUri();
+    private static final URI SELF_URI_BASE = UriWrapper.fromHost(API_DOMAIN)
+                                                 .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                                                 .addChild(JOURNAL_PATH)
+                                                 .getUri();
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<JournalDto>> TYPE_REF = new TypeReference<>() {
     };
@@ -90,9 +95,9 @@ class SearchJournalByQueryHandlerTest {
     void setup(WireMockRuntimeInfo runtimeInfo) {
 
         Environment environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         var channelRegistryBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
@@ -169,7 +174,7 @@ class SearchJournalByQueryHandlerTest {
         int offset = 0;
         int size = 10;
         var channelRegistrySearchResult = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(channelRegistrySearchResult, offset, size);
+        var responseBody = getChannelRegistrySearchResponseBody(channelRegistrySearchResult, offset, size);
         stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
@@ -199,7 +204,7 @@ class SearchJournalByQueryHandlerTest {
         int offset = 0;
         int size = 10;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(result, offset, size);
+        var responseBody = getChannelRegistrySearchResponseBody(result, offset, size);
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
@@ -234,7 +239,7 @@ class SearchJournalByQueryHandlerTest {
         int maxNr = 30;
         var channelRegistrySearchResult = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
-            getChannelRegistryResponseBody(channelRegistrySearchResult, offset, size),
+            getChannelRegistrySearchResponseBody(channelRegistrySearchResult, offset, size),
             HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM, yearString,
             CHANNEL_REGISTRY_PAGE_COUNT_PARAM, String.valueOf(size),
@@ -267,7 +272,7 @@ class SearchJournalByQueryHandlerTest {
         int maxNr = 30;
         var channelRegistrySearchResult = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
-            getChannelRegistryResponseBody(channelRegistrySearchResult, offset, size),
+            getChannelRegistrySearchResponseBody(channelRegistrySearchResult, offset, size),
             HttpURLConnection.HTTP_OK,
             YEAR_QUERY_PARAM,
             yearString,
@@ -396,7 +401,7 @@ class SearchJournalByQueryHandlerTest {
         var name = randomString();
         int maxNr = 30;
         var channelRegistrySearchResult = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistryResponseBody(channelRegistrySearchResult, 0, 10);
+        var responseBody = getChannelRegistrySearchResponseBody(channelRegistrySearchResult, 0, 10);
         stubChannelRegistrySearchResponse(
             responseBody, HttpURLConnection.HTTP_INTERNAL_ERROR,
             YEAR_QUERY_PARAM, yearString,
@@ -443,7 +448,7 @@ class SearchJournalByQueryHandlerTest {
             expectedParams.put("year", year);
         }
 
-        return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null),
+        return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH, null),
                                             queryOffset,
                                             querySize,
                                             expectedHits.size(),
@@ -464,7 +469,7 @@ class SearchJournalByQueryHandlerTest {
     }
 
     private static JournalDto toJournalResult(ThirdPartyJournal journal, String requestedYear) {
-        return JournalDto.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, null), journal, requestedYear);
+        return JournalDto.create(constructPublicationChannelUri(JOURNAL_PATH, null), journal, requestedYear);
     }
 
     private static PaginatedSearchResult<JournalDto> getExpectedSearchResult(Integer year, String printIssn,
@@ -478,7 +483,7 @@ class SearchJournalByQueryHandlerTest {
 
         var expectedHits = List.of(testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
 
-        return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH_ELEMENT, expectedParams),
+        return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH, expectedParams),
                                             DEFAULT_OFFSET_INT,
                                             DEFAULT_SIZE_INT,
                                             expectedHits.size(),
@@ -488,26 +493,28 @@ class SearchJournalByQueryHandlerTest {
     private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearch(Integer year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestChannel(year, pid).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(year, pid).withPrintIssn(printIssn);
 
-        mockChannelRegistryResponse(String.valueOf(year), printIssn, List.of(testData.asChannelRegistryJournalBody()));
+        mockChannelRegistryResponse(String.valueOf(year), printIssn,
+                                    List.of(testChannel.asChannelRegistryJournalBody()));
 
-        return getExpectedSearchResult(year, printIssn, testData);
+        return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
     private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
         Integer year,
         String printIssn) throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testData = new TestChannel(null, pid).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(null, pid).withPrintIssn(printIssn);
 
-        mockChannelRegistryResponse(String.valueOf(year), printIssn, List.of(testData.asChannelRegistryJournalBody()));
+        mockChannelRegistryResponse(String.valueOf(year), printIssn,
+                                    List.of(testChannel.asChannelRegistryJournalBody()));
 
-        return getExpectedSearchResult(year, printIssn, testData);
+        return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
     private void mockChannelRegistryResponse(String year, String printIssn, List<String> channelRegistryEntityResult) {
-        var responseBody = getChannelRegistryResponseBody(channelRegistryEntityResult, 0, 10);
+        var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, 0, 10);
         stubChannelRegistrySearchResponse(responseBody, HttpURLConnection.HTTP_OK,
                                           ISSN_QUERY_PARAM, printIssn,
                                           YEAR_QUERY_PARAM, year,
@@ -521,7 +528,7 @@ class SearchJournalByQueryHandlerTest {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getChannelRegistryRequestUrl("findJournal", queryValue);
+        var url = getChannelRegistryRequestUrl("findjournal", queryValue);
 
         stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
                     .withQueryParams(queryParams)

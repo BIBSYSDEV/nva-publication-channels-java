@@ -7,13 +7,11 @@ import org.junit.jupiter.api.Named;
 
 public class TestCommons {
 
-    public static final String LOCALHOST = "localhost";
+    public static final String API_DOMAIN = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String NAME_QUERY_PARAM = "name";
     public static final String YEAR_QUERY_PARAM = "year";
     public static final String ISSN_QUERY_PARAM = "issn";
-    public static final int MAX_LEVEL = 2;
-    public static final double MIN_LEVEL = 0;
     public static final String DEFAULT_OFFSET = "0";
     public static final int DEFAULT_OFFSET_INT = 0;
     public static final String DEFAULT_SIZE = "10";
@@ -25,6 +23,7 @@ public class TestCommons {
     public static final String LOCATION = "Location";
     public static final String PUBLISHER_PATH = "publisher";
     public static final String SERIES_PATH = "series";
+    public static final String JOURNAL_PATH = "journal";
 
     private TestCommons() {
     }
