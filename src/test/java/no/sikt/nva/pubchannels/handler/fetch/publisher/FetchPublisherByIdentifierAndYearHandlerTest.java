@@ -2,22 +2,19 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
+import static no.sikt.nva.pubchannels.TestCommons.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryPublisherResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublisher;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static no.sikt.nva.pubchannels.handler.TestUtils.scientificValueToLevel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
-import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
-import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -37,8 +34,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -59,7 +55,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchPublisherByIdentifierAndYearHandlerTest {
 
-    private static final String PUBLISHER_PATH = "publisher";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
     private static final Context context = new FakeContext();
@@ -71,9 +66,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
         environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
@@ -274,15 +269,15 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                                   .toString();
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = TestUtils.constructExpectedLocation(newIdentifier, year, PUBLISHER_PATH);
+        var expectedLocation = createPublicationChannelUri(newIdentifier, PUBLISHER_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
@@ -293,68 +288,20 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
-        var name = randomString();
-        var isbnPrefix = String.valueOf(validIsbnPrefix());
-        var scientificValue = randomElement(ScientificValue.values());
-        var level = scientificValueToLevel(scientificValue);
-        var landingPage = randomUri();
-        var discontinued = String.valueOf(Integer.parseInt(String.valueOf(year)) - 1);
-        var body = createChannelRegistryPublisherResponse(year,
-                                                          name,
-                                                          identifier,
-                                                          isbnPrefix,
-                                                          landingPage,
-                                                          level,
-                                                          discontinued);
+        var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(String.valueOf(year),
-                                           identifier,
-                                           name,
-                                           isbnPrefix,
-                                           scientificValue,
-                                           landingPage,
-                                           String.valueOf(Integer.parseInt(String.valueOf(year)) - 1));
+        return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
-        var name = randomString();
-        var isbnPrefix = String.valueOf(validIsbnPrefix());
-        var scientificValue = randomElement(ScientificValue.values());
-        var level = scientificValueToLevel(scientificValue);
-        var landingPage = randomUri();
-        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
-        var body = createChannelRegistryPublisherResponse(null,
-                                                          name,
-                                                          identifier,
-                                                          isbnPrefix,
-                                                          landingPage,
-                                                          level,
-                                                          discontinued);
+        var testChannel = new TestChannel(null, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(year,
-                                           identifier,
-                                           name,
-                                           isbnPrefix,
-                                           scientificValue,
-                                           landingPage,
-                                           discontinued);
-    }
-
-    private PublisherDto getFetchByIdAndYearResponse(String year,
-                                                     String identifier,
-                                                     String name,
-                                                     String isbnPrefix,
-                                                     ScientificValue scientificValue,
-                                                     URI landingPage,
-                                                     String discontinued) {
-
-        var selfUriBase = URI.create(SELF_URI_BASE);
-        var publisher = createPublisher(year, identifier, name, isbnPrefix, scientificValue, landingPage, discontinued);
-
-        return PublisherDto.create(selfUriBase, publisher, year);
+        return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 }

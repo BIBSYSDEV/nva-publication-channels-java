@@ -3,6 +3,9 @@ package no.sikt.nva.pubchannels.handler.fetch.journal;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
@@ -53,9 +56,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchJournalByIdentifierAndYearHandlerTest {
 
-    public static final String API_DOMAIN = "localhost";
-    public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
-    public static final String JOURNAL_PATH = "journal";
     private static final int YEAR_START = 2004;
     private static final Context context = new FakeContext();
     private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
@@ -290,8 +290,8 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild("findjournal", newIdentifier, year)
-                                                   .toString();
+                                             .addChild("findjournal", newIdentifier, year)
+                                             .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
@@ -303,18 +303,18 @@ class FetchJournalByIdentifierAndYearHandlerTest {
 
     private static String constructExpectedLocation(String newIdentifier, String year) {
         return UriWrapper.fromHost(API_DOMAIN)
-                         .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
-                         .toString();
+                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
+                   .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
         throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                                                               .withPathParameters(Map.of("identifier",
-                                                                                          identifier,
-                                                                                          "year",
-                                                                                          year))
-                                                               .build();
+                   .withPathParameters(Map.of("identifier",
+                                              identifier,
+                                              "year",
+                                              year))
+                   .build();
     }
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {

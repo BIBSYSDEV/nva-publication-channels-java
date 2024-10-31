@@ -4,81 +4,64 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCALHOST;
-import static no.sikt.nva.pubchannels.TestCommons.MAX_LEVEL;
-import static no.sikt.nva.pubchannels.TestCommons.MIN_LEVEL;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
-import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
-
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
-
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
-import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-
-import nva.commons.core.SingletonCollector;
-import nva.commons.core.paths.UriWrapper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.core.SingletonCollector;
+import nva.commons.core.paths.UriWrapper;
 
 public class TestUtils {
 
     public static final String PAGERESULT_FIELD = "pageresult";
     public static final int YEAR_START = 1900;
     public static final String VALID_ISBN_PREFIX = "12345-1234567";
-    private static final ScientificValueMapper mapper = new ScientificValueMapper();
 
     private TestUtils() {
 
     }
 
-    public static URI createExpectedUri(String pid, String channelPathElement) {
-        return new UriWrapper(HTTPS, "localhost")
-                   .addChild("publication-channels", channelPathElement, pid, currentYear())
+    public static URI createPublicationChannelUri(String pid, String channelPathElement, String year) {
+        return new UriWrapper(HTTPS, API_DOMAIN)
+                   .addChild(CUSTOM_DOMAIN_BASE_PATH, channelPathElement, pid, year)
                    .getUri();
     }
 
-    public static ScientificValue getScientificValue(String level) {
-        return mapper.map(level);
-    }
-
-    public static void mockChannelRegistryResponse(String dataportenPathElement, String year, String identifier,
+    public static void mockChannelRegistryResponse(String channelRegistryPathElement, String year, String identifier,
                                                    String responseBody) {
         stubFor(
-            get(dataportenPathElement + identifier + "/" + year)
+            get(channelRegistryPathElement + identifier + "/" + year)
                 .withHeader("Accept", WireMock.equalTo("application/json"))
                 .willReturn(
                     aResponse()
@@ -126,177 +109,33 @@ public class TestUtils {
         return VALID_ISBN_PREFIX;
     }
 
-    public static String randomLevel() {
-        return String.valueOf((int) Math.floor(Math.random() * (MAX_LEVEL - MIN_LEVEL + 1) + MIN_LEVEL));
-    }
-
     public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(
-                       i -> createChannelRegistryJournalResponse(year, name, UUID.randomUUID().toString(), randomIssn(),
-                                                                 randomIssn(), randomUri(), randomLevel(), randomString()))
+                   .mapToObj(i -> generateChannelRegistryJournalBody(year, name))
                    .collect(Collectors.toList());
     }
 
     public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                   .mapToObj(i -> createChannelRegistryPublisherResponse(year, name, UUID.randomUUID().toString(),
-                                                                         String.valueOf(validIsbnPrefix()),
-                                                                         randomUri(), randomLevel(), randomString()))
+                   .mapToObj(i -> generateChannelRegistryPublisherBody(year, name))
                    .collect(Collectors.toList());
     }
 
-    public static ThirdPartyJournal createJournal(
-        String year,
-        String identifier,
-        String name,
-        String electronicIssn,
-        String issn,
-        ScientificValue scientificValue,
-        URI landingPage,
-        String discontinued) {
-
-        return new ThirdPartyJournal() {
-            @Override
-            public String identifier() {
-                return identifier;
-            }
-
-            @Override
-            public String getYear() {
-                return year;
-            }
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public ScientificValue getScientificValue() {
-                return scientificValue;
-            }
-
-            @Override
-            public URI homepage() {
-                return landingPage;
-            }
-
-            @Override
-            public String discontinued() {
-                return discontinued;
-            }
-
-            @Override
-            public String onlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String printIssn() {
-                return issn;
-            }
-        };
+    public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
+        var queryParams = new HashMap<String, StringValuePattern>();
+        for (int i = 0; i < queryValue.length; i = i + 2) {
+            queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
+        }
+        return queryParams;
     }
 
-    public static ThirdPartySeries createSeries(
-        String year,
-        String identifier,
-        String name,
-        String electronicIssn,
-        String issn,
-        ScientificValue scientificValue,
-        URI landingPage,
-        String discontinued) {
-
-        return new ThirdPartySeries() {
-            @Override
-            public String identifier() {
-                return identifier;
-            }
-
-            @Override
-            public String getYear() {
-                return year;
-            }
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public ScientificValue getScientificValue() {
-                return scientificValue;
-            }
-
-            @Override
-            public URI homepage() {
-                return landingPage;
-            }
-
-            @Override
-            public String discontinued() {
-                return discontinued;
-            }
-
-            @Override
-            public String onlineIssn() {
-                return electronicIssn;
-            }
-
-            @Override
-            public String printIssn() {
-                return issn;
-            }
-        };
-    }
-
-    public static ThirdPartyPublisher createPublisher(
-        String year,
-        String identifier,
-        String name,
-        String isbnPrefix,
-        ScientificValue scientificValue,
-        URI landingPage,
-        String discontinued) {
-
-        return new ThirdPartyPublisher() {
-            @Override
-            public String identifier() {
-                return identifier;
-            }
-
-            @Override
-            public String getYear() {
-                return year;
-            }
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public ScientificValue getScientificValue() {
-                return scientificValue;
-            }
-
-            @Override
-            public URI homepage() {
-                return landingPage;
-            }
-
-            @Override
-            public String discontinued() {
-                return discontinued;
-            }
-
-            @Override
-            public String isbnPrefix() {
-                return isbnPrefix;
-            }
-        };
+    public static StringBuilder getChannelRegistryRequestUrl(String channelRegistryPath, String... queryValue) {
+        var url = new StringBuilder("/" + channelRegistryPath + "/channels");
+        for (int i = 0; i < queryValue.length; i = i + 2) {
+            url.append(i == 0 ? "?" : "&");
+            url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
+        }
+        return url;
     }
 
     public static ChannelRegistryClient setupInterruptedClient() throws IOException, InterruptedException {
@@ -318,33 +157,8 @@ public class TestUtils {
                         .withStatus(httpStatus)));
     }
 
-    public static String createChannelRegistryJournalResponse(Integer year, String originalTitle, String pid, String eissn,
-                                                              String pissn, URI kurl, String level, String discontinued) {
-        return new ChannelRegistryBodyBuilder()
-                   .withPid(pid)
-                   .withOriginalTitle(originalTitle)
-                   .withEissn(eissn)
-                   .withPissn(pissn)
-                   .withKurl(kurl.toString())
-                   .withLevel(new ChannelRegistryLevel(year, level))
-                   .withCeased(discontinued)
-                   .build();
-    }
-
-    public static String createChannelRegistryPublisherResponse(Integer year, String name, String pid, String isbnPrefix,
-                                                                URI kurl, String level, String discontinued) {
-        return new ChannelRegistryBodyBuilder()
-                   .withCeased(discontinued)
-                   .withPid(pid)
-                   .withName(name)
-                   .withIsbnPrefix(isbnPrefix)
-                   .withKurl(kurl.toString())
-                   .withLevel(new ChannelRegistryLevel(year, level))
-                   .build();
-    }
-
     public static URI constructPublicationChannelUri(String pathElement, Map<String, String> queryParams) {
-        var uri = new UriWrapper(HTTPS, LOCALHOST)
+        var uri = new UriWrapper(HTTPS, API_DOMAIN)
                       .addChild(CUSTOM_DOMAIN_BASE_PATH, pathElement)
                       .getUri();
         if (Objects.nonNull(queryParams)) {
@@ -353,7 +167,7 @@ public class TestUtils {
         return uri;
     }
 
-    public static String getChannelRegistryResponseBody(List<String> results, int offset, int size) {
+    public static String getChannelRegistrySearchResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize =
             results.stream()
                 .skip(offset)
@@ -361,20 +175,16 @@ public class TestUtils {
                 .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
                 .collect(Collectors.toList());
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
-        return buildDataportenSearchResponse(results, entityResult);
+        return buildChannelRegistrySearchResponse(results, entityResult);
     }
 
-    public static String constructExpectedLocation(String newIdentifier, String year, String channelPath) {
-        return UriWrapper.fromHost(LOCALHOST)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, channelPath, newIdentifier, year)
-                   .toString();
-    }
-
-    /** Compares two URIs for equality, ignoring the order of query parameters. */
+    /**
+     * Compares two URIs for equality, ignoring the order of query parameters.
+     */
     public static boolean areEqualURIs(URI uri1, URI uri2) {
         if (!Objects.equals(uri1.getScheme(), uri2.getScheme())
-                || !Objects.equals(uri1.getHost(), uri2.getHost())
-                || !Objects.equals(uri1.getPath(), uri2.getPath())) {
+            || !Objects.equals(uri1.getHost(), uri2.getHost())
+            || !Objects.equals(uri1.getPath(), uri2.getPath())) {
             return false;
         }
 
@@ -384,23 +194,33 @@ public class TestUtils {
         return params1.equals(params2);
     }
 
+    public static String currentYear() {
+        return String.valueOf(LocalDate.now().getYear());
+    }
+
+    private static String generateChannelRegistryPublisherBody(Integer year, String name) {
+        return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
+                   .asChannelRegistryPublisherBody();
+    }
+
+    private static String generateChannelRegistryJournalBody(Integer year, String name) {
+        return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
+                   .asChannelRegistryJournalBody();
+    }
+
     private static Map<String, String> getQueryParameters(URI uri) {
         return uri.getQuery() == null
-                ? Map.of()
-                : Arrays.stream(uri.getQuery().split("&"))
-                        .map(param -> param.split("="))
-                        .collect(
-                                Collectors.toMap(
-                                        param -> param[0],
-                                        param -> param.length > 1 ? param[1] : ""));
+                   ? Map.of()
+                   : Arrays.stream(uri.getQuery().split("&"))
+                         .map(param -> param.split("="))
+                         .collect(
+                             Collectors.toMap(
+                                 param -> param[0],
+                                 param -> param.length > 1 ? param[1] : ""));
     }
 
-    private static String currentYear() {
-        return Year.now().toString();
-    }
-
-    private static String buildDataportenSearchResponse(List<String> results, ObjectNode entityResult) {
-        return new ChannelRegistryBodyBuilder()
+    private static String buildChannelRegistrySearchResponse(List<String> results, ObjectNode entityResult) {
+        return new ChannelRegistrySearchResponseBodyBuilder()
                    .withEntityPageInformation(new ChannelRegistryEntityPageInformation(results.size()))
                    .withEntityResultSet(entityResult)
                    .build();

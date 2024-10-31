@@ -8,6 +8,7 @@ import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.unit.nva.commons.json.JsonSerializable;
 
 @JsonSerialize
 public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String identifier,
@@ -17,7 +18,7 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
                                      @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
                                      @JsonProperty(HOMEPAGE_FIELD) URI homepage,
                                      @JsonProperty(DISCONTINUED) String discontinued)
-    implements Immutable, ThirdPartyJournal {
+    implements Immutable, ThirdPartyJournal, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
     private static final String NAME_FIELD = "originalTitle";
@@ -25,7 +26,7 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
     private static final String PRINT_ISSN_FIELD = "pissn";
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
-    public static final String DISCONTINUED = "ceased";
+    private static final String DISCONTINUED = "ceased";
 
     @Override
     public String getYear() {

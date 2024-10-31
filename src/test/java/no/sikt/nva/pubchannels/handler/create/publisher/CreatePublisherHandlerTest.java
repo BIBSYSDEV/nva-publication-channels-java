@@ -4,7 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.PUBLISHER_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -25,12 +29,13 @@ import java.time.Year;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
-import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -48,7 +53,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreatePublisherHandlerTest extends CreateHandlerTest {
 
-    public static final String PUBLISHER_PATH_ELEMENT = "publisher";
     private static final String PROBLEM = "Some problem";
     private transient CreatePublisherHandler handlerUnderTest;
     private Environment environment;
@@ -56,9 +60,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
         this.environment = mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
@@ -75,7 +79,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
-        setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
@@ -85,7 +89,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, PUBLISHER_PATH_ELEMENT))));
+        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, PUBLISHER_PATH,
+                                                                          TestUtils.currentYear()))));
 
         var expectedPublisher = constructExpectedPublisher(expectedPid);
         assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
@@ -96,7 +101,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
+        setupStub(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -116,7 +121,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
-        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+        setupBadRequestStub(request);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -131,7 +136,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        setupStub(null, request, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -151,7 +156,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
         setupStub(null, new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null),
-                  HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
+                  HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -260,7 +265,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var isbnPrefix = String.valueOf(validIsbnPrefix());
         var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, isbnPrefix, null);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testPublisher = new CreatePublisherRequestBuilder()
                                 .withName(VALID_NAME)
@@ -280,7 +285,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, homepage);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testPublisher = new CreatePublisherRequestBuilder()
                                 .withName(VALID_NAME)
@@ -317,34 +322,32 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private CreatePublisherResponse constructExpectedPublisher(String pid) {
         var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("publisher")
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(PUBLISHER_PATH)
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
         return new CreatePublisherResponse(uri, VALID_NAME, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(
-        String expectedPid,
-        ChannelRegistryCreatePublisherRequest request,
-        int clientAuthResponseHttpCode,
-        int clientResponseHttpCode)
+    private void setupStub(String expectedPid,
+                           ChannelRegistryCreatePublisherRequest request,
+                           int clientResponseHttpCode)
         throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
+        stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreatePublisherRequest request,
-                                     int clientAuthResponseHttpCode,
-                                     int clientResponseHttpCode) throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
+    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request)
+        throws JsonProcessingException {
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createpublisher/createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
-        stubFetchResponse(expectedPid);
+        stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String pid) {
@@ -356,11 +359,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(nonNull(pid)
-                                      ? new ChannelRegistryBodyBuilder()
-                                            .withType("Journal")
-                                            .withName(VALID_NAME)
-                                            .withPid(pid)
-                                            .build()
+                                      ? new ChannelRegistryPublisher(pid, null, null, VALID_NAME, null, null)
+                                            .toJsonString()
                                       : null)));
     }
 }

@@ -2,19 +2,18 @@ package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
+import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createChannelRegistryJournalResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createSeries;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
-import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -34,12 +33,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.ScientificValue;
-import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
-import no.unit.nva.testutils.RandomDataGenerator;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -57,7 +54,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest {
 
-    public static final String SERIES_PATH = "series";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
@@ -69,9 +65,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
         environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
@@ -270,15 +266,15 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                                   .toString();
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = TestUtils.constructExpectedLocation(newIdentifier, year, SERIES_PATH);
+        var expectedLocation = createPublicationChannelUri(newIdentifier, SERIES_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
@@ -289,83 +285,20 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     }
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
-        var name = randomString();
-        var electronicIssn = randomIssn();
-        var issn = randomIssn();
-        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = TestUtils.scientificValueToLevel(scientificValue);
-        var landingPage = randomUri();
-        var yearString = String.valueOf(year);
-        var discontinued = String.valueOf(year - 1);
-        var body = createChannelRegistryJournalResponse(year,
-                                                        name,
-                                                        identifier,
-                                                        electronicIssn,
-                                                        issn,
-                                                        landingPage,
-                                                        level,
-                                                        discontinued);
+        var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistrySeriesBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, yearString, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return getFetchByIdAndYearResponse(yearString,
-                                           identifier,
-                                           name,
-                                           electronicIssn,
-                                           issn,
-                                           scientificValue,
-                                           landingPage,
-                                           discontinued);
+        return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
-        var name = randomString();
-        var electronicIssn = randomIssn();
-        var issn = randomIssn();
-        var scientificValue = RandomDataGenerator.randomElement(ScientificValue.values());
-        var level = TestUtils.scientificValueToLevel(scientificValue);
-        var landingPage = randomUri();
-        var discontinued = String.valueOf(Integer.parseInt(year) - 1);
-        var body = createChannelRegistryJournalResponse(null,
-                                                        name,
-                                                        identifier,
-                                                        electronicIssn,
-                                                        issn,
-                                                        landingPage,
-                                                        level,
-                                                        discontinued);
+        var testChannel = new TestChannel(null, identifier);
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
+                                    testChannel.asChannelRegistrySeriesBody());
 
-        return getFetchByIdAndYearResponse(year,
-                                           identifier,
-                                           name,
-                                           electronicIssn,
-                                           issn,
-                                           scientificValue,
-                                           landingPage,
-                                           discontinued);
-    }
-
-    private SeriesDto getFetchByIdAndYearResponse(String year,
-                                                  String identifier,
-                                                  String name,
-                                                  String electronicIssn,
-                                                  String issn,
-                                                  ScientificValue scientificValue,
-                                                  URI landingPage,
-                                                  String discontinued) {
-
-        var selfUriBase = URI.create(SELF_URI_BASE);
-        var series = createSeries(year,
-                                  identifier,
-                                  name,
-                                  electronicIssn,
-                                  issn,
-                                  scientificValue,
-                                  landingPage,
-                                  discontinued);
-
-        return SeriesDto.create(selfUriBase, series, year);
+        return testChannel.asSeriesDto(SELF_URI_BASE, year);
     }
 }

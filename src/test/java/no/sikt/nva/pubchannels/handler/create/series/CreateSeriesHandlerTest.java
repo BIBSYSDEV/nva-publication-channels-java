@@ -4,7 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createExpectedUri;
+import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -22,12 +26,13 @@ import java.net.URI;
 import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
-import no.sikt.nva.pubchannels.handler.ChannelRegistryBodyBuilder;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -46,7 +51,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class CreateSeriesHandlerTest extends CreateHandlerTest {
 
-    public static final String SERIES_PATH_ELEMENT = "series";
     private static final String PROBLEM = "Some problem";
     private transient CreateSeriesHandler handlerUnderTest;
 
@@ -55,9 +59,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @BeforeEach
     void setUp(WireMockRuntimeInfo runtimeInfo) {
         this.environment = mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
-        when(environment.readEnv("API_DOMAIN")).thenReturn("localhost");
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn("publication-channels");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
@@ -74,7 +78,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
         var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
 
-        setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
@@ -83,7 +87,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createExpectedUri(expectedPid, SERIES_PATH_ELEMENT))));
+        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, SERIES_PATH,
+                                                                          TestUtils.currentYear()))));
 
         var expectedSeries = constructExpectedSeries(expectedPid);
         assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
@@ -94,7 +99,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
+        setupStub(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -114,7 +119,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
-        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+        setupBadRequestStub(request);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -129,7 +134,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        setupStub(null, request, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -149,7 +154,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
         setupStub(null, new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null),
-                  HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
+                  HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -240,7 +245,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         setupStub(expectedPid, new ChannelRegistryCreateSeriesRequest(VALID_NAME, issn, null, null),
-                  HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_OK);
+                  HttpURLConnection.HTTP_OK);
 
         var testJournal = new CreateSeriesRequestBuilder()
                               .withName(VALID_NAME)
@@ -291,7 +296,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var printIssn = validIssn().findAny().get();
         var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, printIssn, null, null);
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateSeriesRequestBuilder()
                               .withName(VALID_NAME)
@@ -310,7 +315,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var onlineIssn = validIssn().findAny().get();
         var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, onlineIssn, null);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateSeriesRequestBuilder()
                               .withName(VALID_NAME)
@@ -330,7 +335,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, homepage);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testJournal = new CreateSeriesRequestBuilder()
                               .withName(VALID_NAME)
@@ -363,34 +368,32 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     private CreateSeriesResponse constructExpectedSeries(String pid) {
         var uri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild("publication-channels")
-                      .addChild("series")
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(SERIES_PATH)
                       .addChild(pid)
                       .addChild(Year.now().toString())
                       .getUri();
         return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(
-        String expectedPid,
-        ChannelRegistryCreateSeriesRequest request,
-        int clientAuthResponseHttpCode,
-        int clientResponseHttpCode)
+    private void setupStub(String expectedPid,
+                           ChannelRegistryCreateSeriesRequest request,
+                           int clientResponseHttpCode)
         throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
+        stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode, "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreateSeriesRequest request,
-                                     int clientAuthResponseHttpCode,
-                                     int clientResponseHttpCode) throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createseries/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
+    private void setupBadRequestStub(ChannelRegistryCreateSeriesRequest request)
+        throws JsonProcessingException {
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createseries/createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
-        stubFetchResponse(expectedPid);
+        stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String expectedPid) {
@@ -402,11 +405,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(nonNull(expectedPid)
-                                      ? new ChannelRegistryBodyBuilder()
-                                            .withType("Series")
-                                            .withOriginalTitle(VALID_NAME)
-                                            .withPid(expectedPid)
-                                            .build()
+                                      ? new ChannelRegistrySeries(expectedPid, VALID_NAME, null, null, null, null, null)
+                                            .toJsonString()
                                       : null)));
     }
 }
