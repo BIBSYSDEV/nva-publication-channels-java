@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,11 @@ class SeriesDtoTest {
             @Override
             public String discontinued() {
                 return randomString();
+            }
+
+            @Override
+            public ScientificValueReviewNotice reviewNotice() {
+                return null;
             }
 
             @Override

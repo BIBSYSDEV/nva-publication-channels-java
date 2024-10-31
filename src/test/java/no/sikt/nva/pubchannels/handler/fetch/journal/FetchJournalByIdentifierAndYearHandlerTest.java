@@ -68,7 +68,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     void setup(WireMockRuntimeInfo runtimeInfo) {
 
         this.environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn("*");
+        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
 
@@ -131,8 +131,22 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
-        var actualYear = response.getBodyObject(JournalDto.class).getYear();
+        var actualYear = response.getBodyObject(JournalDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
+    }
+
+    @Test
+    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.journalWithScientificValueReviewNotice(year);
+        var input = constructRequest(String.valueOf(year), identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var actualJournalReviewNotice = response.getBodyObject(JournalDto.class).reviewNotice();
+        var expectedJournalReviewNotice = mockRegistry.getJournal(identifier).reviewNotice();
+        assertThat(actualJournalReviewNotice, is(equalTo(expectedJournalReviewNotice)));
     }
 
     @Test
