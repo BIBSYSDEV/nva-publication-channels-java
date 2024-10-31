@@ -79,7 +79,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
         var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
-        setupStub(expectedPid, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
@@ -101,7 +101,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_UNAUTHORIZED);
+        setupStub(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -121,7 +121,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
 
-        setupBadRequestStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_BAD_REQUEST);
+        setupBadRequestStub(null, request);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -136,7 +136,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
-        setupStub(null, request, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_FORBIDDEN);
+        setupStub(null, request, HttpURLConnection.HTTP_FORBIDDEN);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -156,7 +156,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
         setupStub(null, new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null),
-                  HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_INTERNAL_ERROR);
+                  HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -265,7 +265,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var isbnPrefix = String.valueOf(validIsbnPrefix());
         var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, isbnPrefix, null);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testPublisher = new CreatePublisherRequestBuilder()
                                 .withName(VALID_NAME)
@@ -285,7 +285,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, homepage);
 
-        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+        setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testPublisher = new CreatePublisherRequestBuilder()
                                 .withName(VALID_NAME)
@@ -332,21 +332,20 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private void setupStub(String expectedPid,
                            ChannelRegistryCreatePublisherRequest request,
-                           int clientAuthResponseHttpCode,
                            int clientResponseHttpCode)
         throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
+        stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreatePublisherRequest request,
-                                     int clientAuthResponseHttpCode,
-                                     int clientResponseHttpCode) throws JsonProcessingException {
-        stubAuth(clientAuthResponseHttpCode);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid", dtoObjectMapper.writeValueAsString(PROBLEM),
+    private void setupBadRequestStub(String expectedPid, ChannelRegistryCreatePublisherRequest request)
+        throws JsonProcessingException {
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createpublisher/createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }

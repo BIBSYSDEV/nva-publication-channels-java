@@ -24,8 +24,8 @@ public class TestChannel {
     private final ScientificValue scientificValue;
     private final String discontinued;
     private final URI sameAs;
+    private final String onlineIssn;
     private String name;
-    private String onlineIssn;
     private String printIssn;
 
     private TestChannel(Integer year, String identifier, String name,
@@ -56,11 +56,6 @@ public class TestChannel {
 
     public TestChannel withPrintIssn(String printIssn) {
         this.printIssn = printIssn;
-        return this;
-    }
-
-    public TestChannel withOriginalTitle(String originalTitle) {
-        this.name = originalTitle;
         return this;
     }
 
