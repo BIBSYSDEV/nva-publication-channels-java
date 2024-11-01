@@ -43,7 +43,8 @@ public class PublicationChannelMockClient {
     public String journalWithScientificValueReviewNotice(int year) {
         var identifierString = UUID.randomUUID().toString();
         var testChannel = new TestChannel(year, identifierString)
-                              .withScientificValueReviewNotice(Map.of("en", "some comment"));
+                              .withScientificValueReviewNotice(Map.of("en", "some comment",
+                                                                      "no", "vedtak"));
 
         mockChannelRegistry(year, testChannel);
         return identifierString;

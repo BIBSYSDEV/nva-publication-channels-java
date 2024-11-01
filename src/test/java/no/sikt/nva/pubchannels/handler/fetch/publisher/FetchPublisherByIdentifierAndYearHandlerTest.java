@@ -314,7 +314,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier)
-                              .withScientificValueReviewNotice(Map.of("en", "some comment"));
+                              .withScientificValueReviewNotice(Map.of("en", "some comment",
+                                                                      "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
