@@ -308,6 +308,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
     }
+
     private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice"));

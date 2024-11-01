@@ -49,11 +49,6 @@ public class PublicationChannelMockClient {
         return identifierString;
     }
 
-    public void mockChannelRegistry(int year, TestChannel testChannel) {
-        mockChannelRegistry(year, testChannel.getIdentifier(), testChannel.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(testChannel.getIdentifier(), testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
-    }
-
     public String randomJournalWithThirdPartyYearValueNull(int year) {
         var identifierString = UUID.randomUUID().toString();
         var testChannel = new TestChannel(null, identifierString);
@@ -72,6 +67,12 @@ public class PublicationChannelMockClient {
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_MOVED_PERM)
                         .withHeader("Location", location)));
+    }
+
+    public void mockChannelRegistry(int year, TestChannel testChannel) {
+        mockChannelRegistry(year, testChannel.getIdentifier(), testChannel.asChannelRegistryJournalBody());
+        journalsByIdentifier.put(testChannel.getIdentifier(),
+                                 testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
     }
 
     private static void mockChannelRegistry(int year, String identifier, String responseBody) {
