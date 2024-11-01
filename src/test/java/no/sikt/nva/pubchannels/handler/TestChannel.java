@@ -109,13 +109,13 @@ public class TestChannel {
     public SeriesDto asSeriesDto(String selfUriBase, String requestedYear) {
         var expectedId = generateExpectedId(URI.create(selfUriBase), requestedYear);
         return new SeriesDto(expectedId, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
-                             discontinued, requestedYear);
+                             discontinued, requestedYear, reviewNotice);
     }
 
     public PublisherDto asPublisherDto(String selfUriBase, String requestedYear) {
         var expectedId = generateExpectedId(URI.create(selfUriBase), requestedYear);
         return new PublisherDto(expectedId, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued,
-                                requestedYear);
+                                requestedYear, reviewNotice);
     }
 
     public String getIdentifier() {
@@ -127,11 +127,11 @@ public class TestChannel {
         return new ChannelRegistryLevel(year,
                                         level,
                                         isNull(reviewNotice) ? level
-                                                                : CHANNEL_REGISTRY_REVIEW_NOTICE_MARK,
+                                            : CHANNEL_REGISTRY_REVIEW_NOTICE_MARK,
                                         isNull(reviewNotice) ? null
-                                                                : reviewNotice.comment().get("no"),
+                                            : reviewNotice.comment().get("no"),
                                         isNull(reviewNotice) ? null
-                                                                : reviewNotice.comment().get("en"));
+                                            : reviewNotice.comment().get("en"));
     }
 
     private URI generateExpectedId(URI selfUriBase, String requestedYear) {
