@@ -115,9 +115,9 @@ public record TestChannel(String identifier,
                                         isNull(reviewNotice) ? level
                                             : CHANNEL_REGISTRY_REVIEW_NOTICE_MARK,
                                         isNull(reviewNotice) ? null
-                                            : reviewNotice.comment().get("no"),
+                                            : reviewNotice.comments().get("no"),
                                         isNull(reviewNotice) ? null
-                                            : reviewNotice.comment().get("en"));
+                                            : reviewNotice.comments().get("en"));
     }
 
     private record Issn(String value) {
