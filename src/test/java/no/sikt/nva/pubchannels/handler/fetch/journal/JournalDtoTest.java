@@ -7,12 +7,14 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
+import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import org.junit.jupiter.api.Test;
 
-class SeriesDtoTest {
+class JournalDtoTest {
 
     @Test
     void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {
@@ -56,6 +58,11 @@ class SeriesDtoTest {
             @Override
             public String discontinued() {
                 return randomString();
+            }
+
+            @Override
+            public ScientificValueReviewNotice reviewNotice() {
+                return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
             }
 
             @Override

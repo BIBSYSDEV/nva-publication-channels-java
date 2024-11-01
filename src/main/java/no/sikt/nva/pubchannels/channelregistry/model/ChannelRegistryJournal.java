@@ -7,6 +7,7 @@ import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.unit.nva.commons.json.JsonSerializable;
 
@@ -30,7 +31,7 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(channelRegistryLevel())
+        return Optional.ofNullable(channelRegistryLevel)
                    .map(ChannelRegistryLevel::year)
                    .map(String::valueOf)
                    .orElse(null);
@@ -41,8 +42,13 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
         return levelToScientificValue(new ScientificValueMapper());
     }
 
+    @Override
+    public ScientificValueReviewNotice reviewNotice() {
+        return channelRegistryLevel.reviewNotice();
+    }
+
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
-        return Optional.ofNullable(channelRegistryLevel())
+        return Optional.ofNullable(channelRegistryLevel)
                    .map(level -> mapper.map(level.level()))
                    .orElse(ScientificValue.UNASSIGNED);
     }

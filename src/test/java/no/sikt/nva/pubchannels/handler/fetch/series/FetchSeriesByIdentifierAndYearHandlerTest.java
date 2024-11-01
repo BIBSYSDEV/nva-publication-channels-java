@@ -19,6 +19,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -30,10 +31,12 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -111,7 +114,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        var actualYear = response.getBodyObject(SeriesDto.class).getYear();
+        var actualYear = response.getBodyObject(SeriesDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
@@ -158,6 +161,33 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
+    }
+
+    @Test
+    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var expectedSeries = mockSeriesWithScientificValueReviewNotice(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var actualReviewNotice = response.getBodyObject(SeriesDto.class).reviewNotice();
+        assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
+    }
+
+    @Test
+    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var actualSeries = response.getBodyObject(SeriesDto.class);
+        assertNull(actualSeries.reviewNotice());
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
@@ -286,6 +316,17 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistrySeriesBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier)
+                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
+                                                                      "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);

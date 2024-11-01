@@ -9,7 +9,9 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
+import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import org.junit.jupiter.api.Test;
@@ -58,6 +60,11 @@ class SeriesDtoTest {
             @Override
             public String discontinued() {
                 return randomString();
+            }
+
+            @Override
+            public ScientificValueReviewNotice reviewNotice() {
+                return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
             }
 
             @Override

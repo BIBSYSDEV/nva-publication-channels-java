@@ -15,4 +15,6 @@ public interface ThirdPartyPublicationChannel {
     URI homepage();
 
     String discontinued();
+
+    ScientificValueReviewNotice reviewNotice();
 }

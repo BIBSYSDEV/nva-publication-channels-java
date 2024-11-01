@@ -7,6 +7,7 @@ import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
+import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.unit.nva.commons.json.JsonSerializable;
 
@@ -37,6 +38,11 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     @Override
     public ScientificValue getScientificValue() {
         return levelToScientificValue(new ScientificValueMapper());
+    }
+
+    @Override
+    public ScientificValueReviewNotice reviewNotice() {
+        return channelRegistryLevel.reviewNotice();
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {

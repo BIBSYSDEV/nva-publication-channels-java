@@ -20,6 +20,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -31,10 +32,12 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -111,8 +114,35 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
-        var actualYear = response.getBodyObject(PublisherDto.class).getYear();
+        var actualYear = response.getBodyObject(PublisherDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
+    }
+
+    @Test
+    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+        var actualReviewNotice = response.getBodyObject(PublisherDto.class).reviewNotice();
+        assertThat(actualReviewNotice, is(equalTo(expectedPublisher.reviewNotice())));
+    }
+
+    @Test
+    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+        var actualPublisher = response.getBodyObject(PublisherDto.class);
+        assertNull(actualPublisher.reviewNotice());
     }
 
     @ParameterizedTest
@@ -289,6 +319,17 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier)
+                              .withScientificValueReviewNotice(Map.of("en", "some comment",
+                                                                      "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
