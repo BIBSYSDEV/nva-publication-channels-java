@@ -1,9 +1,6 @@
 package no.sikt.nva.pubchannels.handler.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.net.URI;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
@@ -13,8 +10,6 @@ import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.paths.UriWrapper;
 
-@JsonTypeName(SeriesDto.TYPE)
-@JsonTypeInfo(use = Id.NAME, property = "type")
 public record SeriesDto(
     URI id,
     String identifier,
@@ -42,6 +37,11 @@ public record SeriesDto(
                              series.discontinued(),
                              year,
                              series.reviewNotice());
+    }
+
+    @JsonProperty("type")
+    public String getType() {
+        return TYPE;
     }
 
     @JsonProperty("context")
