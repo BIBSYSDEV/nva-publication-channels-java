@@ -1,12 +1,10 @@
 package no.sikt.nva.pubchannels.handler;
 
 import static no.sikt.nva.pubchannels.handler.TestUtils.scientificValueToLevel;
-import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
-import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -17,94 +15,91 @@ import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import nva.commons.core.paths.UriWrapper;
 
-public class TestChannel {
-
-    private final String identifier;
-    private final Integer year;
-    private final String isbnPrefix;
-    private final ScientificValue scientificValue;
-    private final String discontinued;
-    private final URI sameAs;
-    private final String onlineIssn;
-    private String name;
-    private String printIssn;
-
-    private TestChannel(Integer year, String identifier, String name,
-                        String onlineIssn, String printIssn, String isbnPrefix,
-                        ScientificValue scientificValue,
-                        String discontinued, URI sameAs) {
-
-        this.identifier = identifier;
-        this.year = year;
-        this.name = name;
-        this.onlineIssn = onlineIssn;
-        this.printIssn = printIssn;
-        this.isbnPrefix = isbnPrefix;
-        this.scientificValue = scientificValue;
-        this.discontinued = discontinued;
-        this.sameAs = sameAs;
-    }
+public record TestChannel(String identifier,
+                          Integer year,
+                          String name,
+                          ScientificValue scientificValue,
+                          IsbnPrefix isbnPrefix,
+                          Issn onlineIssn,
+                          Issn printIssn,
+                          String discontinued,
+                          URI sameAs) {
 
     public TestChannel(Integer year, String identifier) {
-        this(year, identifier, randomString(), randomIssn(), randomIssn(), randomString(),
-             randomElement(ScientificValue.values()), randomString(), randomUri());
+        this(identifier, year, randomString(), randomElement(ScientificValue.values()), new IsbnPrefix(randomString()),
+             new Issn(randomIssn()), new Issn(randomIssn()), randomString(), randomUri());
     }
 
     public TestChannel withName(String name) {
-        this.name = name;
-        return this;
+        return new TestChannel(identifier, year, name, scientificValue, isbnPrefix, onlineIssn, printIssn, discontinued,
+                               sameAs);
     }
 
     public TestChannel withPrintIssn(String printIssn) {
-        this.printIssn = printIssn;
-        return this;
+        return new TestChannel(identifier, year, name, scientificValue, isbnPrefix, onlineIssn, new Issn(printIssn),
+                               discontinued, sameAs);
     }
 
     public String asChannelRegistryJournalBody() {
-        var channelRegistryBody = new ChannelRegistryJournal(identifier, name, onlineIssn, printIssn,
-                                                             new ChannelRegistryLevel(year, scientificValueToLevel(
-                                                                 scientificValue)),
-                                                             sameAs,
-                                                             discontinued);
-        return attempt(() -> dtoObjectMapper.writeValueAsString(channelRegistryBody)).orElseThrow();
+        return new ChannelRegistryJournal(identifier,
+                                          name,
+                                          onlineIssn.value(),
+                                          printIssn.value(),
+                                          new ChannelRegistryLevel(year, scientificValueToLevel(scientificValue)),
+                                          sameAs,
+                                          discontinued)
+                   .toJsonString();
     }
 
     public String asChannelRegistrySeriesBody() {
-        var channelRegistryBody = new ChannelRegistrySeries(identifier, name, onlineIssn, printIssn,
-                                                            new ChannelRegistryLevel(year, scientificValueToLevel(
-                                                                scientificValue)),
-                                                            sameAs,
-                                                            discontinued);
-        return attempt(() -> dtoObjectMapper.writeValueAsString(channelRegistryBody)).orElseThrow();
+        return new ChannelRegistrySeries(identifier,
+                                         name,
+                                         onlineIssn.value(),
+                                         printIssn.value(),
+                                         new ChannelRegistryLevel(year, scientificValueToLevel(scientificValue)),
+                                         sameAs,
+                                         discontinued)
+                   .toJsonString();
     }
 
     public String asChannelRegistryPublisherBody() {
-        var channelRegistryBody = new ChannelRegistryPublisher(identifier,
-                                                               new ChannelRegistryLevel(year, scientificValueToLevel(
-                                                                   scientificValue)), isbnPrefix, name, sameAs,
-                                                               discontinued);
-        return attempt(() -> dtoObjectMapper.writeValueAsString(channelRegistryBody)).orElseThrow();
+        return new ChannelRegistryPublisher(identifier,
+                                            new ChannelRegistryLevel(year, scientificValueToLevel(scientificValue)),
+                                            isbnPrefix.value(),
+                                            name,
+                                            sameAs,
+                                            discontinued)
+                   .toJsonString();
     }
 
     public JournalDto asJournalDto(URI selfUriBase, String requestedYear) {
-        var expectedId = generateExpectedId(selfUriBase, requestedYear);
-        return new JournalDto(expectedId, identifier, name, onlineIssn, printIssn,
+        var id = generateIdWithYear(selfUriBase, requestedYear);
+        return new JournalDto(id, identifier, name, onlineIssn.value(), printIssn.value(),
                               scientificValue, sameAs, discontinued, requestedYear);
     }
 
     public SeriesDto asSeriesDto(String selfUriBase, String requestedYear) {
-        var expectedId = generateExpectedId(URI.create(selfUriBase), requestedYear);
-        return new SeriesDto(expectedId, identifier, name, onlineIssn, printIssn, scientificValue, sameAs,
+        var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
+        return new SeriesDto(id, identifier, name, onlineIssn.value(), printIssn.value(), scientificValue,
+                             sameAs,
                              discontinued, requestedYear);
     }
 
     public PublisherDto asPublisherDto(String selfUriBase, String requestedYear) {
-        var expectedId = generateExpectedId(URI.create(selfUriBase), requestedYear);
-        return new PublisherDto(expectedId, identifier, name, isbnPrefix, scientificValue, sameAs, discontinued,
+        var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
+        return new PublisherDto(id, identifier, name, isbnPrefix.value(), scientificValue, sameAs, discontinued,
                                 requestedYear);
     }
 
-    private URI generateExpectedId(URI selfUriBase, String requestedYear) {
+    private URI generateIdWithYear(URI selfUriBase, String requestedYear) {
         return UriWrapper.fromUri(selfUriBase).addChild(identifier, requestedYear).getUri();
+    }
+
+    private record Issn(String value) {
+
+    }
+
+    private record IsbnPrefix(String value) {
+
     }
 }
