@@ -15,6 +15,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -147,6 +148,19 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var actualJournalReviewNotice = response.getBodyObject(JournalDto.class).reviewNotice();
         var expectedJournalReviewNotice = mockRegistry.getJournal(identifier).reviewNotice();
         assertThat(actualJournalReviewNotice, is(equalTo(expectedJournalReviewNotice)));
+    }
+
+    @Test
+    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.randomJournal(year);
+        var input = constructRequest(String.valueOf(year), identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var actualJournal = response.getBodyObject(JournalDto.class);
+        assertNull(actualJournal.reviewNotice());
     }
 
     @Test

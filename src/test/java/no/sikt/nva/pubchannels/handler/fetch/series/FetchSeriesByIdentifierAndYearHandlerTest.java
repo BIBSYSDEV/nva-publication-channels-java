@@ -19,6 +19,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -174,6 +175,19 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
         var actualReviewNotice = response.getBodyObject(SeriesDto.class).reviewNotice();
         assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
+    }
+
+    @Test
+    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
+        var year = TestUtils.randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var actualSeries = response.getBodyObject(SeriesDto.class);
+        assertNull(actualSeries.reviewNotice());
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
