@@ -173,7 +173,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
         var actualReviewNotice = response.getBodyObject(SeriesDto.class).reviewNotice();
-        assertThat(actualReviewNotice, is(equalTo(String.valueOf(expectedSeries.reviewNotice()))));
+        assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
     }
 
     @ParameterizedTest(name = "year {0} is invalid")

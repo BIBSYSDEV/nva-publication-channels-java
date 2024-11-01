@@ -41,7 +41,7 @@ public record SeriesDto(
                              series.homepage(),
                              series.discontinued(),
                              year,
-                             null);
+                             series.reviewNotice());
     }
 
     @JsonProperty("context")

@@ -38,7 +38,7 @@ public record PublisherDto(URI id,
                                 publisher.homepage(),
                                 publisher.discontinued(),
                                 year,
-                                null);
+                                publisher.reviewNotice());
     }
 
     @JsonProperty("context")

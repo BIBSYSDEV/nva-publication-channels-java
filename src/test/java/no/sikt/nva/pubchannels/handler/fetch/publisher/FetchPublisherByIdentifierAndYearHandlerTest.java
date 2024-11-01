@@ -122,13 +122,13 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var year = TestUtils.randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
-        var expectedSeries = mockPublisherWithScientificValueReviewNotice(year, identifier);
+        var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
         var actualReviewNotice = response.getBodyObject(PublisherDto.class).reviewNotice();
-        assertThat(actualReviewNotice, is(equalTo(String.valueOf(expectedSeries.reviewNotice()))));
+        assertThat(actualReviewNotice, is(equalTo(expectedPublisher.reviewNotice())));
     }
 
     @ParameterizedTest

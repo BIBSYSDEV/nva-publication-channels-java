@@ -1,11 +1,8 @@
 package no.sikt.nva.pubchannels.channelregistry.model;
 
-import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
@@ -31,9 +28,6 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
     private static final String DISCONTINUED = "ceased";
-    private static final String CHANNEL_REGISTRY_REVIEW_MARK = "X";
-    private static final String NORWEGIAN = "no";
-    private static final String ENGLISH = "en";
 
     @Override
     public String getYear() {
@@ -50,21 +44,7 @@ public record ChannelRegistryJournal(@JsonProperty(IDENTIFIER_FIELD) String iden
 
     @Override
     public ScientificValueReviewNotice reviewNotice() {
-        return Optional.ofNullable(channelRegistryLevel)
-                   .filter(level -> CHANNEL_REGISTRY_REVIEW_MARK.equals(level.levelDisplay()))
-                   .map(level -> new ScientificValueReviewNotice(mapLanguages(level)))
-                   .orElse(null);
-    }
-
-    private static Map<String, String> mapLanguages(ChannelRegistryLevel level) {
-        var decisionMap = new HashMap<String, String>();
-        if (nonNull(level.decision())) {
-            decisionMap.put(ENGLISH, level.decision());
-        }
-        if (nonNull(level.decisionNO())) {
-            decisionMap.put(NORWEGIAN, level.decisionNO());
-        }
-        return decisionMap;
+        return channelRegistryLevel.reviewNotice();
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {

@@ -42,7 +42,7 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
 
     @Override
     public ScientificValueReviewNotice reviewNotice() {
-        return null;
+        return channelRegistryLevel.reviewNotice();
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {

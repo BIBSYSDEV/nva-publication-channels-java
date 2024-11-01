@@ -45,7 +45,7 @@ public record ChannelRegistrySeries(@JsonProperty(IDENTIFIER_FIELD) String ident
 
     @Override
     public ScientificValueReviewNotice reviewNotice() {
-        return null;
+        return channelRegistryLevel.reviewNotice();
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
