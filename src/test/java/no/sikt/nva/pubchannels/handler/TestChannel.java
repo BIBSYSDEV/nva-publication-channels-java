@@ -50,6 +50,17 @@ public record TestChannel(String identifier,
                                discontinued, sameAs, new ScientificValueReviewNotice(comment));
     }
 
+    public String asChannelRegistryJournalBodyWithoutLevel() {
+        return new ChannelRegistryJournal(identifier,
+                                          name,
+                                          onlineIssn.value(),
+                                          printIssn.value(),
+                                          null,
+                                          sameAs,
+                                          discontinued)
+                   .toJsonString();
+    }
+
     public String asChannelRegistryJournalBody() {
         return new ChannelRegistryJournal(identifier,
                                           name,
@@ -82,6 +93,16 @@ public record TestChannel(String identifier,
                    .toJsonString();
     }
 
+    public String asChannelRegistryPublisherBodyWithoutLevel() {
+        return new ChannelRegistryPublisher(identifier,
+                                            null,
+                                            isbnPrefix.value(),
+                                            name,
+                                            sameAs,
+                                            discontinued)
+                   .toJsonString();
+    }
+
     public JournalDto asJournalDto(URI selfUriBase, String requestedYear) {
         var id = generateIdWithYear(selfUriBase, requestedYear);
         return new JournalDto(id, identifier, name, onlineIssn.value(), printIssn.value(),
@@ -104,12 +125,23 @@ public record TestChannel(String identifier,
         return identifier;
     }
 
+    public String asChannelRegistrySeriesBodyWithoutLevel() {
+        return new ChannelRegistrySeries(identifier,
+                                         name,
+                                         onlineIssn.value(),
+                                         printIssn.value(),
+                                         null,
+                                         sameAs,
+                                         discontinued)
+                   .toJsonString();
+    }
+
     private URI generateIdWithYear(URI selfUriBase, String requestedYear) {
         return UriWrapper.fromUri(selfUriBase).addChild(identifier, requestedYear).getUri();
     }
 
     private ChannelRegistryLevel mapValuesToChannelRegistryLevel() {
-        String level = scientificValueToLevel(scientificValue);
+        var level = scientificValueToLevel(scientificValue);
         return new ChannelRegistryLevel(year,
                                         level,
                                         isNull(reviewNotice) ? level

@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.channelregistry.model;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
@@ -45,7 +46,7 @@ public record ChannelRegistrySeries(@JsonProperty(IDENTIFIER_FIELD) String ident
 
     @Override
     public ScientificValueReviewNotice reviewNotice() {
-        return channelRegistryLevel.reviewNotice();
+        return nonNull(channelRegistryLevel) ? channelRegistryLevel.reviewNotice() : null;
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {

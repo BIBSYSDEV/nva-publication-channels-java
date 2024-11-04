@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
@@ -116,6 +117,20 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
         var actualYear = response.getBodyObject(PublisherDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
+    }
+
+    @Test
+    void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var testChannel = new TestChannel(year, identifier);
+        mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBodyWithoutLevel());
+
+        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
+                                       context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+        assertEquals(HTTP_OK, response.getStatusCode());
     }
 
     @Test
@@ -321,9 +336,15 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
         var testChannel = new TestChannel(year, identifier);
         var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private void mockPublisherFound(int year, String identifier, String channelRegistryPublisherBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistryPublisherBody);
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
