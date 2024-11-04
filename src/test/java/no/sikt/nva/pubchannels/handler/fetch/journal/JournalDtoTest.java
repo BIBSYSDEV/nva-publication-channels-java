@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -32,7 +33,7 @@ class JournalDtoTest {
     void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
         var serializedJournal = dtoObjectMapper.writeValueAsString(randomJournal());
 
-        assertTrue(serializedJournal.contains("@context"));
+        assertTrue(objectMapper.readTree(serializedJournal).has("@context"));
     }
 
     private static JournalDto randomJournal() {

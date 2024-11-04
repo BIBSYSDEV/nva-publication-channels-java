@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -34,7 +35,7 @@ class SeriesDtoTest {
     void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
         var serializedSeries = dtoObjectMapper.writeValueAsString(randomSeries());
 
-        assertTrue(serializedSeries.contains("@context"));
+        assertTrue(objectMapper.readTree(serializedSeries).has("@context"));
     }
 
     private static SeriesDto randomSeries() {
