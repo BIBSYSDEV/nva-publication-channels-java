@@ -5,6 +5,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import java.util.Map;
@@ -25,6 +26,13 @@ class JournalDtoTest {
         var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, JournalDto.class);
 
         assertEquals(deserializedJournal, journal);
+    }
+
+    @Test
+    void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
+        var serializedJournal = dtoObjectMapper.writeValueAsString(randomJournal());
+
+        assertTrue(serializedJournal.contains("@context"));
     }
 
     private static JournalDto randomJournal() {
