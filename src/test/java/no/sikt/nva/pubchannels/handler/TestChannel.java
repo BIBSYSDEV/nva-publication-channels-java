@@ -93,6 +93,16 @@ public record TestChannel(String identifier,
                    .toJsonString();
     }
 
+    public String asChannelRegistryPublisherBodyWithoutLevel() {
+        return new ChannelRegistryPublisher(identifier,
+                                            null,
+                                            isbnPrefix.value(),
+                                            name,
+                                            sameAs,
+                                            discontinued)
+                   .toJsonString();
+    }
+
     public JournalDto asJournalDto(URI selfUriBase, String requestedYear) {
         var id = generateIdWithYear(selfUriBase, requestedYear);
         return new JournalDto(id, identifier, name, onlineIssn.value(), printIssn.value(),
@@ -120,7 +130,7 @@ public record TestChannel(String identifier,
     }
 
     private ChannelRegistryLevel mapValuesToChannelRegistryLevel() {
-        String level = scientificValueToLevel(scientificValue);
+        var level = scientificValueToLevel(scientificValue);
         return new ChannelRegistryLevel(year,
                                         level,
                                         isNull(reviewNotice) ? level
