@@ -50,6 +50,17 @@ public record TestChannel(String identifier,
                                discontinued, sameAs, new ScientificValueReviewNotice(comment));
     }
 
+    public String asChannelRegistryJournalBodyWithoutLevel() {
+        return new ChannelRegistryJournal(identifier,
+                                          name,
+                                          onlineIssn.value(),
+                                          printIssn.value(),
+                                          null,
+                                          sameAs,
+                                          discontinued)
+                   .toJsonString();
+    }
+
     public String asChannelRegistryJournalBody() {
         return new ChannelRegistryJournal(identifier,
                                           name,

@@ -71,7 +71,11 @@ public class PublicationChannelMockClient {
     }
 
     public void mockChannelRegistry(int year, TestChannel testChannel) {
-        mockChannelRegistry(year, testChannel.getIdentifier(), testChannel.asChannelRegistryJournalBody());
+        mockChannelRegistry(year, testChannel, testChannel.asChannelRegistryJournalBody());
+    }
+
+    public void mockChannelRegistry(int year, TestChannel testChannel, String channelRegistryJournalBody) {
+        mockChannelRegistry(year, testChannel.getIdentifier(), channelRegistryJournalBody);
         journalsByIdentifier.put(testChannel.getIdentifier(),
                                  testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
     }
