@@ -41,7 +41,7 @@ public record PublisherDto(URI id,
         return TYPE;
     }
 
-    @JsonProperty("context")
+    @JsonProperty("@context")
     public URI getContext() {
         return URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
     }
