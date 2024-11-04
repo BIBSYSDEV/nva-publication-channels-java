@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
@@ -190,6 +191,20 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         assertNull(actualSeries.reviewNotice());
     }
 
+    @Test
+    void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var testChannel = new TestChannel(year, identifier);
+        mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
+
+        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
+                                       context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        assertEquals(HTTP_OK, response.getStatusCode());
+    }
+
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
@@ -316,9 +331,15 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier);
-        var body = testChannel.asChannelRegistrySeriesBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+        return mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBody());
+    }
+
+    private SeriesDto mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
+        var testChannel = new TestChannel(year, identifier);
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistrySeriesBody);
 
         return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
     }

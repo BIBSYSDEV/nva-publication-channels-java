@@ -125,6 +125,17 @@ public record TestChannel(String identifier,
         return identifier;
     }
 
+    public String asChannelRegistrySeriesBodyWithoutLevel() {
+        return new ChannelRegistrySeries(identifier,
+                                         name,
+                                         onlineIssn.value(),
+                                         printIssn.value(),
+                                         null,
+                                         sameAs,
+                                         discontinued)
+                   .toJsonString();
+    }
+
     private URI generateIdWithYear(URI selfUriBase, String requestedYear) {
         return UriWrapper.fromUri(selfUriBase).addChild(identifier, requestedYear).getUri();
     }
