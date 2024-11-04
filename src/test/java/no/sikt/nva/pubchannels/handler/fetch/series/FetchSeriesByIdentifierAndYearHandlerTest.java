@@ -331,17 +331,17 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier);
-
-        return mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBody());
-    }
-
-    private SeriesDto mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
-        var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    channelRegistrySeriesBody);
+                                    body);
 
         return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private void mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistrySeriesBody);
     }
 
     private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {

@@ -334,17 +334,17 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier);
-
-        return mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBody());
-    }
-
-    private PublisherDto mockPublisherFound(int year, String identifier, String channelRegistryPublisherBody) {
-        var testChannel = new TestChannel(year, identifier);
+        var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    channelRegistryPublisherBody);
+                                    body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private void mockPublisherFound(int year, String identifier, String channelRegistryPublisherBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistryPublisherBody);
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
