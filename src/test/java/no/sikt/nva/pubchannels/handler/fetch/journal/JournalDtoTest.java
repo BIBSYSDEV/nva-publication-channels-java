@@ -1,10 +1,12 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import java.util.Map;
@@ -25,6 +27,13 @@ class JournalDtoTest {
         var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, JournalDto.class);
 
         assertEquals(deserializedJournal, journal);
+    }
+
+    @Test
+    void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
+        var serializedJournal = dtoObjectMapper.writeValueAsString(randomJournal());
+
+        assertTrue(objectMapper.readTree(serializedJournal).has("@context"));
     }
 
     private static JournalDto randomJournal() {

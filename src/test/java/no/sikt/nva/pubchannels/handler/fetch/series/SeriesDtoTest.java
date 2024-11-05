@@ -1,12 +1,14 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import java.util.Map;
@@ -27,6 +29,13 @@ class SeriesDtoTest {
         var deserializedSeries = dtoObjectMapper.readValue(serializedSeries, SeriesDto.class);
 
         assertThat(deserializedSeries, is(equalTo(series)));
+    }
+
+    @Test
+    void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
+        var serializedSeries = dtoObjectMapper.writeValueAsString(randomSeries());
+
+        assertTrue(objectMapper.readTree(serializedSeries).has("@context"));
     }
 
     private static SeriesDto randomSeries() {
