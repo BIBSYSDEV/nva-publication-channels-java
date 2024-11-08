@@ -21,3 +21,10 @@ phases:
 artifacts:
   files:
     - packaged.yaml
+    - '**/build/reports/**/*'
+
+reports:
+  junit-reports:
+    files:
+      - "build/test-results/test/*.xml"
+    file-format: "JUNITXML"
