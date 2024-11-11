@@ -6,22 +6,26 @@ phases:
     runtime-versions:
       java: corretto21
 
-    commands:
-      # Upgrade AWS CLI to the latest version
-      # - pip3 install --upgrade awscli
-      # Install aws-sam-cli
-      - pip3 install -U aws-sam-cli
+    # commands:
+    #   # Upgrade AWS CLI to the latest version
+    #   # - pip3 install --upgrade awscli
+    #   # Install aws-sam-cli
+    #   #- pip3 install -U aws-sam-cli
 
   build:
     commands:
       # Use AWS SAM to build and package the application by using AWS CloudFormation
       - sam build --debug
+
+
+  post-build:
+    commands:
       - sam package --s3-bucket $S3_BUCKET --output-template-file packaged.yaml
 
 artifacts:
   files:
     - packaged.yaml
-    - '**/build/reports/**/*'
+    - "**/build/reports/**/*"
 
 reports:
   junit-reports:
