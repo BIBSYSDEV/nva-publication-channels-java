@@ -18,7 +18,7 @@ phases:
       - sam build --debug
 
 
-  post-build:
+  post_build:
     commands:
       - sam package --s3-bucket $S3_BUCKET --output-template-file packaged.yaml
 
