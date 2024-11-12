@@ -140,6 +140,7 @@ Resources:
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
+      Timeout: 3
       Events:
         FetchJournalByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -163,6 +164,7 @@ Resources:
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
+      Timeout: 3
       Events:
         FetchSeriesByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -186,6 +188,7 @@ Resources:
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
+      Timeout: 3
       Events:
         FetchPublisherByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
