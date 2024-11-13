@@ -16,6 +16,7 @@ dependencies {
     implementation libs.bundles.jackson
     implementation libs.guava
     implementation libs.commons.validator
+    implementation libs.open.csv
 }
 
 sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility

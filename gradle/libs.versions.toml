@@ -48,6 +48,8 @@ wiremock = { group = 'org.wiremock', name = 'wiremock-jetty12', version.ref = 'w
 
 commons-validator = { group = 'commons-validator', name = 'commons-validator', version.ref = 'commons-validator-version'}
 
+open-csv = { group = 'com.opencsv', name = 'opencsv', version = '5.9' }
+
 [bundles]
 nva = ['nva-commons-core', 'nva-commons-apigateway', 'nva-json', 'nva-commons-pagination', 'nva-commons-secrets']
 logging = ['log4j-core', 'log4j-api', 'slf4j-api', 'aws-lambda-log4j2']
