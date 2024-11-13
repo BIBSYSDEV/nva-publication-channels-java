@@ -32,10 +32,6 @@ public class ChannelRegistryCacheEntry {
     @CsvBindByName(column = "KURL")
     private String uri;
 
-    public ChannelRegistryCacheEntry() {
-        // NO-OP
-    }
-
     @JacocoGenerated
     public String getSecondaryPid() {
         return secondaryPid;
