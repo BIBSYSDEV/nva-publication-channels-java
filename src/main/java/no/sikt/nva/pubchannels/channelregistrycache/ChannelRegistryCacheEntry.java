@@ -81,7 +81,7 @@ public class ChannelRegistryCacheEntry {
 
     @JacocoGenerated
     public String getCeased() {
-        return ceased.equals(NULL) ? null : ceased;
+        return NULL.equals(ceased) ? null : ceased;
     }
 
     @JacocoGenerated
