@@ -23,6 +23,7 @@ nva-testutils = { group = 'com.github.bibsysdev', name = 'nvatestutils', version
 nva-logutils = { group = 'com.github.bibsysdev', name = 'logutils', version.ref = 'nva-commons' }
 nva-json = { group = 'com.github.bibsysdev', name = 'json', version.ref = 'nva-commons' }
 nva-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nva-commons' }
+nva-s3 = { group = 'com.github.bibsysdev', name = 's3', version.ref = 'nva-commons' }
 zalando = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
 guava = { group = 'com.google.guava', name = 'guava', version.ref = 'guava' }
 
@@ -38,6 +39,7 @@ jackson-datatype-jdk8 = { group = 'com.fasterxml.jackson.datatype', name = 'jack
 jackson-datatype-jsr310 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jsr310', version.ref = 'jackson' }
 
 aws-lambda-java-core = { group = 'com.amazonaws', name = 'aws-lambda-java-core', version.ref = 'awsLambdaJavaCore' }
+aws-sdk2-s3 = { group = 'software.amazon.awssdk', name = 's3', version = '2.27.24' }
 aws-lambda-log4j2 = { group = 'com.amazonaws', name = 'aws-lambda-java-log4j2', version.ref = 'awslog4j2'}
 
 log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
