@@ -10,12 +10,15 @@ group 'no.sikt.nva'
 dependencies {
     testImplementation libs.bundles.testing
 
+    implementation libs.nva.s3
     implementation libs.aws.lambda.java.core
     implementation libs.bundles.nva
     implementation libs.bundles.logging
     implementation libs.bundles.jackson
     implementation libs.guava
     implementation libs.commons.validator
+    implementation libs.open.csv
+    implementation libs.aws.sdk2.s3
 }
 
 sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility
