@@ -11,35 +11,22 @@ public class ChannelRegistryCacheEntry {
 
     @CsvBindByName(column = "underordnetPID")
     private String secondaryPid;
-
     @CsvBindByName(column = "PID")
     private String pid;
-
-    @CsvBindByName(column = "regDato")
-    private String createdDate;
-
     @CsvBindByName(column = "type")
     private String type;
-
     @CsvBindByName(column = "Original tittel")
     private String originalTitle;
-
-    @CsvBindByName(column = "Internasjonal tittel")
-    private String internationalTitle;
     @CsvBindByName(column = "Print ISSN")
     private String printIssn;
     @CsvBindByName(column = "Online ISSN")
     private String onlineIssn;
     @CsvBindByName(column = "ISBN-prefiks")
     private String isbn;
-    @CsvBindByName(column = "Publiseringsavtale")
-    private String agreement;
-    @CsvBindByName(column = "DOAJ")
-    private String openAccessJournal;
     @CsvBindByName(column = "Gjeldende nivå")
     private String currentLevel;
     @CsvBindByName(column = "Nedlagt")
-    private String closed;
+    private String ceased;
     @CsvBindByName(column = "Nivåhistorikk")
     private String levelHistory;
     @CsvBindByName(column = "KURL")
@@ -60,11 +47,6 @@ public class ChannelRegistryCacheEntry {
     }
 
     @JacocoGenerated
-    public String getCreatedDate() {
-        return createdDate;
-    }
-
-    @JacocoGenerated
     public String getType() {
         return type;
     }
@@ -72,11 +54,6 @@ public class ChannelRegistryCacheEntry {
     @JacocoGenerated
     public String getOriginalTitle() {
         return originalTitle;
-    }
-
-    @JacocoGenerated
-    public String getInternationalTitle() {
-        return internationalTitle;
     }
 
     @JacocoGenerated
@@ -95,18 +72,8 @@ public class ChannelRegistryCacheEntry {
     }
 
     @JacocoGenerated
-    public String getAgreement() {
-        return agreement;
-    }
-
-    @JacocoGenerated
-    public String getOpenAccessJournal() {
-        return openAccessJournal;
-    }
-
-    @JacocoGenerated
-    public String getClosed() {
-        return closed;
+    public String getCeased() {
+        return ceased;
     }
 
     @JacocoGenerated
