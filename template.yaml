@@ -154,7 +154,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       Policies:
-        - !Ref S3ManagedPolicy
+        - !GetAtt S3ManagedPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
