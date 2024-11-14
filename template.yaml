@@ -4,417 +4,417 @@ Description: >
   This template creates lambdas and apis for publication channels
 
 
-## More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-#Globals:
-#  Function:
-#    Timeout: 40
-#    MemorySize: 1798
-#    Runtime: java21
-#    Architectures:
-#      - x86_64
-#    Environment:
-#      Variables:
-#        ALLOWED_ORIGIN: !Ref AllowedOrigins
-#        COGNITO_HOST: !Ref CognitoAuthorizationUri
-#        API_HOST: !Ref ApiDomain
-#        API_DOMAIN: !Ref ApiDomain
-#        CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
-#        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
-#
-#  Api:
-#    Cors:
-#      AllowOrigin: "'*'"
-#      AllowMethods: "'OPTIONS,GET'"
-#      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin'"
-#
-#Parameters:
-#  ApiDomain:
-#    Type: AWS::SSM::Parameter::Value<String>
-#    Default: /NVA/ApiDomain
-#    Description: Domain-name for the backend
-#  DataportenChannelRegistryBaseUrl:
-#    Type: String
-#  CustomDomainBasePath:
-#    Type: String
-#    Description: Base path mapping in CustomDomain
-#    Default: publication-channels-v2
-#  CognitoAuthorizationUri:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: '/NVA/CognitoUri'
-#  CognitoAuthorizerArn:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Description: Reference to Cognito UserPool for the stage
-#    Default: CognitoAuthorizerArn
-#  AllowedOrigins:
-#    Type: String
-#    Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
-#    Default: '*'
-#  SlackSnsArn:
-#    Type: AWS::SSM::Parameter::Value<String>
-#    Default: '/NVA/Monitoring/SlackSnsArn'
-#  ChannelRegisterCacheBucketName:
-#    Type: 'String'
-#    Default: "channel-register-cache"
-#    Description: Name of bucket for channel register cache csv
-#
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 40
+    MemorySize: 1798
+    Runtime: java21
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ALLOWED_ORIGIN: !Ref AllowedOrigins
+        COGNITO_HOST: !Ref CognitoAuthorizationUri
+        API_HOST: !Ref ApiDomain
+        API_DOMAIN: !Ref ApiDomain
+        CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
+        DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
+
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowMethods: "'OPTIONS,GET'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin'"
+
+Parameters:
+  ApiDomain:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NVA/ApiDomain
+    Description: Domain-name for the backend
+  DataportenChannelRegistryBaseUrl:
+    Type: String
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+    Default: publication-channels-v2
+  CognitoAuthorizationUri:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/CognitoUri'
+  CognitoAuthorizerArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
+  AllowedOrigins:
+    Type: String
+    Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
+    Default: '*'
+  SlackSnsArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/NVA/Monitoring/SlackSnsArn'
+  ChannelRegisterCacheBucketName:
+    Type: 'String'
+    Default: "channel-register-cache"
+    Description: Name of bucket for channel register cache csv
+
 Resources:
-#
+
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
-#
-#  PublicationChannelsApi:
-#    Type: AWS::Serverless::Api
-#    Properties:
-#      CacheClusterEnabled: true
-#      CacheClusterSize: "0.5"
-#      MethodSettings:
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1journal~1{identifier}~1{year}'
-#          CacheTtlInSeconds: 3600
-#          CachingEnabled: true
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1series~1{identifier}~1{year}'
-#          CacheTtlInSeconds: 3600
-#          CachingEnabled: true
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1publisher~1{identifier}~1{year}'
-#          CacheTtlInSeconds: 3600
-#          CachingEnabled: true
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1journal'
-#          CacheTtlInSeconds: 300
-#          CachingEnabled: false
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1series'
-#          CacheTtlInSeconds: 300
-#          CachingEnabled: false
-#        - HttpMethod: 'GET'
-#          ResourcePath: '/~1publisher'
-#          CacheTtlInSeconds: 300
-#          CachingEnabled: false
-#      DefinitionBody:
-#        'Fn::Transform':
-#          Name: AWS::Include
-#          Parameters:
-#            Location: ./docs/openapi.yaml
-#      AccessLogSetting:
-#        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
-#        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
-#      StageName: Prod
-#      Auth:
-#        DefaultAuthorizer: NONE
-#      EndpointConfiguration:
-#        Type: REGIONAL
-#
-#  LambdaRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Version: 2012-10-17
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: [ lambda.amazonaws.com ]
-#            Action: [ 'sts:AssumeRole' ]
-#      Policies:
-#        - PolicyName: writeLog
-#          PolicyDocument:
-#            Version: 2012-10-17
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - logs:CreateLogGroup
-#                  - logs:CreateLogStream
-#                  - logs:PutLogEvents
-#                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
-#        - PolicyName: readSecrets
-#          PolicyDocument:
-#            Version: 2012-10-17
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - secretsmanager:GetSecretValue
-#                Resource: '*'
-#
-#  S3ManagedPolicy:
-#    Type: AWS::IAM::ManagedPolicy
-#    Properties:
-#      PolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: Allow
-#            Action:
-#              - s3:Get*
-#            Resource:
-#              - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
-#
-#  FetchJournalByIdentifierAndYearFunction:
-#    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      Policies:
-#        - !Ref S3ManagedPolicy
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Timeout: 60
-#      Events:
-#        FetchJournalByIdentifierAndYearEvent:
-#          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /journal/{identifier}/{year}
-#            Method: get
-#      Environment:
-#        Variables:
-#          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
-#          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-#          SHOULD_USE_CACHE: "true"
-#
-#  FetchJournalByIdentifierAndYearFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  FetchSeriesByIdentifierAndYearFunction:
-#    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      Policies:
-#        - !Ref S3ManagedPolicy
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Timeout: 60
-#      Events:
-#        FetchSeriesByIdentifierAndYearEvent:
-#          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /series/{identifier}/{year}
-#            Method: get
-#      Environment:
-#        Variables:
-#          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
-#          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-#          SHOULD_USE_CACHE: "true"
-#
-#  FetchSeriesByIdentifierAndYearFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  FetchPublisherByIdentifierAndYearFunction:
-#    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      Policies:
-#        - !Ref S3ManagedPolicy
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Timeout: 60
-#      Events:
-#        FetchPublisherByIdentifierAndYearEvent:
-#          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /publisher/{identifier}/{year}
-#            Method: get
-#      Environment:
-#        Variables:
-#          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
-#          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-#          SHOULD_USE_CACHE: "true"
-#
-#  FetchPublisherByIdentifierAndYearFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  SearchJournalByQueryFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      Events:
-#        SearchJournalByQueryEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /journal
-#            Method: get
-#
-#  SearchJournalByQueryFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  PublicationChannelsBasePathMapping:
-#    Type: AWS::ApiGateway::BasePathMapping
-#    Properties:
-#      BasePath: !Ref CustomDomainBasePath
-#      DomainName: !Ref ApiDomain
-#      RestApiId: !Ref PublicationChannelsApi
-#      Stage: !Ref PublicationChannelsApi.Stage
-#
-#  CreateJournalFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Events:
-#        CreateJournalEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /journal
-#            Method: post
-#
-#  CreateJournalFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreateJournalFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  SearchPublisherByQueryFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      Events:
-#        SearchPublisherByQueryEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /publisher
-#            Method: get
-#
-#  SearchPublisherByQueryFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt SearchPublisherByQueryFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  CreatePublisherFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Events:
-#        CreatePublisherEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /publisher
-#            Method: post
-#
-#  CreatePublisherFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreatePublisherFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  SearchSeriesByQueryFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      Events:
-#        SearchSeriesByQueryEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /series
-#            Method: get
-#
-#  SearchSeriesByQueryFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt SearchSeriesByQueryFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  CreateSeriesFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
-#      Role: !GetAtt LambdaRole.Arn
-#      AutoPublishAlias: live
-#      #      SnapStart:
-#      #        ApplyOn: PublishedVersions
-#      Events:
-#        CreateSeriesEvent:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref PublicationChannelsApi
-#            Path: /series
-#            Method: post
-#
-#  CreateSeriesFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      FunctionName: !GetAtt CreateSeriesFunction.Arn
-#      Action: lambda:InvokeFunction
-#      Principal: 'apigateway.amazonaws.com'
-#
-#  DataportenChannelRegistryHealthCheck:
-#    Type: AWS::Route53::HealthCheck
-#    Properties:
-#      HealthCheckConfig:
-#        Port: 443
-#        Type: HTTPS
-#        ResourcePath: /health
-#        FullyQualifiedDomainName: !Select [2, !Split ["/", !Ref DataportenChannelRegistryBaseUrl]] # Extracts the domain name from the URL
-#        RequestInterval: 30
-#        FailureThreshold: 2
-#        EnableSNI: true
-#
-#  DataportenChannelRegistryHealthAlarm:
-#    Type: AWS::CloudWatch::Alarm
-#    Properties:
-#      AlarmName: !Sub External-Dataporten-Channel-Registry-API-HealthCheck-${PublicationChannelsApi} # PublicationChannelsApi is here just to make the name unique
-#      AlarmDescription: Check if external Dataporten Channel Registry API is healthy
-#      Namespace: AWS/Route53
-#      MetricName: HealthCheckStatus
-#      Dimensions:
-#        - Name: HealthCheckId
-#          Value: !GetAtt DataportenChannelRegistryHealthCheck.HealthCheckId
-#      Statistic: Minimum
-#      Period: 60
-#      EvaluationPeriods: 1
-#      DatapointsToAlarm: 1
-#      Threshold: 1
-#      ComparisonOperator: LessThanThreshold
-#      AlarmActions:
-#        - !Ref SlackSnsArn
-#      TreatMissingData: notBreaching
-#
-#  ChannelRegisterCacheBucket:
-#    Type: AWS::S3::Bucket
-#    Properties:
-#      BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
-#
+
+  PublicationChannelsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
+      MethodSettings:
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1journal~1{identifier}~1{year}'
+          CacheTtlInSeconds: 3600
+          CachingEnabled: true
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1series~1{identifier}~1{year}'
+          CacheTtlInSeconds: 3600
+          CachingEnabled: true
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1publisher~1{identifier}~1{year}'
+          CacheTtlInSeconds: 3600
+          CachingEnabled: true
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1journal'
+          CacheTtlInSeconds: 300
+          CachingEnabled: false
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1series'
+          CacheTtlInSeconds: 300
+          CachingEnabled: false
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1publisher'
+          CacheTtlInSeconds: 300
+          CachingEnabled: false
+      DefinitionBody:
+        'Fn::Transform':
+          Name: AWS::Include
+          Parameters:
+            Location: ./docs/openapi.yaml
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
+        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: NONE
+      EndpointConfiguration:
+        Type: REGIONAL
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ lambda.amazonaws.com ]
+            Action: [ 'sts:AssumeRole' ]
+      Policies:
+        - PolicyName: writeLog
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
+        - PolicyName: readSecrets
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: '*'
+
+  S3ManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+            Resource:
+              - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
+
+  FetchJournalByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Timeout: 60
+      Events:
+        FetchJournalByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /journal/{identifier}/{year}
+            Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
+
+  FetchJournalByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  FetchSeriesByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Timeout: 60
+      Events:
+        FetchSeriesByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series/{identifier}/{year}
+            Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
+
+  FetchSeriesByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  FetchPublisherByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Timeout: 60
+      Events:
+        FetchPublisherByIdentifierAndYearEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher/{identifier}/{year}
+            Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
+
+  FetchPublisherByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  SearchJournalByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      Events:
+        SearchJournalByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /journal
+            Method: get
+
+  SearchJournalByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  PublicationChannelsBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref CustomDomainBasePath
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref PublicationChannelsApi
+      Stage: !Ref PublicationChannelsApi.Stage
+
+  CreateJournalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Events:
+        CreateJournalEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /journal
+            Method: post
+
+  CreateJournalFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateJournalFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  SearchPublisherByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      Events:
+        SearchPublisherByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher
+            Method: get
+
+  SearchPublisherByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchPublisherByQueryFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  CreatePublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Events:
+        CreatePublisherEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /publisher
+            Method: post
+
+  CreatePublisherFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreatePublisherFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  SearchSeriesByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      Events:
+        SearchSeriesByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series
+            Method: get
+
+  SearchSeriesByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchSeriesByQueryFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  CreateSeriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      AutoPublishAlias: live
+      #      SnapStart:
+      #        ApplyOn: PublishedVersions
+      Events:
+        CreateSeriesEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /series
+            Method: post
+
+  CreateSeriesFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateSeriesFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
+  DataportenChannelRegistryHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Port: 443
+        Type: HTTPS
+        ResourcePath: /health
+        FullyQualifiedDomainName: !Select [2, !Split ["/", !Ref DataportenChannelRegistryBaseUrl]] # Extracts the domain name from the URL
+        RequestInterval: 30
+        FailureThreshold: 2
+        EnableSNI: true
+
+  DataportenChannelRegistryHealthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub External-Dataporten-Channel-Registry-API-HealthCheck-${PublicationChannelsApi} # PublicationChannelsApi is here just to make the name unique
+      AlarmDescription: Check if external Dataporten Channel Registry API is healthy
+      Namespace: AWS/Route53
+      MetricName: HealthCheckStatus
+      Dimensions:
+        - Name: HealthCheckId
+          Value: !GetAtt DataportenChannelRegistryHealthCheck.HealthCheckId
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+      TreatMissingData: notBreaching
+
+  ChannelRegisterCacheBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
+
