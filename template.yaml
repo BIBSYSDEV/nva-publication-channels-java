@@ -172,12 +172,12 @@ Resources:
 #          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 #          SHOULD_USE_CACHE: "true"
 
-  FetchJournalByIdentifierAndYearFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+#  FetchJournalByIdentifierAndYearFunctionPermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
+#      Action: lambda:InvokeFunction
+#      Principal: 'apigateway.amazonaws.com'
 
 #  FetchSeriesByIdentifierAndYearFunction:
 #    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -203,12 +203,12 @@ Resources:
 #          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 #          SHOULD_USE_CACHE: "true"
 
-  FetchSeriesByIdentifierAndYearFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+#  FetchSeriesByIdentifierAndYearFunctionPermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
+#      Action: lambda:InvokeFunction
+#      Principal: 'apigateway.amazonaws.com'
 
 #  FetchPublisherByIdentifierAndYearFunction:
 #    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -234,12 +234,12 @@ Resources:
 #          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 #          SHOULD_USE_CACHE: "true"
 
-  FetchPublisherByIdentifierAndYearFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+#  FetchPublisherByIdentifierAndYearFunctionPermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+#      Action: lambda:InvokeFunction
+#      Principal: 'apigateway.amazonaws.com'
 
   SearchJournalByQueryFunction:
     Type: AWS::Serverless::Function
