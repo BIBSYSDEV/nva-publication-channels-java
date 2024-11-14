@@ -7,12 +7,15 @@ import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 public final class ChannelRegistryCsvCacheClient implements PublicationChannelFetchClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryCsvCacheClient.class);
     public static final String CHANNEL_NOT_FOUND_MESSAGE = "Could not find cached publication channel with id %s and type %s";
     private final List<ChannelRegistryCacheEntry> cacheEntries;
 
@@ -43,6 +46,7 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
     }
 
     private CachedPublicationChannelNotFoundException throwException(String identifier, ChannelType type) {
+        LOGGER.error("Could not find cached publication channel with id {} and type {}", identifier, type);
         return new CachedPublicationChannelNotFoundException(CHANNEL_NOT_FOUND_MESSAGE.formatted(identifier, type.name()));
     }
 

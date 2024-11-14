@@ -83,6 +83,7 @@ public class FetchPublisherByIdentifierAndYearHandler extends
     private ThirdPartyPublicationChannel fetchPublisher(FetchByIdAndYearRequest request, String requestYear)
         throws ApiGatewayException {
         try {
+            LOGGER.info("Fetching publisher from channel register: {}", request.getIdentifier());
             return publicationChannelClient.getChannel(PUBLISHER, request.getIdentifier(), requestYear);
         } catch (PublicationChannelMovedException movedException) {
             throw new PublicationChannelMovedException(

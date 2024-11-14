@@ -79,6 +79,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     private ThirdPartyPublicationChannel fetchSeries(FetchByIdAndYearRequest request, String requestYear)
         throws ApiGatewayException {
         try {
+            LOGGER.info("Fetching series from channel register: {}", request.getIdentifier());
             return publicationChannelClient.getChannel(SERIES, request.getIdentifier(), requestYear);
         } catch (PublicationChannelMovedException movedException) {
             throw new PublicationChannelMovedException("Series moved", constructNewLocation(SERIES_PATH_ELEMENT,
