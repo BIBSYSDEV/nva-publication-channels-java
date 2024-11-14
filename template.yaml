@@ -52,6 +52,10 @@ Parameters:
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/NVA/Monitoring/SlackSnsArn'
+  ChannelRegisterCacheBucketName:
+    Type: 'String'
+    Default: "channel-register-cache"
+    Description: Name of bucket for channel register cache csv
 
 Resources:
 
@@ -148,6 +152,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /journal/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -172,6 +181,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /series/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -196,6 +210,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /publisher/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -375,3 +394,9 @@ Resources:
       AlarmActions:
         - !Ref SlackSnsArn
       TreatMissingData: notBreaching
+
+  ChannelRegisterCacheBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
+

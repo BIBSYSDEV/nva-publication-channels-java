@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -17,6 +18,7 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStat
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
@@ -39,6 +41,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -57,7 +60,7 @@ import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchPublisherByIdentifierAndYearHandlerTest {
+class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
 
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
@@ -69,14 +72,18 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
+        super.setup();
         environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
+
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                             super.getCacheClient());
         this.output = new ByteArrayOutputStream();
     }
 
@@ -287,10 +294,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
+    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccursAndPublisherNotCached() throws IOException,
+                                                                                      InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                             super.getCacheClient());
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -330,6 +339,58 @@ class FetchPublisherByIdentifierAndYearHandlerTest {
     private static Stream<String> invalidYearsProvider() {
         var yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    }
+
+    @Test
+    void shouldReturnPublisherWhenInterruptionOccursAndPublisherIsCached() throws IOException, InterruptedException {
+        ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
+
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                             super.getCacheClient());
+
+        var publisherIdentifier = super.getCachedPublisherIdentifier();
+        var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+    }
+
+    @Test
+    void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
+        var publisherIdentifier = super.getCachedPublisherIdentifier();
+
+        var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
+                                                                             super.getCacheClient());
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+        assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
+        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
+                                                                             super.getCacheClient());
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {

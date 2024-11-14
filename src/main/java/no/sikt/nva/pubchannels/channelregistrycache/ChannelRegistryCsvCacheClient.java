@@ -9,7 +9,6 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.unit.nva.s3.S3Driver;
-import nva.commons.core.Environment;
 import nva.commons.core.paths.UnixPath;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -23,14 +22,15 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
     }
 
     public static ChannelRegistryCsvCacheClient load(S3Client s3Client) {
-        var s3Driver = new S3Driver(s3Client, "CHANNEL_REGISTER_CACHE_BUCKET");
+        var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
         var value = attempt(
-            () -> s3Driver.getFile(UnixPath.of(new Environment().readEnv("CHANNEL_REGISTER_CACHE")))).orElseThrow();
+            () -> s3Driver.getFile(UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT))).orElseThrow();
         return new ChannelRegistryCsvCacheClient(getChannelRegistryCacheFromString(value));
     }
 
     @Override
-    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year) {
+    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+        throws CachedPublicationChannelNotFoundException {
         return cacheEntries.stream()
                    .filter(entry -> entry.getPid().equals(identifier))
                    .findFirst()
@@ -38,7 +38,7 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
                    .orElseThrow(() -> throwException(identifier, type));
     }
 
-    private RuntimeException throwException(String identifier, ChannelType type) {
+    private CachedPublicationChannelNotFoundException throwException(String identifier, ChannelType type) {
         return new CachedPublicationChannelNotFoundException(CHANNEL_NOT_FOUND_MESSAGE.formatted(identifier, type.name()));
     }
 

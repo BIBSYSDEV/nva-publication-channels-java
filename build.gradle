@@ -8,5 +8,5 @@ dependencies {
 test {
     environment("ALLOWED_ORIGIN", "*")
     environment("CHANNEL_REGISTER_CACHE_BUCKET", "someBucket")
-    environment("CHANNEL_REGISTER_CACHE", "someFile")
+    environment("CHANNEL_REGISTER_CACHE_S3_OBJECT", "someFile")
 }
