@@ -20,7 +20,7 @@ class ChannelRegistryCsvCacheClientTest extends ChannelRegistryCacheSetup {
     @BeforeEach
     void setUp() {
         super.setup();
-        cacheClient = super.getCacheClient();
+        cacheClient = ChannelRegistryCsvCacheClient.load(super.getS3Client());
     }
 
     @Test

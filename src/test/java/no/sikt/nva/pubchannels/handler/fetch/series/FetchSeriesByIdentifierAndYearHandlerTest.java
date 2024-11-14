@@ -40,7 +40,6 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
-import no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
@@ -58,7 +57,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Int;
 
 @WireMockTest(httpsEnabled = true)
 class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
@@ -83,7 +81,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, super.getCacheClient());
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, super.getS3Client());
         this.output = new ByteArrayOutputStream();
     }
 
@@ -295,7 +293,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          super.getCacheClient());
+                                                                          super.getS3Client());
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -359,7 +357,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getCacheClient());
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -374,7 +372,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getCacheClient());
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());

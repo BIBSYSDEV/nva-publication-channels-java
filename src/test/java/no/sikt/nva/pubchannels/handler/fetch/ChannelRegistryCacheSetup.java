@@ -3,7 +3,6 @@ package no.sikt.nva.pubchannels.handler.fetch;
 import static nva.commons.core.attempt.Try.attempt;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
-import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvCacheClient;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.ioutils.IoUtils;
@@ -11,19 +10,18 @@ import nva.commons.core.paths.UnixPath;
 
 public class ChannelRegistryCacheSetup {
 
-    private ChannelRegistryCsvCacheClient cacheClient;
+    private FakeS3Client s3Client;
 
-    public ChannelRegistryCsvCacheClient getCacheClient() {
-        return cacheClient;
+    public FakeS3Client getS3Client() {
+        return s3Client;
     }
 
     public void setup() {
         var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
-        var s3Client = new FakeS3Client();
+        s3Client = new FakeS3Client();
         var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
         attempt(() -> s3Driver.insertFile(UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
                                           csv)).orElseThrow();
-        this.cacheClient = ChannelRegistryCsvCacheClient.load(s3Client);
     }
 
     public String getCachedJournalSeriesIdentifier() {

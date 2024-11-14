@@ -5,8 +5,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
+import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvCacheClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
@@ -18,6 +18,7 @@ import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.s3.S3Client;
 
 public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, JournalDto> {
 
@@ -31,8 +32,8 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
 
     public FetchJournalByIdentifierAndYearHandler(Environment environment,
                                                   PublicationChannelClient publicationChannelClient,
-                                                  PublicationChannelFetchClient cacheClient) {
-        super(Void.class, environment, publicationChannelClient, cacheClient);
+                                                  S3Client s3Client) {
+        super(Void.class, environment, publicationChannelClient, s3Client);
     }
 
     @Override
@@ -74,7 +75,8 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
     private ThirdPartyPublicationChannel fetchJournalFromCache(FetchByIdAndYearRequest request)
         throws ApiGatewayException {
         LOGGER.info("Fetching journal from cache: {}", request.getIdentifier());
-        return cacheClient.getChannel(ChannelType.JOURNAL, request.getIdentifier(), request.getYear());
+        return ChannelRegistryCsvCacheClient.load(s3Client)
+                   .getChannel(ChannelType.JOURNAL, request.getIdentifier(), request.getYear());
     }
 
     private ThirdPartyPublicationChannel fetchJournal(FetchByIdAndYearRequest request, String requestYear)

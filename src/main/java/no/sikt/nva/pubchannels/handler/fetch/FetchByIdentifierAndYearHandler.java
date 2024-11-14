@@ -13,9 +13,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvCacheClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -33,22 +31,22 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
 
     protected final PublicationChannelClient publicationChannelClient;
-    protected final PublicationChannelFetchClient cacheClient;
+    protected final S3Client s3Client;
     protected final boolean shouldUseCache;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
         this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
-        this.cacheClient = ChannelRegistryCsvCacheClient.load(S3Client.create());
+        this.s3Client = S3Client.create();
         this.shouldUseCache = Boolean.parseBoolean(environment.readEnv("SHOULD_USE_CACHE"));
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,
-                                              PublicationChannelClient client, PublicationChannelFetchClient cacheClient) {
+                                              PublicationChannelClient client, S3Client s3Client) {
         super(requestClass, environment);
         this.publicationChannelClient = client;
-        this.cacheClient = cacheClient;
+        this.s3Client = s3Client;
         this.shouldUseCache = Boolean.parseBoolean(environment.readEnv("SHOULD_USE_CACHE"));
     }
 

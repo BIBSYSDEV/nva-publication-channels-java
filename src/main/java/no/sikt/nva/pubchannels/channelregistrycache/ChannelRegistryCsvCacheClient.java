@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static nva.commons.core.attempt.Try.attempt;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import java.io.StringReader;
@@ -8,9 +7,9 @@ import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
-import no.unit.nva.s3.S3Driver;
-import nva.commons.core.paths.UnixPath;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 public final class ChannelRegistryCsvCacheClient implements PublicationChannelFetchClient {
 
@@ -22,10 +21,15 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
     }
 
     public static ChannelRegistryCsvCacheClient load(S3Client s3Client) {
-        var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-        var value = attempt(
-            () -> s3Driver.getFile(UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT))).orElseThrow();
+        var value = s3Client.getObject(getCacheRequest(), ResponseTransformer.toBytes()).asUtf8String();
         return new ChannelRegistryCsvCacheClient(getChannelRegistryCacheFromString(value));
+    }
+
+    private static GetObjectRequest getCacheRequest() {
+        return GetObjectRequest.builder()
+                   .bucket(ChannelRegistryCacheConfig.CACHE_BUCKET)
+                   .key(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT)
+                   .build();
     }
 
     @Override

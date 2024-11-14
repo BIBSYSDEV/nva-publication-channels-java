@@ -24,6 +24,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -56,7 +57,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
@@ -73,17 +73,16 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
         super.setup();
-        environment = Mockito.mock(Environment.class);
+        environment = mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
-
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             super.getCacheClient());
+                                                                             super.getS3Client());
         this.output = new ByteArrayOutputStream();
     }
 
@@ -298,8 +297,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
                                                                                       InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             super.getCacheClient());
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, super.getS3Client());
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -342,16 +340,17 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
     }
 
     @Test
-    void shouldReturnPublisherWhenInterruptionOccursAndPublisherIsCached() throws IOException, InterruptedException {
-        ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
-
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             super.getCacheClient());
+    void shouldReturnPublisherWhenInterruptionOccursAndPublisherIsCached() throws IOException {
+        var httpClient = WiremockHttpClient.create();
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var channelRegistryClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
         var publisherIdentifier = super.getCachedPublisherIdentifier();
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
-
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
+                                                                             super.getS3Client());
         var appender = LogUtils.getTestingAppenderForRootLogger();
+
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
@@ -367,7 +366,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             super.getCacheClient());
+                                                                             super.getS3Client());
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -384,7 +383,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             super.getCacheClient());
+                                                                             super.getS3Client());
 
         handlerUnderTest.handleRequest(input, output, context);
 
