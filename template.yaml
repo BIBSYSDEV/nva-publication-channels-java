@@ -146,7 +146,7 @@ Resources:
             Action:
               - s3:Get*
             Resource:
-              - !Sub "arn:aws:s3:::channel-register-cache-${AWS::AccountId}/*"
+              !Ref ChannelRegisterCacheBucket
 
   FetchJournalByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
