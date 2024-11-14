@@ -136,11 +136,25 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource: '*'
 
+  S3ManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+            Resource:
+              - !Sub "arn:aws:s3:::channel-register-cache-${AWS::AccountId}/*"
+
   FetchJournalByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -170,6 +184,8 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -199,6 +215,8 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
