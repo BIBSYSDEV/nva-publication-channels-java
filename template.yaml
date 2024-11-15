@@ -144,7 +144,7 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - s3:Get*
+              - s3:GetObject
             Resource:
               - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
 
