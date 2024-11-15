@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels.handler.fetch.series;
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
+import java.net.HttpURLConnection;
 import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvCacheClient;
@@ -63,7 +64,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     private ThirdPartyPublicationChannel fetchFromCacheWhenServerError(FetchByIdAndYearRequest request,
                                                                        ApiGatewayException e)
         throws ApiGatewayException {
-        if (e.getStatusCode() >= 500) {
+        if (e.getStatusCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
             return attempt(() -> fetchSeriesFromCache(request)).orElseThrow(throwOriginalException(e));
         } else {
             throw e;
