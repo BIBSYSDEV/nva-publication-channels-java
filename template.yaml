@@ -106,6 +106,24 @@ Resources:
       EndpointConfiguration:
         Type: REGIONAL
 
+  ChannelRegisterCacheTable:
+    Type: 'AWS::DynamoDB::Table'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+    Properties:
+      TableName: !Sub 'channel-register-cache-${AWS::StackName}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK0
+          AttributeType: S
+        - AttributeName: SK0
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK0
+          KeyType: HASH
+        - AttributeName: SK0
+          KeyType: RANGE
+
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -144,14 +162,34 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
+        - PolicyName: readDynamoDb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/channel-register-cache-${AWS::StackName}
+
+  LoadCacheButtonHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.cache.LoadCacheHandler::handleRequest
+      Timeout: 900
+      Role: !GetAtt LambdaRole.Arn
+      ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ChannelRegisterCacheTable
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 
   FetchJournalByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      Policies:
-        - !GetAtt S3ManagedPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -181,8 +219,6 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      Policies:
-        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -212,8 +248,6 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      Policies:
-        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
