@@ -9,4 +9,5 @@ test {
     environment("ALLOWED_ORIGIN", "*")
     environment("CHANNEL_REGISTER_CACHE_BUCKET", "someBucket")
     environment("CHANNEL_REGISTER_CACHE", "someFile")
+    environment("TABLE_NAME", "someTable")
 }
