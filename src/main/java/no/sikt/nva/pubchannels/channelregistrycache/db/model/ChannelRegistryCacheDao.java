@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.channelregistrycache.db.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -21,14 +20,14 @@ public record ChannelRegistryCacheDao(UUID identifier,
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute(PRIMARY_KEY)
-    public String primaryKeyHashKey() {
-        return identifier.toString();
+    public UUID primaryKeyHashKey() {
+        return identifier;
     }
 
     @DynamoDbSortKey
     @DynamoDbAttribute(SORT_KEY)
-    public String primaryKeyRangeKey() {
-        return identifier.toString();
+    public UUID primaryKeyRangeKey() {
+        return identifier;
     }
 
     public static Builder builder() {
@@ -96,12 +95,12 @@ public record ChannelRegistryCacheDao(UUID identifier,
             return this;
         }
 
-        public Builder primaryKeyHashKey(String noop) {
+        public Builder primaryKeyHashKey(UUID noop) {
             // Used by @DynamoDbImmutable for building the object
             return this;
         }
 
-        public Builder primaryKeyRangeKey(String noop) {
+        public Builder primaryKeyRangeKey(UUID noop) {
             // Used by @DynamoDbImmutable for building the object
             return this;
         }

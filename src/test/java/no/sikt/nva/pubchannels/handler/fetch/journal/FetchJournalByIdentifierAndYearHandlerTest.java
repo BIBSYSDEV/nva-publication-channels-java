@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
@@ -57,28 +60,33 @@ import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchJournalByIdentifierAndYearHandlerTest {
+class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
 
     private static final int YEAR_START = 2004;
     private static final Context context = new FakeContext();
+    public static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
+    public static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
     private PublicationChannelMockClient mockRegistry;
+    private CacheService cacheService;
     private ByteArrayOutputStream output;
     private Environment environment;
     private String channelRegistryBaseUri;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
-
+        super.setup();
         this.environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
 
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
+        cacheService = new CacheService(super.getClient());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
     }
@@ -233,11 +241,11 @@ class FetchJournalByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    void shouldReturnBadGatewayWhenChannelRegistryIsUnavailable() throws IOException {
+    void shouldReturnBadGatewayWhenChannelRegistryIsUnavailableAndChannelIsNotCached() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -267,7 +275,7 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
 
         var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
@@ -344,6 +352,80 @@ class FetchJournalByIdentifierAndYearHandlerTest {
         var expectedLocation = constructExpectedLocation(newIdentifier, year);
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
+    }
+
+    @Test
+    void shouldReturnJournalWhenChannelRegistryIsUnavailableAndJournalIsCached() throws IOException {
+        var httpClient = WiremockHttpClient.create();
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
+        super.loadCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+
+        var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
+        var year = JOURNAL_YEAR_FROM_CACHE;
+
+        var input = constructRequest(year, identifier);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Fetching journal from cache: " + identifier));
+
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+    }
+
+    @Test
+    void shouldReturnJournalFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
+        var httpClient = WiremockHttpClient.create();
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        super.loadCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+
+        var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
+        var year = JOURNAL_YEAR_FROM_CACHE;
+
+        var input = constructRequest(year, identifier);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Fetching journal from cache: " + identifier));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButJournalIsNotCached() throws IOException {
+        var httpClient = WiremockHttpClient.create();
+        var channelRegistryBaseUri = URI.create("https://localhost:9898");
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        super.loadCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+
+        var identifier = UUID.randomUUID().toString();
+        var year = randomYear();
+
+        var input = constructRequest(year, identifier);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Could not find cached publication channel with"));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
     private static String constructExpectedLocation(String newIdentifier, String year) {

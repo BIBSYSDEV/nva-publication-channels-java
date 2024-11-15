@@ -52,6 +52,10 @@ Parameters:
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/NVA/Monitoring/SlackSnsArn'
+  ChannelRegisterCacheBucketName:
+    Type: 'String'
+    Default: "channel-register-cache"
+    Description: Name of bucket for channel register cache csv
 
 Resources:
 
@@ -131,16 +135,27 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: '*'
+        - PolicyName: readS3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
 
   FetchJournalByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt S3ManagedPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
-      Timeout: 3
+      Timeout: 60
       Events:
         FetchJournalByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -148,6 +163,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /journal/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -161,10 +181,12 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
-      Timeout: 3
+      Timeout: 60
       Events:
         FetchSeriesByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -172,6 +194,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /series/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -185,10 +212,12 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !Ref S3ManagedPolicy
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
-      Timeout: 3
+      Timeout: 60
       Events:
         FetchPublisherByIdentifierAndYearEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -196,6 +225,11 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /publisher/{identifier}/{year}
             Method: get
+      Environment:
+        Variables:
+          CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
+          CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
+          SHOULD_USE_CACHE: "true"
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -375,3 +409,9 @@ Resources:
       AlarmActions:
         - !Ref SlackSnsArn
       TreatMissingData: notBreaching
+
+  ChannelRegisterCacheBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
+

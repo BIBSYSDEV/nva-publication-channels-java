@@ -13,6 +13,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -21,6 +22,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
+import software.amazon.awssdk.services.s3.S3Client;
 
 public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHandler<I, O> {
 
@@ -28,18 +30,25 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
+
     protected final PublicationChannelClient publicationChannelClient;
+    protected final CacheService cacheService;
+    protected final boolean shouldUseCache;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
         this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
+        this.cacheService = CacheService.defaultInstance();
+        this.shouldUseCache = Boolean.parseBoolean(environment.readEnv("SHOULD_USE_CACHE"));
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,
-                                              PublicationChannelClient client) {
+                                              PublicationChannelClient client, CacheService cacheService) {
         super(requestClass, environment);
         this.publicationChannelClient = client;
+        this.cacheService = cacheService;
+        this.shouldUseCache = Boolean.parseBoolean(environment.readEnv("SHOULD_USE_CACHE"));
     }
 
     protected RequestInfo validate(RequestInfo requestInfo) {
