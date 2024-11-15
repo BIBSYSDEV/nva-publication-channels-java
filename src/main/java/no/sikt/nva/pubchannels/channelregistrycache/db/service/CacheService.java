@@ -1,9 +1,10 @@
 package no.sikt.nva.pubchannels.channelregistrycache.db.service;
 
 import static nva.commons.core.attempt.Try.attempt;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
@@ -40,8 +41,8 @@ public class CacheService implements PublicationChannelFetchClient {
     }
 
     public void loadCache(S3Client s3Client) {
-        var entries = new HashSet<>(ChannelRegistryCsvLoader.load(s3Client).getCacheEntries());
-        var uniqueEntries = new ArrayList<>(new HashSet<>(entries));
+        var entries = ChannelRegistryCsvLoader.load(s3Client).getCacheEntries();
+        var uniqueEntries = filterDuplicatesBasedOnPid(entries);
         int start = 0;
         while (start < uniqueEntries.size()) {
             var writeBatchBuilder = WriteBatch.builder(ChannelRegistryCacheDao.class).mappedTableResource(table);
@@ -64,12 +65,20 @@ public class CacheService implements PublicationChannelFetchClient {
     @Override
     public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
         throws CachedPublicationChannelNotFoundException {
-        return attempt(() -> UUID.fromString(identifier))
-                   .map(CacheService::entryWithIdentifier)
+        return attempt(() -> UUID.fromString(identifier)).map(CacheService::entryWithIdentifier)
                    .map(table::getItem)
                    .map(ChannelRegistryCacheEntry::fromDao)
                    .map(entry -> entry.toThirdPartyPublicationChannel(type, year))
                    .orElseThrow(failure -> new CachedPublicationChannelNotFoundException(identifier));
+    }
+
+    private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(List<ChannelRegistryCacheEntry> entries) {
+        return entries.stream()
+                   .collect(Collectors.toMap(ChannelRegistryCacheEntry::getPid, Function.identity(),
+                                             (existing, replacement) -> existing))
+                   .values()
+                   .stream()
+                   .toList();
     }
 
     private static ChannelRegistryCacheDao entryWithIdentifier(UUID uuid) {

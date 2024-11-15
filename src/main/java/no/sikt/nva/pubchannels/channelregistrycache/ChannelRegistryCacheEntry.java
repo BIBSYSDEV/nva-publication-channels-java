@@ -63,7 +63,7 @@ public class ChannelRegistryCacheEntry {
         return pid.toString().toUpperCase(Locale.ROOT);
     }
 
-    private UUID getPid() {
+    public UUID getPid() {
         return pid;
     }
 
