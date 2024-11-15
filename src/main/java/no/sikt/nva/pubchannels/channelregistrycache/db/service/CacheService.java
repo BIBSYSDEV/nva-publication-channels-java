@@ -1,6 +1,8 @@
 package no.sikt.nva.pubchannels.channelregistrycache.db.service;
 
 import static nva.commons.core.attempt.Try.attempt;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
@@ -38,19 +40,21 @@ public class CacheService implements PublicationChannelFetchClient {
     }
 
     public void loadCache(S3Client s3Client) {
-        var entries = ChannelRegistryCsvLoader.load(s3Client).getCacheEntries();
+        var entries = new HashSet<>(ChannelRegistryCsvLoader.load(s3Client).getCacheEntries());
+        var uniqueEntries = new ArrayList<>(new HashSet<>(entries));
         int start = 0;
-        while (start < entries.size()) {
+        while (start < uniqueEntries.size()) {
             var writeBatchBuilder = WriteBatch.builder(ChannelRegistryCacheDao.class).mappedTableResource(table);
-            entries.subList(start, Math.min(start + BATCH_SIZE, entries.size()))
+            uniqueEntries.subList(start, Math.min(start + BATCH_SIZE, uniqueEntries.size()))
                 .stream()
                 .map(ChannelRegistryCacheEntry::toDao)
                 .forEach(writeBatchBuilder::addPutItem);
             var writeBatch = writeBatchBuilder.build();
             client.batchWriteItem(r -> r.addWriteBatch(writeBatch));
             start += BATCH_SIZE;
+            LOGGER.info("Loaded {} entries", start);
         }
-        LOGGER.info("Cache loaded with {} entries", entries.size());
+        LOGGER.info("Cache loaded with {} entries", uniqueEntries.size());
     }
 
     public void save(ChannelRegistryCacheEntry entry) {
