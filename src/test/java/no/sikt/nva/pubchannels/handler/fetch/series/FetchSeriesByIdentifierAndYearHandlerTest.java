@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -38,6 +39,8 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -56,7 +59,7 @@ import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchSeriesByIdentifierAndYearHandlerTest {
+class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
 
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
@@ -68,15 +71,17 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
+        super.setup();
         environment = Mockito.mock(Environment.class);
         when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
 
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, super.getS3Client());
         this.output = new ByteArrayOutputStream();
     }
 
@@ -260,7 +265,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     }
 
     @Test
-    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
+    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndSeriesIsNotCached() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
@@ -287,7 +292,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                          super.getS3Client());
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -322,6 +328,66 @@ class FetchSeriesByIdentifierAndYearHandlerTest {
         var expectedLocation = createPublicationChannelUri(newIdentifier, SERIES_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
+    }
+
+    @Test
+    void shouldReturnSeriesWhenChannelRegistryIsUnavailableAndSeriesIsCached() throws IOException {
+        var identifier = super.getCachedJournalSeriesIdentifier();
+        var year = super.getCachedJournalSeriesYear();
+
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+    }
+
+    @Test
+    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
+        var year = Integer.parseInt(super.getCachedJournalSeriesYear());
+        var identifier = super.getCachedJournalSeriesIdentifier();
+
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
+        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
+
+        var identifier = UUID.randomUUID().toString();
+        var year = String.valueOf(randomYear());
+
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Could not find cached publication channel with"));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
     private static Stream<String> invalidYearsProvider() {

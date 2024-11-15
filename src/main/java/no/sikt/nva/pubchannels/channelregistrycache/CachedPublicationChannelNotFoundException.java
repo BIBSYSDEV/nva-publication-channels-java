@@ -1,6 +1,8 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-public class CachedPublicationChannelNotFoundException extends RuntimeException {
+import nva.commons.apigateway.exceptions.NotFoundException;
+
+public class CachedPublicationChannelNotFoundException extends NotFoundException {
 
     public CachedPublicationChannelNotFoundException(String message) {
         super(message);

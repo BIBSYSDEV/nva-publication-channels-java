@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static nva.commons.core.attempt.Try.attempt;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import java.io.StringReader;
@@ -8,13 +7,15 @@ import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
-import no.unit.nva.s3.S3Driver;
-import nva.commons.core.Environment;
-import nva.commons.core.paths.UnixPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 public final class ChannelRegistryCsvCacheClient implements PublicationChannelFetchClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryCsvCacheClient.class);
     public static final String CHANNEL_NOT_FOUND_MESSAGE = "Could not find cached publication channel with id %s and type %s";
     private final List<ChannelRegistryCacheEntry> cacheEntries;
 
@@ -23,14 +24,20 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
     }
 
     public static ChannelRegistryCsvCacheClient load(S3Client s3Client) {
-        var s3Driver = new S3Driver(s3Client, "CHANNEL_REGISTER_CACHE_BUCKET");
-        var value = attempt(
-            () -> s3Driver.getFile(UnixPath.of(new Environment().readEnv("CHANNEL_REGISTER_CACHE")))).orElseThrow();
+        var value = s3Client.getObject(getCacheRequest(), ResponseTransformer.toBytes()).asUtf8String();
         return new ChannelRegistryCsvCacheClient(getChannelRegistryCacheFromString(value));
     }
 
+    private static GetObjectRequest getCacheRequest() {
+        return GetObjectRequest.builder()
+                   .bucket(ChannelRegistryCacheConfig.CACHE_BUCKET)
+                   .key(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT)
+                   .build();
+    }
+
     @Override
-    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year) {
+    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+        throws CachedPublicationChannelNotFoundException {
         return cacheEntries.stream()
                    .filter(entry -> entry.getPid().equals(identifier))
                    .findFirst()
@@ -38,7 +45,8 @@ public final class ChannelRegistryCsvCacheClient implements PublicationChannelFe
                    .orElseThrow(() -> throwException(identifier, type));
     }
 
-    private RuntimeException throwException(String identifier, ChannelType type) {
+    private CachedPublicationChannelNotFoundException throwException(String identifier, ChannelType type) {
+        LOGGER.error("Could not find cached publication channel with id {} and type {}", identifier, type);
         return new CachedPublicationChannelNotFoundException(CHANNEL_NOT_FOUND_MESSAGE.formatted(identifier, type.name()));
     }
 
