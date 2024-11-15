@@ -12,12 +12,9 @@ import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, PublisherDto> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FetchPublisherByIdentifierAndYearHandler.class);
     private static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
     @JacocoGenerated
