@@ -361,7 +361,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+        assertThat(appender.getMessages(), containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
     }
 
     @Test
@@ -382,7 +382,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
         assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
-        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+        assertThat(appender.getMessages(), containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
     }
 
     @Test

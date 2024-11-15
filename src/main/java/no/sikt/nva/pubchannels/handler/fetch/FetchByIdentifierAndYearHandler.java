@@ -12,20 +12,27 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Year;
 import java.util.List;
+import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
+import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.attempt.Failure;
 import nva.commons.core.paths.UriWrapper;
-import software.amazon.awssdk.services.s3.S3Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHandler<I, O> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FetchByIdentifierAndYearHandler.class);
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
@@ -56,6 +63,62 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         validateYear(requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim(), Year.of(Year.MIN_VALUE),
                      "Year");
         return requestInfo;
+    }
+
+    protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(ChannelType type, String identifier, String year)
+        throws ApiGatewayException{
+        try {
+            LOGGER.info("Fetching {} from channel register: {}", type.name(), identifier);
+            return publicationChannelClient.getChannel(type, identifier, year);
+        } catch (PublicationChannelMovedException movedException) {
+            throw new PublicationChannelMovedException(
+                "%s moved".formatted(type.name()),
+                constructNewLocation(getPathElement(type), movedException.getLocation(), year));
+        }
+    }
+
+    private static String getPathElement(ChannelType type) {
+        return switch (type) {
+            case JOURNAL -> "journal";
+            case PUBLISHER -> "publisher";
+            case SERIES -> "series";
+        };
+    }
+
+    protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(ChannelType type, String identifier,
+                                                                         String year,
+                                                                         ApiGatewayException e)
+        throws ApiGatewayException {
+        if (isServerError(e)) {
+            return attempt(() -> fetchChannelFromCache(type, identifier, year)).orElseThrow(throwOriginalException(e));
+        } else {
+            throw e;
+        }
+    }
+
+    private static boolean isServerError(ApiGatewayException e) {
+        return e.getStatusCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR;
+    }
+
+    protected ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(ChannelType type, String identifier,
+                                                                        String year)
+        throws ApiGatewayException {
+        try {
+            return fetchChannelFromChannelRegister(type, identifier, year);
+        } catch (ApiGatewayException e) {
+            return fetchFromCacheWhenServerError(type, identifier, year, e);
+        }
+    }
+
+    private static Function<Failure<ThirdPartyPublicationChannel>, ApiGatewayException> throwOriginalException(
+        ApiGatewayException e) {
+        return failure -> e;
+    }
+
+    protected ThirdPartyPublicationChannel fetchChannelFromCache(ChannelType type, String identifier, String year)
+        throws ApiGatewayException {
+        LOGGER.info("Fetching {} from cache: {}", type.name(), identifier);
+        return cacheService.getChannel(type, identifier, year);
     }
 
     protected URI constructPublicationChannelIdBaseUri(String publicationChannelPathElement) {

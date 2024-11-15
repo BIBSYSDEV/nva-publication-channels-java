@@ -348,7 +348,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         super.loadCache();
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
@@ -370,7 +370,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));

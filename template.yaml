@@ -206,6 +206,7 @@ Resources:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
           SHOULD_USE_CACHE: "true"
+          TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -235,6 +236,7 @@ Resources:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
           SHOULD_USE_CACHE: "true"
+          TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -264,6 +266,7 @@ Resources:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
           SHOULD_USE_CACHE: "true"
+          TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission

@@ -1,9 +1,8 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import nva.commons.apigateway.RequestInfo;
 
 public final class FetchByIdAndYearRequest {
-
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
     private static final String YEAR_PATH_PARAM_NAME = "year";
 
