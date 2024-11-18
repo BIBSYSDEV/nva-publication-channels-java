@@ -40,9 +40,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
-import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -60,8 +61,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
+class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
 
+    public static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
     private static final Context context = new FakeContext();
@@ -69,6 +71,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
     private ByteArrayOutputStream output;
     private Environment environment;
     private String channelRegistryBaseUri;
+    private CacheService cacheService;
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -81,8 +84,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             super.getS3Client());
+        cacheService = new CacheService(super.getClient());
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
         this.output = new ByteArrayOutputStream();
     }
 
@@ -297,7 +300,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
                                                                                       InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, super.getS3Client());
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -345,10 +348,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var channelRegistryClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
-        var publisherIdentifier = super.getCachedPublisherIdentifier();
+        var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
+
+        super.loadCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
-                                                                             super.getS3Client());
+                                                                             cacheService);
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -356,17 +361,19 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+        assertThat(appender.getMessages(), containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
     }
 
     @Test
     void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
-        var publisherIdentifier = super.getCachedPublisherIdentifier();
+        var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
 
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+
+        super.loadCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             super.getS3Client());
+                                                                             cacheService);
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -375,15 +382,16 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends ChannelRegistryCacheS
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
         assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
-        assertThat(appender.getMessages(), containsString("Fetching publisher from cache: " + publisherIdentifier));
+        assertThat(appender.getMessages(), containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
     }
 
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+        super.loadCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             super.getS3Client());
+                                                                             cacheService);
 
         handlerUnderTest.handleRequest(input, output, context);
 

@@ -15,10 +15,13 @@ dependencies {
     implementation libs.bundles.nva
     implementation libs.bundles.logging
     implementation libs.bundles.jackson
-    implementation libs.guava
     implementation libs.commons.validator
     implementation libs.open.csv
     implementation libs.aws.sdk2.s3
+    implementation libs.aws.sdk2.dynamodb.enhanced
+    implementation libs.guava
+
+    testImplementation libs.dynamodDbLocal
 }
 
 sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility

@@ -18,6 +18,9 @@ local.properties
 # External tool builders
 .externalToolBuilders/
 
+# DynamoDB local database file
+**/dynamodb-local-metadata.json
+
 # Locally stored "Eclipse launch configurations"
 *.launch
 
