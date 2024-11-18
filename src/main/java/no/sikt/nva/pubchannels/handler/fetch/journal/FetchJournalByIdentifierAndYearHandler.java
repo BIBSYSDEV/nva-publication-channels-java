@@ -37,7 +37,7 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
         var identifier = request.getIdentifier();
         var year = request.getYear();
 
-        var journal = shouldUseCache
+        var journal = super.shouldUseCache()
                           ? super.fetchChannelFromCache(JOURNAL, identifier, year)
                           : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
         return JournalDto.create(journalIdBaseUri, (ThirdPartyJournal) journal, year);

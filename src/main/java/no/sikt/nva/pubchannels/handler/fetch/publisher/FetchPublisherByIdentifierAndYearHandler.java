@@ -36,7 +36,7 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
         var year = request.getYear();
         var identifier = request.getIdentifier();
 
-        var publisher = shouldUseCache
+        var publisher = super.shouldUseCache()
                             ? super.fetchChannelFromCache(PUBLISHER, identifier, year)
                             : super.fetchChannelOrFetchFromCache(PUBLISHER, identifier, year);
         return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
