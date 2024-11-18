@@ -3,8 +3,7 @@ package no.sikt.nva.pubchannels.handler.search.journal;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static java.util.Objects.nonNull;
-import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
@@ -21,16 +20,18 @@ import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryRequestUrl;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getStringStringValuePatternHashMap;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+
 import static nva.commons.core.attempt.Try.attempt;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
@@ -38,16 +39,40 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+
+import static java.util.Objects.nonNull;
+
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
+
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.unit.nva.commons.pagination.PaginatedSearchResult;
+import no.unit.nva.stubs.FakeContext;
+import no.unit.nva.stubs.WiremockHttpClient;
+
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.apigateway.exceptions.UnprocessableContentException;
+import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
+import org.zalando.problem.Problem;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.LocalDate;
@@ -57,26 +82,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
-import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.unit.nva.commons.pagination.PaginatedSearchResult;
-import no.unit.nva.stubs.FakeContext;
-import no.unit.nva.stubs.WiremockHttpClient;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.apigateway.exceptions.UnprocessableContentException;
-import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
-import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest {
@@ -420,13 +425,6 @@ class SearchJournalByQueryHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
-    }
-
-    private static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType)
-        throws JsonProcessingException {
-        return new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                   .withQueryParameters(queryParameters).build();
     }
 
     private static Stream<String> invalidYearsProvider() {
