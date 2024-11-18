@@ -124,55 +124,56 @@ Resources:
         - AttributeName: SK0
           KeyType: RANGE
 
-  LambdaRole:
-    Type: AWS::IAM::Role
+  WriteLogPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      AssumeRolePolicyDocument:
+      PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Principal:
-              Service: [ lambda.amazonaws.com ]
-            Action: [ 'sts:AssumeRole' ]
-      Policies:
-        - PolicyName: writeLog
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
-        - PolicyName: readSecrets
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource: '*'
-        - PolicyName: readS3
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource:
-                  - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
-        - PolicyName: readDynamoDb
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:*
-                Resource:
-                  - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/channel-register-cache-${AWS::StackName}
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
 
-  LoadCacheHandlerDynamoDbTableManagedPolicy:
+  ReadSecretsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource: '*'
+
+  S3GetObjectCacheBucketPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - !Sub "arn:aws:s3:::${ChannelRegisterCacheBucketName}-${AWS::AccountId}/*"
+
+  GetItemDynamoDbPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:
+                  - dynamodb:GetItem
+            Resource:
+              - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/channel-register-cache-${AWS::StackName}
+
+  BatchWriteItemDynamoDbCacheTableManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
@@ -190,7 +191,8 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.cache.LoadCacheHandler::handleRequest
       Timeout: 900
       Policies:
-        - !GetAtt LoadCacheHandlerDynamoDbTableManagedPolicy.PolicyArn
+        - !GetAtt BatchWriteItemDynamoDbCacheTableManagedPolicy.PolicyArn
+        - !GetAtt S3GetObjectCacheBucketPolicy.PolicyArn
       ReservedConcurrentExecutions: 1
       Environment:
         Variables:
@@ -202,7 +204,10 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -232,7 +237,10 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -262,7 +270,10 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -292,7 +303,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
@@ -321,7 +334,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -344,7 +359,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchPublisherByQueryEvent:
@@ -365,7 +382,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -388,7 +407,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchSeriesByQueryEvent:
@@ -409,7 +430,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
