@@ -284,8 +284,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
-      Policies:
-        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
@@ -339,8 +337,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
-      Policies:
-        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchPublisherByQueryEvent:
@@ -386,8 +382,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
-      Policies:
-        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchSeriesByQueryEvent:
