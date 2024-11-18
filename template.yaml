@@ -146,7 +146,7 @@ Resources:
           - Effect: Allow
             Action:
               - secretsmanager:GetSecretValue
-            Resource: 'arn:aws:secretsmanager:region:account-id:secret:DataportenChannelRegistryClientCredentials'
+            Resource: 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DataportenChannelRegistryClientCredentials'
 
   S3GetObjectCacheBucketPolicy:
     Type: AWS::IAM::ManagedPolicy
