@@ -45,6 +45,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
     private static final String SHOULD_USE_CACHE = "SHOULD_USE_CACHE";
     private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
+    public static final String CHANNEL_MOVED = "%s moved";
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
@@ -77,7 +78,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
             return publicationChannelClient.getChannel(type, identifier, year);
         } catch (PublicationChannelMovedException movedException) {
             throw new PublicationChannelMovedException(
-                "%s moved".formatted(type.name()),
+                CHANNEL_MOVED.formatted(type.name()),
                 constructNewLocation(getPathElement(type), movedException.getLocation(), year));
         }
     }

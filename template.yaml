@@ -146,7 +146,7 @@ Resources:
           - Effect: Allow
             Action:
               - secretsmanager:GetSecretValue
-            Resource: '*'
+            Resource: 'arn:aws:secretsmanager:region:account-id:secret:DataportenChannelRegistryClientCredentials'
 
   S3GetObjectCacheBucketPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -205,7 +205,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
@@ -238,7 +237,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
@@ -271,7 +269,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
@@ -335,6 +332,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
@@ -383,6 +381,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.publisher.CreatePublisherHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
@@ -431,6 +430,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
