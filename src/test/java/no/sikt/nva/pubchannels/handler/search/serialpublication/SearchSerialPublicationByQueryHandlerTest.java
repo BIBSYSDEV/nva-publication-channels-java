@@ -1,9 +1,10 @@
 package no.sikt.nva.pubchannels.handler.search.serialpublication;
 
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.SERIAL_PUBLICATION_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.SERIAL_PUBLICATION_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.TOO_LONG_INPUT_STRING;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -80,6 +81,44 @@ class SearchSerialPublicationByQueryHandlerTest {
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), is(containsString("Year")));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenMissingQuery() throws IOException {
+        var input =
+                constructRequest(Map.of("year", String.valueOf(randomYear())), MediaType.ANY_TYPE);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(containsString("query")));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
+        var input =
+                constructRequest(
+                        Map.of(
+                                "year",
+                                String.valueOf(randomYear()),
+                                "query",
+                                TOO_LONG_INPUT_STRING),
+                        MediaType.ANY_TYPE);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(containsString("Query")));
     }
 
     @Test

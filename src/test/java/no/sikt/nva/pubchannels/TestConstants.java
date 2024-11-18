@@ -1,15 +1,6 @@
 package no.sikt.nva.pubchannels;
 
-import com.google.common.net.MediaType;
-
-import nva.commons.apigateway.MediaTypes;
-
-import org.junit.jupiter.api.Named;
-
-import java.util.stream.Stream;
-
-public class TestCommons {
-
+public final class TestConstants {
     public static final String API_DOMAIN = "localhost";
     public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
     public static final String NAME_QUERY_PARAM = "name";
@@ -28,15 +19,10 @@ public class TestCommons {
     public static final String SERIES_PATH = "series";
     public static final String JOURNAL_PATH = "journal";
     public static final String SERIAL_PUBLICATION_PATH = "serial-publication";
-
-    private TestCommons() {
-    }
-
-    public static Stream<Named<MediaType>> mediaTypeProvider() {
-        return Stream.of(
-            Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
-            Named.of("ANY", MediaType.ANY_TYPE),
-            Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD)
-        );
-    }
+    public static final String TOO_LONG_INPUT_STRING =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                    + "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, "
+                    + "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor "
+                    + "in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat "
+                    + "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 }

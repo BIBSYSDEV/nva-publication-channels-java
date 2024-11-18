@@ -6,8 +6,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -31,8 +31,11 @@ import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 
+import nva.commons.apigateway.MediaTypes;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
+
+import org.junit.jupiter.api.Named;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -218,6 +221,13 @@ public class TestUtils {
 
     public static String currentYear() {
         return String.valueOf(LocalDate.now().getYear());
+    }
+
+    public static Stream<Named<MediaType>> mediaTypeProvider() {
+        return Stream.of(
+                Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
+                Named.of("ANY", MediaType.ANY_TYPE),
+                Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
     }
 
     private static String generateChannelRegistryPublisherBody(Integer year, String name) {

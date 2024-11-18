@@ -5,19 +5,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.CHANNEL_REGISTRY_PAGE_NO_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET;
-import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_OFFSET_INT;
-import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE;
-import static no.sikt.nva.pubchannels.TestCommons.DEFAULT_SIZE_INT;
-import static no.sikt.nva.pubchannels.TestCommons.ISSN_QUERY_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.NAME_QUERY_PARAM;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
-import static no.sikt.nva.pubchannels.TestCommons.YEAR_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
+import static no.sikt.nva.pubchannels.TestConstants.ISSN_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.TOO_LONG_INPUT_STRING;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
@@ -110,9 +111,9 @@ class SearchJournalByQueryHandlerTest {
 
     @ParameterizedTest
     @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
-        throws IOException, UnprocessableContentException {
+            throws IOException, UnprocessableContentException {
         var year = randomYear();
         var issn = randomIssn();
         final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
@@ -345,28 +346,14 @@ class SearchJournalByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
-        var input = constructRequest(Map.of("year", String.valueOf(randomYear()),
-                                            "query", "Lorem Ipsum "
-                                                     + "is simply dummy text of"
-                                                     + " the "
-                                                     + "printing and "
-                                                     + "typesetting industry."
-                                                     + " Lorem Ipsum has been "
-                                                     + "the "
-                                                     + "industry's standard "
-                                                     + "dummy text "
-                                                     + "ever since the 1500s, "
-                                                     + "when an "
-                                                     + "unknown printer took a "
-                                                     + "galley "
-                                                     + "of type and scrambled "
-                                                     + "it to make a"
-                                                     + " type specimen book. It"
-                                                     + " has "
-                                                     + "survived not only five "
-                                                     + "centuries,"
-                                                     + " but also the l"),
-                                     MediaType.ANY_TYPE);
+        var input =
+                constructRequest(
+                        Map.of(
+                                "year",
+                                String.valueOf(randomYear()),
+                                "query",
+                                TOO_LONG_INPUT_STRING),
+                        MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 

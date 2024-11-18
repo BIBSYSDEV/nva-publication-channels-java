@@ -2,12 +2,12 @@ package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 
@@ -94,7 +94,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
 
     @ParameterizedTest
     @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         final var expectedMediaType =
             mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();

@@ -1,12 +1,12 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
-import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
@@ -131,7 +131,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
 
     @ParameterizedTest
     @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
