@@ -17,9 +17,9 @@ public enum ChannelType {
     PUBLISHER("findpublisher", ChannelRegistryPublisher.class, ChannelRegistrySearchPublisherResponse.class),
     SERIES("findseries", ChannelRegistrySeries.class, ChannelRegistrySearchSeriesResponse.class),
     SERIAL_PUBLICATION(
-            "findjournalserie",
-            ChannelRegistrySerialPublication.class,
-            ChannelRegistrySearchSerialPublicationResponse.class);
+        "findjournalserie",
+        ChannelRegistrySerialPublication.class,
+        ChannelRegistrySearchSerialPublicationResponse.class);
 
     public final String pathElement;
     public final Class<? extends ThirdPartyPublicationChannel> fetchResponseClass;

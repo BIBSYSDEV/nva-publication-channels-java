@@ -2,15 +2,12 @@ package no.sikt.nva.pubchannels.handler.create.journal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.net.URI;
+import java.util.Objects;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.model.Contexts;
-
 import nva.commons.core.JacocoGenerated;
-
-import java.net.URI;
-import java.util.Objects;
 
 public class CreateJournalResponse {
 

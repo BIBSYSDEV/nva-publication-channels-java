@@ -1,10 +1,10 @@
 package no.sikt.nva.pubchannels.channelregistry.model;
 
 import static java.util.Objects.nonNull;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import java.net.URI;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.Immutable;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
@@ -12,19 +12,16 @@ import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.unit.nva.commons.json.JsonSerializable;
 
-import java.net.URI;
-import java.util.Optional;
-
 @JsonSerialize
 public record ChannelRegistrySerialPublication(
-        @JsonProperty(IDENTIFIER_FIELD) String identifier,
-        @JsonProperty(NAME_FIELD) String name,
-        @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-        @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-        @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
-        @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-        @JsonProperty(DISCONTINUED) String discontinued)
-        implements Immutable, ThirdPartySerialPublication, JsonSerializable {
+    @JsonProperty(IDENTIFIER_FIELD) String identifier,
+    @JsonProperty(NAME_FIELD) String name,
+    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+    @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
+    @JsonProperty(HOMEPAGE_FIELD) URI homepage,
+    @JsonProperty(DISCONTINUED) String discontinued)
+    implements Immutable, ThirdPartySerialPublication, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
     private static final String NAME_FIELD = "originalTitle";
@@ -38,9 +35,9 @@ public record ChannelRegistrySerialPublication(
     @Override
     public String getYear() {
         return Optional.ofNullable(channelRegistryLevel())
-                .map(ChannelRegistryLevel::year)
-                .map(String::valueOf)
-                .orElse(null);
+                       .map(ChannelRegistryLevel::year)
+                       .map(String::valueOf)
+                       .orElse(null);
     }
 
     @Override
@@ -55,7 +52,7 @@ public record ChannelRegistrySerialPublication(
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
         return Optional.ofNullable(channelRegistryLevel())
-                .map(level -> mapper.map(level.level()))
-                .orElse(ScientificValue.UNASSIGNED);
+                       .map(level -> mapper.map(level.level()))
+                       .orElse(ScientificValue.UNASSIGNED);
     }
 }

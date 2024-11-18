@@ -4,39 +4,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
-
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
-
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
-import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-
-import nva.commons.apigateway.MediaTypes;
-import nva.commons.core.SingletonCollector;
-import nva.commons.core.paths.UriWrapper;
-
-import org.junit.jupiter.api.Named;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -52,6 +36,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
+import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.apigateway.MediaTypes;
+import nva.commons.core.SingletonCollector;
+import nva.commons.core.paths.UriWrapper;
+import org.junit.jupiter.api.Named;
 
 public class TestUtils {
 
@@ -109,25 +101,25 @@ public class TestUtils {
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year
-                   ))
+                                             ))
                    .build();
     }
 
     public static InputStream constructRequest(
-            Map<String, String> queryParameters, MediaType mediaType)
-            throws JsonProcessingException {
+        Map<String, String> queryParameters, MediaType mediaType)
+        throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper)
-                .withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                .withQueryParameters(queryParameters)
-                .build();
+                   .withHeaders(Map.of(ACCEPT, mediaType.toString()))
+                   .withQueryParameters(queryParameters)
+                   .build();
     }
 
     public static String scientificValueToLevel(ScientificValue scientificValue) {
         return ScientificValueMapper.VALUES.entrySet()
-                   .stream()
-                   .filter(item -> item.getValue().equals(scientificValue))
-                   .map(Map.Entry::getKey)
-                   .collect(SingletonCollector.collectOrElse(null));
+                                           .stream()
+                                           .filter(item -> item.getValue().equals(scientificValue))
+                                           .map(Map.Entry::getKey)
+                                           .collect(SingletonCollector.collectOrElse(null));
     }
 
     public static String validIsbnPrefix() {
@@ -136,14 +128,14 @@ public class TestUtils {
 
     public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                .mapToObj(i -> generateChannelRegistryJournalBody(year, name))
-                .toList();
+                        .mapToObj(i -> generateChannelRegistryJournalBody(year, name))
+                        .toList();
     }
 
     public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
         return IntStream.range(0, maxNr)
-                .mapToObj(i -> generateChannelRegistryPublisherBody(year, name))
-                .toList();
+                        .mapToObj(i -> generateChannelRegistryPublisherBody(year, name))
+                        .toList();
     }
 
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
@@ -194,11 +186,11 @@ public class TestUtils {
 
     public static String getChannelRegistrySearchResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize =
-                results.stream()
-                        .skip(offset)
-                        .limit(size)
-                        .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
-                        .toList();
+            results.stream()
+                   .skip(offset)
+                   .limit(size)
+                   .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
+                   .toList();
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildChannelRegistrySearchResponse(results, entityResult);
     }
@@ -225,30 +217,30 @@ public class TestUtils {
 
     public static Stream<Named<MediaType>> mediaTypeProvider() {
         return Stream.of(
-                Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
-                Named.of("ANY", MediaType.ANY_TYPE),
-                Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
+            Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
+            Named.of("ANY", MediaType.ANY_TYPE),
+            Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
     }
 
     private static String generateChannelRegistryPublisherBody(Integer year, String name) {
         return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
-                   .asChannelRegistryPublisherBody();
+                                                                  .asChannelRegistryPublisherBody();
     }
 
     private static String generateChannelRegistryJournalBody(Integer year, String name) {
         return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
-                   .asChannelRegistryJournalBody();
+                                                                  .asChannelRegistryJournalBody();
     }
 
     private static Map<String, String> getQueryParameters(URI uri) {
         return uri.getQuery() == null
                    ? Map.of()
                    : Arrays.stream(uri.getQuery().split("&"))
-                         .map(param -> param.split("="))
-                         .collect(
-                             Collectors.toMap(
-                                 param -> param[0],
-                                 param -> param.length > 1 ? param[1] : ""));
+                           .map(param -> param.split("="))
+                           .collect(
+                               Collectors.toMap(
+                                   param -> param[0],
+                                   param -> param.length > 1 ? param[1] : ""));
     }
 
     private static String buildChannelRegistrySearchResponse(List<String> results, ObjectNode entityResult) {
@@ -265,5 +257,4 @@ public class TestUtils {
         entityResult.set(PAGERESULT_FIELD, arrayNode);
         return entityResult;
     }
-
 }

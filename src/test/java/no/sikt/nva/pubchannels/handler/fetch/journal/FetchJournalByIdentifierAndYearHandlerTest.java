@@ -1,5 +1,7 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -10,7 +12,6 @@ import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -20,39 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
-
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
-import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.unit.nva.stubs.FakeContext;
-import no.unit.nva.stubs.WiremockHttpClient;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
-import org.zalando.problem.Problem;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +36,26 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.unit.nva.stubs.FakeContext;
+import no.unit.nva.stubs.WiremockHttpClient;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
+import nva.commons.logutils.LogUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
@@ -87,7 +80,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
     }
@@ -246,7 +241,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -276,7 +273,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
 
         var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
@@ -344,8 +343,8 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild("findjournal", newIdentifier, year)
-                                             .toString();
+                                                   .addChild("findjournal", newIdentifier, year)
+                                                   .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
@@ -360,7 +359,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
 
         var identifier = super.getCachedJournalSeriesIdentifier();
         var year = super.getCachedJournalSeriesYear();
@@ -384,7 +385,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
 
         var identifier = super.getCachedJournalSeriesIdentifier();
         var year = super.getCachedJournalSeriesYear();
@@ -408,7 +411,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, super.getS3Client());
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           super.getS3Client());
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -428,18 +433,18 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
 
     private static String constructExpectedLocation(String newIdentifier, String year) {
         return UriWrapper.fromHost(API_DOMAIN)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
-                   .toString();
+                         .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
+                         .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
         throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                   .withPathParameters(Map.of("identifier",
-                                              identifier,
-                                              "year",
-                                              year))
-                   .build();
+                                                               .withPathParameters(Map.of("identifier",
+                                                                                          identifier,
+                                                                                          "year",
+                                                                                          year))
+                                                               .build();
     }
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {

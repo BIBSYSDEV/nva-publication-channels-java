@@ -1,11 +1,10 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
-
 import static nva.commons.core.attempt.Try.attempt;
-
 import com.amazonaws.services.lambda.runtime.Context;
-
+import java.net.HttpURLConnection;
+import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvCacheClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -13,20 +12,14 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
-
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import software.amazon.awssdk.services.s3.S3Client;
-
-import java.net.HttpURLConnection;
-import java.util.function.Function;
 
 public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SeriesDto> {
 
@@ -52,7 +45,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
         var requestYear = request.getYear();
         var series = shouldUseCache ? fetchSeriesFromCache(request) : fetchSeriesOrFetchFromCache(request);
         return SeriesDto.create(
-                publisherIdBaseUri, (ThirdPartySerialPublication) series, requestYear);
+            publisherIdBaseUri, (ThirdPartySerialPublication) series, requestYear);
     }
 
     private static Function<Failure<ThirdPartyPublicationChannel>, ApiGatewayException> throwOriginalException(
@@ -82,7 +75,8 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     private ThirdPartyPublicationChannel fetchSeriesFromCache(FetchByIdAndYearRequest request)
         throws ApiGatewayException {
         LOGGER.info("Fetching series from cache: {}", request.getIdentifier());
-        return ChannelRegistryCsvCacheClient.load(s3Client).getChannel(SERIES, request.getIdentifier(), request.getYear());
+        return ChannelRegistryCsvCacheClient.load(s3Client)
+                                            .getChannel(SERIES, request.getIdentifier(), request.getYear());
     }
 
     private ThirdPartyPublicationChannel fetchSeries(FetchByIdAndYearRequest request, String requestYear)

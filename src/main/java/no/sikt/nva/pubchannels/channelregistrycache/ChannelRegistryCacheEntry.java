@@ -1,11 +1,11 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static nva.commons.core.attempt.Try.attempt;
-
 import static java.util.Objects.nonNull;
-
+import static nva.commons.core.attempt.Try.attempt;
 import com.opencsv.bean.CsvBindByName;
-
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -15,12 +15,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.unit.nva.commons.json.JsonUtils;
-
 import nva.commons.core.JacocoGenerated;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 
 public class ChannelRegistryCacheEntry {
 
@@ -137,10 +132,10 @@ public class ChannelRegistryCacheEntry {
 
     private String getLevelForYear(String year) {
         return getLevelHistory().stream()
-                   .filter(levelForYear -> levelForYear.year().equals(year))
-                   .map(LevelForYear::level)
-                   .findFirst()
-                   .orElse(null);
+                                .filter(levelForYear -> levelForYear.year().equals(year))
+                                .map(LevelForYear::level)
+                                .findFirst()
+                                .orElse(null);
     }
 
     private String toArrayString(String value) {

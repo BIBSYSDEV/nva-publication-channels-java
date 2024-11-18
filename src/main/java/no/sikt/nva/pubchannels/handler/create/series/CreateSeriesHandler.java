@@ -4,23 +4,19 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalIssn;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
-
 import com.amazonaws.services.lambda.runtime.Context;
-
+import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
-
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-
-import java.util.Map;
 
 public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, CreateSeriesResponse> {
 
@@ -49,9 +45,9 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
         var createdUri = constructIdUri(SERIES_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreateSeriesResponse.create(
-                createdUri,
-                (ThirdPartySerialPublication)
-                        publicationChannelClient.getChannel(SERIES, response.pid(), getYear()));
+            createdUri,
+            (ThirdPartySerialPublication)
+                publicationChannelClient.getChannel(SERIES, response.pid(), getYear()));
     }
 
     private static ChannelRegistryCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {
