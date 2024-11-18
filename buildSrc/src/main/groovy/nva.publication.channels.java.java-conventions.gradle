@@ -18,13 +18,10 @@ dependencies {
     implementation libs.commons.validator
     implementation libs.open.csv
     implementation libs.aws.sdk2.s3
-    implementation libs.aws.sdk2.dynamodb
     implementation libs.aws.sdk2.dynamodb.enhanced
+    implementation libs.guava
 
-    implementation(libs.dynamodDbLocal) {
-        exclude group: 'com.amazonaws', module: 'aws-java-sdk-dynamodb'
-        exclude group: 'com.amazonaws', module: 'aws-java-sdk-core'
-    }
+    testImplementation libs.dynamodDbLocal
 }
 
 sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility

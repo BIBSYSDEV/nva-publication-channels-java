@@ -6,7 +6,6 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
-import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;

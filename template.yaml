@@ -187,7 +187,7 @@ Resources:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 
-  FetchJournalByIdentifierAndYearFunction:
+  FetchJournalByIdentifierAndYearFunctionV2:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
@@ -214,11 +214,11 @@ Resources:
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunction.Arn
+      FunctionName: !GetAtt FetchJournalByIdentifierAndYearFunctionV2.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
-  FetchSeriesByIdentifierAndYearFunction:
+  FetchSeriesByIdentifierAndYearFunctionV2:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
@@ -245,11 +245,11 @@ Resources:
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunction.Arn
+      FunctionName: !GetAtt FetchSeriesByIdentifierAndYearFunctionV2.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
-  FetchPublisherByIdentifierAndYearFunction:
+  FetchPublisherByIdentifierAndYearFunctionV2:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
@@ -276,7 +276,7 @@ Resources:
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunction.Arn
+      FunctionName: !GetAtt FetchPublisherByIdentifierAndYearFunctionV2.Arn
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
