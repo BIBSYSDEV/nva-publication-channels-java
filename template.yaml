@@ -207,7 +207,7 @@ Resources:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -240,7 +240,7 @@ Resources:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -273,7 +273,7 @@ Resources:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
         - !GetAtt WriteLogPolicy.PolicyArn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60

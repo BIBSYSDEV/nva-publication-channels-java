@@ -37,14 +37,14 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
-    public static final String YEAR = "Year";
-    public static final String PID = "Pid";
-    public static final String JOURNAL_PATH_PARAM = "journal";
-    public static final String PUBLISHER_PATH_PARAM = "publisher";
-    public static final String SERIES_PATH_PARAM = "series";
-    public static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
-    public static final String SHOULD_USE_CACHE = "SHOULD_USE_CACHE";
-    public static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
+    private static final String YEAR = "Year";
+    private static final String PID = "Pid";
+    private static final String JOURNAL_PATH_PARAM = "journal";
+    private static final String PUBLISHER_PATH_PARAM = "publisher";
+    private static final String SERIES_PATH_PARAM = "series";
+    private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
+    private static final String SHOULD_USE_CACHE = "SHOULD_USE_CACHE";
+    private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
