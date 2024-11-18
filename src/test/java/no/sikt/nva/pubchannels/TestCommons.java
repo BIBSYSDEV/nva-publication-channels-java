@@ -1,9 +1,12 @@
 package no.sikt.nva.pubchannels;
 
 import com.google.common.net.MediaType;
-import java.util.stream.Stream;
+
 import nva.commons.apigateway.MediaTypes;
+
 import org.junit.jupiter.api.Named;
+
+import java.util.stream.Stream;
 
 public class TestCommons {
 
@@ -24,6 +27,7 @@ public class TestCommons {
     public static final String PUBLISHER_PATH = "publisher";
     public static final String SERIES_PATH = "series";
     public static final String JOURNAL_PATH = "journal";
+    public static final String SERIAL_PUBLICATION_PATH = "serial-publication";
 
     private TestCommons() {
     }
