@@ -124,19 +124,6 @@ Resources:
         - AttributeName: SK0
           KeyType: RANGE
 
-  WriteLogPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
-
   ReadSecretsPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -146,7 +133,8 @@ Resources:
           - Effect: Allow
             Action:
               - secretsmanager:GetSecretValue
-            Resource: 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DataportenChannelRegistryClientCredentials'
+            Resource:
+              - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DataportenChannelRegistryClientCredentials'
 
   S3GetObjectCacheBucketPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -205,7 +193,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -237,7 +224,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -269,7 +255,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -301,7 +286,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
@@ -333,7 +317,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -358,7 +341,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchPublisherByQueryEvent:
@@ -382,7 +364,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -407,7 +388,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       Events:
         SearchSeriesByQueryEvent:
@@ -431,7 +411,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
