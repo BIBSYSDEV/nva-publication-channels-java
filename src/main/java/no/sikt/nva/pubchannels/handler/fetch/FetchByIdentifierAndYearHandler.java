@@ -37,6 +37,14 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
     private static final String YEAR_PATH_PARAM_NAME = "year";
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
+    public static final String YEAR = "Year";
+    public static final String PID = "Pid";
+    public static final String JOURNAL_PATH_PARAM = "journal";
+    public static final String PUBLISHER_PATH_PARAM = "publisher";
+    public static final String SERIES_PATH_PARAM = "series";
+    public static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
+    public static final String SHOULD_USE_CACHE = "SHOULD_USE_CACHE";
+    public static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
@@ -56,16 +64,16 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected RequestInfo validate(RequestInfo requestInfo) {
-        validateUuid(requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim(), "Pid");
+        validateUuid(requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim(), PID);
         validateYear(requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim(), Year.of(Year.MIN_VALUE),
-                     "Year");
+                     YEAR);
         return requestInfo;
     }
 
     protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(ChannelType type, String identifier, String year)
         throws ApiGatewayException{
         try {
-            LOGGER.info("Fetching {} from channel register: {}", type.name(), identifier);
+            LOGGER.info(FETCHING_FROM_CHANNEL_REGISTER_MESSAGE, type.name(), identifier);
             return publicationChannelClient.getChannel(type, identifier, year);
         } catch (PublicationChannelMovedException movedException) {
             throw new PublicationChannelMovedException(
@@ -75,14 +83,14 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected boolean shouldUseCache() {
-        return Boolean.parseBoolean(environment.readEnv("SHOULD_USE_CACHE"));
+        return Boolean.parseBoolean(environment.readEnv(SHOULD_USE_CACHE));
     }
 
     private static String getPathElement(ChannelType type) {
         return switch (type) {
-            case JOURNAL -> "journal";
-            case PUBLISHER -> "publisher";
-            case SERIES -> "series";
+            case JOURNAL -> JOURNAL_PATH_PARAM;
+            case PUBLISHER -> PUBLISHER_PATH_PARAM;
+            case SERIES -> SERIES_PATH_PARAM;
         };
     }
 
@@ -118,7 +126,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
 
     protected ThirdPartyPublicationChannel fetchChannelFromCache(ChannelType type, String identifier, String year)
         throws ApiGatewayException {
-        LOGGER.info("Fetching {} from cache: {}", type.name(), identifier);
+        LOGGER.info(FETCHING_FROM_CACHE_MESSAGE, type.name(), identifier);
         return cacheService.getChannel(type, identifier, year);
     }
 
