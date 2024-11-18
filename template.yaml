@@ -172,12 +172,25 @@ Resources:
                 Resource:
                   - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/channel-register-cache-${AWS::StackName}
 
+  LoadCacheHandlerDynamoDbTableManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:BatchWriteItem
+            Resource:
+              - !GetAtt ChannelRegisterCacheTable.Arn
+
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.cache.LoadCacheHandler::handleRequest
       Timeout: 900
-      Role: !GetAtt LambdaRole.Arn
+      Policies:
+        - !GetAtt LoadCacheHandlerDynamoDbTableManagedPolicy.PolicyArn
       ReservedConcurrentExecutions: 1
       Environment:
         Variables:
@@ -190,7 +203,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      #      AutoPublishAlias: live
+      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -220,7 +233,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      #      AutoPublishAlias: live
+      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -250,7 +263,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      #      AutoPublishAlias: live
+      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
