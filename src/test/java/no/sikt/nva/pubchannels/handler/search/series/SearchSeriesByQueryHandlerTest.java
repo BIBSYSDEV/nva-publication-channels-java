@@ -50,7 +50,7 @@ import com.google.common.net.MediaType;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -77,7 +77,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @WireMockTest(httpsEnabled = true)
@@ -89,30 +88,6 @@ class SearchSeriesByQueryHandlerTest {
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private SearchSeriesByQueryHandler handlerUnderTest;
     private ByteArrayOutputStream output;
-
-    public static PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultNameSearch(List<String> results,
-                                                                                              String year,
-                                                                                              String name,
-                                                                                              int queryOffset,
-                                                                                              int querySize)
-        throws UnprocessableContentException {
-        var expectedHits = mapToSeriesResults(results, year);
-        var expectedParams = new HashMap<String, String>();
-        expectedParams.put("query", name);
-        if (year != null) {
-            expectedParams.put("year", year);
-        }
-
-        return PaginatedSearchResult.create(constructPublicationChannelUri(SERIES_PATH, null),
-                                            queryOffset,
-                                            querySize,
-                                            expectedHits.size(),
-                                            expectedHits.stream()
-                                                .skip(queryOffset)
-                                                .limit(querySize)
-                                                .collect(Collectors.toList()),
-                                            expectedParams);
-    }
 
     @BeforeEach
     void setup(WireMockRuntimeInfo runtimeInfo) {
@@ -439,21 +414,45 @@ class SearchSeriesByQueryHandlerTest {
                    is(equalTo("Unexpected response from upstream!")));
     }
 
+    private static PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultNameSearch(
+            List<String> results, String year, String name, int queryOffset, int querySize)
+            throws UnprocessableContentException {
+        var expectedHits = mapToSeriesResults(results, year);
+        var expectedParams = new HashMap<String, String>();
+        expectedParams.put("query", name);
+        if (year != null) {
+            expectedParams.put("year", year);
+        }
+
+        return PaginatedSearchResult.create(
+                constructPublicationChannelUri(SERIES_PATH, null),
+                queryOffset,
+                querySize,
+                expectedHits.size(),
+                expectedHits.stream().skip(queryOffset).limit(querySize).toList(),
+                expectedParams);
+    }
+
     private static Stream<String> invalidYearsProvider() {
         String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
         return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     private static List<SeriesDto> mapToSeriesResults(List<String> results, String requestedYear) {
-        return results
-                   .stream()
-                   .map(result -> attempt(
-                       () -> objectMapper.readValue(result, ChannelRegistrySeries.class)).orElseThrow())
-                   .map(series -> toResult(series, requestedYear))
-                   .collect(Collectors.toList());
+        return results.stream()
+                .map(
+                        result ->
+                                attempt(
+                                                () ->
+                                                        objectMapper.readValue(
+                                                                result,
+                                                                ChannelRegistrySeries.class))
+                                        .orElseThrow())
+                .map(series -> toResult(series, requestedYear))
+                .toList();
     }
 
-    private static SeriesDto toResult(ThirdPartySeries series, String requestedYear) {
+    private static SeriesDto toResult(ThirdPartySerialPublication series, String requestedYear) {
         return SeriesDto.create(constructPublicationChannelUri(SERIES_PATH, null), series, requestedYear);
     }
 

@@ -52,7 +52,7 @@ import com.google.common.net.MediaType;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -80,7 +80,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @WireMockTest(httpsEnabled = true)
@@ -446,27 +445,31 @@ class SearchJournalByQueryHandlerTest {
             expectedParams.put("year", year);
         }
 
-        return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH, null),
-                                            queryOffset,
-                                            querySize,
-                                            expectedHits.size(),
-                                            expectedHits.stream()
-                                                .skip(queryOffset)
-                                                .limit(querySize)
-                                                .collect(Collectors.toList()),
-                                            expectedParams);
+        return PaginatedSearchResult.create(
+                constructPublicationChannelUri(JOURNAL_PATH, null),
+                queryOffset,
+                querySize,
+                expectedHits.size(),
+                expectedHits.stream().skip(queryOffset).limit(querySize).toList(),
+                expectedParams);
     }
 
     private static List<JournalDto> mapToJournalResults(List<String> channelRegistryResults, String requestedYear) {
-        return channelRegistryResults
-                   .stream()
-                   .map(result -> attempt(
-                       () -> objectMapper.readValue(result, ChannelRegistryJournal.class)).orElseThrow())
-                   .map(journal -> toJournalResult(journal, requestedYear))
-                   .collect(Collectors.toList());
+        return channelRegistryResults.stream()
+                .map(
+                        result ->
+                                attempt(
+                                                () ->
+                                                        objectMapper.readValue(
+                                                                result,
+                                                                ChannelRegistryJournal.class))
+                                        .orElseThrow())
+                .map(journal -> toJournalResult(journal, requestedYear))
+                .toList();
     }
 
-    private static JournalDto toJournalResult(ThirdPartyJournal journal, String requestedYear) {
+    private static JournalDto toJournalResult(
+            ThirdPartySerialPublication journal, String requestedYear) {
         return JournalDto.create(constructPublicationChannelUri(JOURNAL_PATH, null), journal, requestedYear);
     }
 

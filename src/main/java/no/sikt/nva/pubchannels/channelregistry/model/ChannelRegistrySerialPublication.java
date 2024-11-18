@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @JsonSerialize
-public record ChannelRegistrySeries(
+public record ChannelRegistrySerialPublication(
         @JsonProperty(IDENTIFIER_FIELD) String identifier,
         @JsonProperty(NAME_FIELD) String name,
         @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
@@ -33,13 +33,14 @@ public record ChannelRegistrySeries(
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
     private static final String DISCONTINUED = "ceased";
+    private static final String TYPE = "type";
 
     @Override
     public String getYear() {
         return Optional.ofNullable(channelRegistryLevel())
-                   .map(ChannelRegistryLevel::year)
-                   .map(String::valueOf)
-                   .orElse(null);
+                .map(ChannelRegistryLevel::year)
+                .map(String::valueOf)
+                .orElse(null);
     }
 
     @Override
@@ -54,7 +55,7 @@ public record ChannelRegistrySeries(
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
         return Optional.ofNullable(channelRegistryLevel())
-                   .map(level -> mapper.map(level.level()))
-                   .orElse(ScientificValue.UNASSIGNED);
+                .map(level -> mapper.map(level.level()))
+                .orElse(ScientificValue.UNASSIGNED);
     }
 }

@@ -1,22 +1,26 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static java.util.Objects.nonNull;
 import static nva.commons.core.attempt.Try.attempt;
+
+import static java.util.Objects.nonNull;
+
 import com.opencsv.bean.CsvBindByName;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
+
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.unit.nva.commons.json.JsonUtils;
+
 import nva.commons.core.JacocoGenerated;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 
 public class ChannelRegistryCacheEntry {
 
@@ -102,6 +106,7 @@ public class ChannelRegistryCacheEntry {
             case JOURNAL -> toJournal(year);
             case SERIES -> toSeries(year);
             case PUBLISHER -> toPublisher(year);
+            case SERIAL_PUBLICATION -> null; // FIXME: Not implemented
         };
     }
 
@@ -110,12 +115,12 @@ public class ChannelRegistryCacheEntry {
                                             getUri(), getCeased());
     }
 
-    public ThirdPartySeries toSeries(String year) {
+    public ThirdPartySerialPublication toSeries(String year) {
         return new ChannelRegistrySeries(getPid(), getOriginalTitle(), getOnlineIssn(), getPrintIssn(),
                                          getChannelRegistryLevel(year), getUri(), getCeased());
     }
 
-    public ThirdPartyJournal toJournal(String year) {
+    public ThirdPartySerialPublication toJournal(String year) {
         return new ChannelRegistryJournal(getPid(), getOriginalTitle(), getOnlineIssn(), getPrintIssn(),
                                           getChannelRegistryLevel(year), getUri(), getCeased());
     }
