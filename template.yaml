@@ -152,7 +152,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Policies:
         - !GetAtt S3ManagedPolicy.PolicyArn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -167,7 +167,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -183,7 +183,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Policies:
         - !Ref S3ManagedPolicy
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -198,7 +198,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -214,7 +214,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Policies:
         - !Ref S3ManagedPolicy
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -229,7 +229,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
