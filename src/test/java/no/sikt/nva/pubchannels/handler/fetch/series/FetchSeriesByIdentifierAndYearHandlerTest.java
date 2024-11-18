@@ -356,7 +356,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     @Test
-    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
+    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentVariableIsTrue() throws IOException {
         var identifier = SERIES_IDENTIFIER_FROM_CACHE;
         var year = SERIES_YEAR_FROM_CACHE;
 

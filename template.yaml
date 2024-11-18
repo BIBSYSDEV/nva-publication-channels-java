@@ -190,7 +190,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -205,7 +205,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchJournalByIdentifierAndYearFunctionPermission:
@@ -220,7 +220,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -235,7 +235,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
@@ -250,7 +250,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
-      AutoPublishAlias: live
+      #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Timeout: 60
@@ -265,7 +265,7 @@ Resources:
         Variables:
           CHANNEL_REGISTER_CACHE_BUCKET: !Ref ChannelRegisterCacheBucket
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
-          SHOULD_USE_CACHE: "true"
+          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
