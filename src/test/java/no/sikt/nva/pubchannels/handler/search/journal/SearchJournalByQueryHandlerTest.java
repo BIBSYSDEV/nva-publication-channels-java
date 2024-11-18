@@ -75,12 +75,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest {
@@ -314,7 +312,7 @@ class SearchJournalByQueryHandlerTest {
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenYearIsInvalid(String year) throws IOException {
         var queryParameters = Map.of("year", year, "query", "asd");
         var input = constructRequest(queryParameters, MediaType.ANY_TYPE);
@@ -424,11 +422,6 @@ class SearchJournalByQueryHandlerTest {
 
         assertThat(problem.getDetail(),
                    is(equalTo("Unexpected response from upstream!")));
-    }
-
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     private static PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchJournalResultNameSearch(

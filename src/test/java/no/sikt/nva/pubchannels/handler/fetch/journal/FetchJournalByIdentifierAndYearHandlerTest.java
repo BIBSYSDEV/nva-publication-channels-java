@@ -1,7 +1,5 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -12,6 +10,7 @@ import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
 import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -21,11 +20,39 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
+
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.TestUtils;
+import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.unit.nva.stubs.FakeContext;
+import no.unit.nva.stubs.WiremockHttpClient;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
+import nva.commons.logutils.LogUtils;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+import org.zalando.problem.Problem;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,27 +63,6 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
-import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.unit.nva.stubs.FakeContext;
-import no.unit.nva.stubs.WiremockHttpClient;
-import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
-import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
@@ -202,7 +208,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString());
@@ -438,11 +444,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSet
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
         return constructRequest(year, identifier, MediaType.JSON_UTF_8);
-    }
-
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     private String randomYear() {

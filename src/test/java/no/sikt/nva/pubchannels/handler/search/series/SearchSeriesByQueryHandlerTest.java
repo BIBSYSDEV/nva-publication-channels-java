@@ -72,12 +72,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @WireMockTest(httpsEnabled = true)
 class SearchSeriesByQueryHandlerTest {
@@ -304,7 +302,7 @@ class SearchSeriesByQueryHandlerTest {
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenYearIsInvalid(String year) throws IOException {
         var queryParameters = Map.of("year", year, "query", "asd");
         var input = constructRequest(queryParameters, MediaType.ANY_TYPE);
@@ -433,10 +431,7 @@ class SearchSeriesByQueryHandlerTest {
                 expectedParams);
     }
 
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
-    }
+
 
     private static List<SeriesDto> mapToSeriesResults(List<String> results, String requestedYear) {
         return results.stream()

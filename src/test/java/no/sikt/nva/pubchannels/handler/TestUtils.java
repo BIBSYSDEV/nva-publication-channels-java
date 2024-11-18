@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TestUtils {
 
@@ -91,6 +92,11 @@ public class TestUtils {
     public static int randomYear() {
         var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
         return YEAR_START + randomInteger(bound);
+    }
+
+    public static Stream<String> invalidYearsProvider() {
+        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
+        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     public static InputStream constructRequest(String year, String identifier, MediaType mediaType)
@@ -249,4 +255,5 @@ public class TestUtils {
         entityResult.set(PAGERESULT_FIELD, arrayNode);
         return entityResult;
     }
+
 }

@@ -28,6 +28,8 @@ import nva.commons.core.Environment;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
@@ -61,6 +63,23 @@ class SearchSerialPublicationByQueryHandlerTest {
         this.handlerUnderTest =
                 new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
         this.output = new ByteArrayOutputStream();
+    }
+
+    @ParameterizedTest(name = "year {0} is invalid")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
+    void shouldReturnBadRequestWhenYearIsInvalid(String year) throws IOException {
+        var queryParameters = Map.of("year", year, "query", "asd");
+        var input = constructRequest(queryParameters, MediaType.ANY_TYPE);
+
+        this.handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(containsString("Year")));
     }
 
     @Test
