@@ -124,20 +124,6 @@ Resources:
         - AttributeName: SK0
           KeyType: RANGE
 
-
-  WriteLogPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*'
-
   ReadSecretsPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -207,7 +193,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -237,7 +222,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -267,7 +251,6 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
-        - !GetAtt WriteLogPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
