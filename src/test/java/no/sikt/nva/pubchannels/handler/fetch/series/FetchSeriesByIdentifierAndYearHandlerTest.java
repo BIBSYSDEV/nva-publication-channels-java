@@ -203,7 +203,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
         mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
         handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
@@ -397,7 +397,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     private SeriesDto mockSeriesFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
         var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
@@ -412,7 +412,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier)
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -423,7 +423,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier);
+        var testChannel = new TestChannel(null, identifier, SeriesDto.TYPE);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
                                     testChannel.asChannelRegistrySeriesBody());

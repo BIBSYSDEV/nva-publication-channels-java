@@ -149,7 +149,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = TestUtils.randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, JournalDto.TYPE);
 
         mockRegistry.mockChannelRegistry(year, testChannel, testChannel.asChannelRegistryJournalBodyWithoutLevel());
         var input = constructRequest(String.valueOf(year), identifier);

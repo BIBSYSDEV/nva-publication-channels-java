@@ -130,7 +130,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBodyWithoutLevel());
 
         handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
@@ -394,7 +394,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
@@ -409,7 +409,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier)
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "some comment",
                                                                       "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
@@ -420,7 +420,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier);
+        var testChannel = new TestChannel(null, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);

@@ -15,6 +15,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
 import nva.commons.core.paths.UriWrapper;
 
 public record TestChannel(String identifier,
@@ -26,28 +27,29 @@ public record TestChannel(String identifier,
                           Issn printIssn,
                           String discontinued,
                           URI sameAs,
-                          ScientificValueReviewNotice reviewNotice) {
+                          ScientificValueReviewNotice reviewNotice,
+                          String type) {
 
     private static final String CHANNEL_REGISTRY_REVIEW_NOTICE_MARK = "X";
 
-    public TestChannel(Integer year, String identifier) {
+    public TestChannel(Integer year, String identifier, String type) {
         this(identifier, year, randomString(), randomElement(ScientificValue.values()), new IsbnPrefix(randomString()),
-             new Issn(randomIssn()), new Issn(randomIssn()), randomString(), randomUri(), null);
+             new Issn(randomIssn()), new Issn(randomIssn()), randomString(), randomUri(), null, type);
     }
 
     public TestChannel withName(String name) {
         return new TestChannel(identifier, year, name, scientificValue, isbnPrefix, onlineIssn, printIssn, discontinued,
-                               sameAs, reviewNotice);
+                               sameAs, reviewNotice, type);
     }
 
     public TestChannel withPrintIssn(String printIssn) {
         return new TestChannel(identifier, year, name, scientificValue, isbnPrefix, onlineIssn, new Issn(printIssn),
-                               discontinued, sameAs, reviewNotice);
+                               discontinued, sameAs, reviewNotice, type);
     }
 
     public TestChannel withScientificValueReviewNotice(Map<String, String> comment) {
         return new TestChannel(identifier, year, name, scientificValue, isbnPrefix, onlineIssn, printIssn,
-                               discontinued, sameAs, new ScientificValueReviewNotice(comment));
+                               discontinued, sameAs, new ScientificValueReviewNotice(comment), type);
     }
 
     public String asChannelRegistryJournalBodyWithoutLevel() {
@@ -113,6 +115,12 @@ public record TestChannel(String identifier,
         var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
         return new SeriesDto(id, identifier, name, onlineIssn.value(), printIssn.value(), scientificValue,
                              sameAs, discontinued, requestedYear, reviewNotice);
+    }
+
+    public SerialPublicationDto asSerialPublicationDto(String selfUriBase, String requestedYear, String type) {
+        var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
+        return new SerialPublicationDto(id, identifier, name, onlineIssn.value(), printIssn.value(), scientificValue,
+                                        sameAs, discontinued, type, requestedYear, reviewNotice);
     }
 
     public PublisherDto asPublisherDto(String selfUriBase, String requestedYear) {

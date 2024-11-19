@@ -10,10 +10,8 @@ import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
-import static no.sikt.nva.pubchannels.TestConstants.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.TestConstants.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
@@ -30,13 +28,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -44,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.handler.TestChannel;
@@ -53,19 +46,15 @@ import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
-import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
-import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
-@WireMockTest(httpsEnabled = true)
 class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
 
     private static final URI SELF_URI_BASE = UriWrapper.fromHost(API_DOMAIN)
@@ -82,18 +71,8 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
     }
 
     @BeforeEach
-    void setup(WireMockRuntimeInfo runtimeInfo) {
-
-        Environment environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
-        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
-        var channelRegistryBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
-        var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-
+    void setup() {
         this.handlerUnderTest = new SearchJournalByQueryHandler(environment, publicationChannelClient);
-        this.output = new ByteArrayOutputStream();
     }
 
     @ParameterizedTest
@@ -355,7 +334,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
     private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearch(Integer year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(year, pid, JournalDto.TYPE).withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,
@@ -368,26 +347,12 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
         Integer year,
         String printIssn) throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, pid).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(null, pid, JournalDto.TYPE).withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,
                                     List.of(testChannel.asChannelRegistryJournalBody()));
 
         return getExpectedSearchResult(year, printIssn, testChannel);
-    }
-
-    private void mockChannelRegistryResponse(String year, String printIssn, List<String> channelRegistryEntityResult) {
-        var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, 0, 10);
-        stubChannelRegistrySearchResponse(responseBody,
-                                          HttpURLConnection.HTTP_OK,
-                                          ISSN_QUERY_PARAM,
-                                          printIssn,
-                                          YEAR_QUERY_PARAM,
-                                          year,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          DEFAULT_SIZE,
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          DEFAULT_OFFSET);
     }
 }
