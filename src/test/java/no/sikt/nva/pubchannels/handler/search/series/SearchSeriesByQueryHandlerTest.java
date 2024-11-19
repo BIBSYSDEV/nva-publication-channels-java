@@ -267,18 +267,14 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
                                           String.valueOf(offset / size),
                                           NAME_QUERY_PARAM,
                                           name);
-        var input =
-            constructRequest(
-                Map.of(
-                    "year",
+        var input = constructRequest(Map.of("year",
                                             yearString,
                                             "query",
                                             name,
                                             "offset",
                                             String.valueOf(offset),
                                             "size",
-                    String.valueOf(size)),
-                MediaType.ANY_TYPE);
+                                            String.valueOf(size)), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 

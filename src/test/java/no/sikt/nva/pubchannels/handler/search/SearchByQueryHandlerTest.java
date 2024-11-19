@@ -66,13 +66,10 @@ public abstract class SearchByQueryHandlerTest {
         var input = constructRequest(queryParameters, MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
-
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
         var problem = response.getBodyObject(Problem.class);
 
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
         assertThat(problem.getDetail(), is(containsString("Year")));
     }
 
@@ -81,13 +78,10 @@ public abstract class SearchByQueryHandlerTest {
         var input = constructRequest(Map.of("year", String.valueOf(randomYear())), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
-
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
         var problem = response.getBodyObject(Problem.class);
 
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
         assertThat(problem.getDetail(), is(containsString("query")));
     }
 
@@ -97,13 +91,10 @@ public abstract class SearchByQueryHandlerTest {
                                      MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
-
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
         var problem = response.getBodyObject(Problem.class);
 
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
         assertThat(problem.getDetail(), is(containsString("Query")));
     }
 
@@ -119,10 +110,11 @@ public abstract class SearchByQueryHandlerTest {
                                             "8"), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
+
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
+        var problem = response.getBodyObject(Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-        var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(containsString("Offset")));
     }
 
@@ -147,13 +139,10 @@ public abstract class SearchByQueryHandlerTest {
         var input = constructRequest(Map.of("year", String.valueOf(year), "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
-
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
         var problem = response.getBodyObject(Problem.class);
 
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 }
