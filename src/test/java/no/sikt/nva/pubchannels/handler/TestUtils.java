@@ -222,8 +222,10 @@ public class TestUtils {
     }
 
     private static String buildChannelRegistrySearchResponse(List<String> results, ObjectNode entityResult) {
-        return new ChannelRegistrySearchResponseBodyBuilder().withEntityPageInformation(new ChannelRegistryEntityPageInformation(
-            results.size())).withEntityResultSet(entityResult).build();
+        return new ChannelRegistrySearchResponseBodyBuilder()
+                   .withEntityPageInformation(new ChannelRegistryEntityPageInformation(results.size()))
+                   .withEntityResultSet(entityResult)
+                   .build();
     }
 
     private static ObjectNode createEntityResultObjectNode(List<JsonNode> results) {

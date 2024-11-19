@@ -159,30 +159,24 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         int size = 10;
         var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
         var responseBody = getChannelRegistrySearchResponseBody(result, offset, size);
-        stubChannelRegistrySearchResponse(responseBody,
-                                          HttpURLConnection.HTTP_OK,
-                                          YEAR_QUERY_PARAM,
-                                          yearString,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          DEFAULT_SIZE,
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          DEFAULT_OFFSET,
-                                          NAME_QUERY_PARAM,
-                                          name);
+        stubChannelRegistrySearchResponse(
+            responseBody, HttpURLConnection.HTTP_OK,
+            YEAR_QUERY_PARAM, yearString,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM, DEFAULT_SIZE,
+            CHANNEL_REGISTRY_PAGE_NO_PARAM, DEFAULT_OFFSET,
+            NAME_QUERY_PARAM, name);
         var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(),
+                                                       TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(result,
-                                                                                       yearString,
-                                                                                       name,
-                                                                                       offset,
-                                                                                       size);
+        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(
+            result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
@@ -212,8 +206,7 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(result,
-                                                                                       null,
+        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(result, null,
                                                                                        name,
                                                                                        offset,
                                                                                        size);
@@ -229,37 +222,27 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         int size = 10;
         int maxNr = 30;
         var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
-        stubChannelRegistrySearchResponse(getChannelRegistrySearchResponseBody(result, offset, size),
+        stubChannelRegistrySearchResponse(
+            getChannelRegistrySearchResponseBody(result, offset, size),
                                           HttpURLConnection.HTTP_OK,
-                                          YEAR_QUERY_PARAM,
-                                          yearString,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          String.valueOf(size),
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          String.valueOf(offset / size),
-                                          NAME_QUERY_PARAM,
-                                          name);
-        var input = constructRequest(Map.of("year",
-                                            yearString,
-                                            "query",
-                                            name,
-                                            "offset",
-                                            String.valueOf(offset),
-                                            "size",
-                                            String.valueOf(size)), MediaType.ANY_TYPE);
+            YEAR_QUERY_PARAM, yearString,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM, String.valueOf(size),
+            CHANNEL_REGISTRY_PAGE_NO_PARAM, String.valueOf(offset / size),
+            NAME_QUERY_PARAM, name);
+        var input = constructRequest(
+            Map.of("year", yearString, "query", name,
+                   "offset", String.valueOf(offset), "size", String.valueOf(size)), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
+        var pagesSearchResult = objectMapper.readValue(response.getBody(),
+                                                       TYPE_REF);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(result,
-                                                                                       yearString,
-                                                                                       name,
-                                                                                       offset,
-                                                                                       size);
+        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(
+            result, yearString, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
@@ -272,7 +255,8 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         int size = 10;
         int maxNr = 30;
         var result = getChannelRegistrySearchPublisherResult(year, name, maxNr);
-        stubChannelRegistrySearchResponse(getChannelRegistrySearchResponseBody(result, offset, size),
+        stubChannelRegistrySearchResponse(
+            getChannelRegistrySearchResponseBody(result, offset, size),
                                           HttpURLConnection.HTTP_OK,
                                           YEAR_QUERY_PARAM,
                                           yearString,
@@ -282,25 +266,27 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
                                           String.valueOf(offset / size),
                                           NAME_QUERY_PARAM,
                                           name);
-        var input = constructRequest(Map.of("year",
+        var input =
+            constructRequest(
+                Map.of(
+                    "year",
                                             yearString,
                                             "query",
                                             name,
                                             "offset",
                                             String.valueOf(offset),
                                             "size",
-                                            String.valueOf(size)), MediaType.ANY_TYPE);
+                    String.valueOf(size)),
+                MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
 
-        var expectedSearchResult = getExpectedPaginatedSearchPublisherResultNameSearch(result,
-                                                                                       yearString,
-                                                                                       name,
-                                                                                       offset,
-                                                                                       size);
+        var expectedSearchResult =
+            getExpectedPaginatedSearchPublisherResultNameSearch(
+                result, yearString, name, offset, size);
         var expectedUri = expectedSearchResult.getId();
         var actualUri = pagesSearchResult.getId();
 

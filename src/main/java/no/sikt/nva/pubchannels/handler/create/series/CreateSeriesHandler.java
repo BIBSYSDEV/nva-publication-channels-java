@@ -44,10 +44,9 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
         var response = publicationChannelClient.createSeries(getClientRequest(input));
         var createdUri = constructIdUri(SERIES_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return CreateSeriesResponse.create(createdUri,
-                                           (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIES,
-                                                                                                             response.pid(),
-                                                                                                             getYear()));
+        return CreateSeriesResponse.create(
+            createdUri,
+            (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIES, response.pid(), getYear()));
     }
 
     private static ChannelRegistryCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {

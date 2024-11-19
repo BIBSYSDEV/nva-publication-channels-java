@@ -130,27 +130,14 @@ public class CreateJournalResponse {
     @Override
     public String toString() {
         return "FetchByIdAndYearResponse{"
-               + "type='"
-               + type
-               + '\''
-               + ", context="
-               + context
-               + ", id="
-               + id
-               + ", name='"
-               + name
-               + '\''
-               + ", onlineIssn='"
-               + onlineIssn
-               + '\''
-               + ", printIssn='"
-               + printIssn
-               + '\''
-               + ", scientificValue='"
-               + scientificValue
-               + '\''
-               + ", sameAs="
-               + sameAs
+               + "type='" + type + '\''
+               + ", context=" + context
+               + ", id=" + id
+               + ", name='" + name + '\''
+               + ", onlineIssn='" + onlineIssn + '\''
+               + ", printIssn='" + printIssn + '\''
+               + ", scientificValue='" + scientificValue + '\''
+               + ", sameAs=" + sameAs
                + '}';
     }
 }

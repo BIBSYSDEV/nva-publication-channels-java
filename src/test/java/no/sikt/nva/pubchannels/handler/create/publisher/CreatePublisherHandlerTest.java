@@ -144,7 +144,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(),
+                   is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -164,7 +165,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(),
+                   is(equalTo("Unexpected response from upstream!")));
     }
 
     @ParameterizedTest
@@ -184,7 +186,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(),
+                   is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -241,7 +244,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
+        var testPublisher = new CreatePublisherRequestBuilder()
+                                .withName(VALID_NAME)
+                                .withHomepage(url)
+                                .build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -259,10 +265,14 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withIsbnPrefix(isbnPrefix).build();
+        var testPublisher = new CreatePublisherRequestBuilder()
+                                .withName(VALID_NAME)
+                                .withIsbnPrefix(isbnPrefix)
+                                .build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -275,18 +285,25 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
+        var testPublisher = new CreatePublisherRequestBuilder()
+                                .withName(VALID_NAME)
+                                .withHomepage(homepage)
+                                .build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
+        var response = GatewayResponse
+                           .fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
-        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper).withBody(testPublisher)
+        var testPublisher = new CreatePublisherRequestBuilder()
+                                .withName(VALID_NAME)
+                                .build();
+        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper)
+                          .withBody(testPublisher)
                                                                                         .build();
         handlerUnderTest.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -313,7 +330,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private void setupStub(String expectedPid,
                            ChannelRegistryCreatePublisherRequest request,
-                           int clientResponseHttpCode) throws JsonProcessingException {
+                           int clientResponseHttpCode)
+        throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode,
                      "/createpublisher/createpid",
@@ -322,31 +340,26 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request) throws JsonProcessingException {
+    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request)
+        throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
-                     "/createpublisher/createpid",
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String pid) {
-        stubFor(get("/findpublisher/" + pid + "/" + Year.now()).withHeader("Accept",
-                                                                           WireMock.equalTo("application/json"))
-                                                               .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
-                                                                                      .withHeader("Content-Type",
-                                                                                                  "application/json;"
-                                                                                                  + "charset=UTF-8")
+        stubFor(
+            get("/findpublisher/" + pid + "/" + Year.now())
+                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(HttpURLConnection.HTTP_OK)
+                        .withHeader("Content-Type", "application/json;charset=UTF-8")
                                                                                       .withBody(nonNull(pid)
-                                                                                                    ?
-                                                                                                    new ChannelRegistryPublisher(
-                                                                                                        pid,
-                                                                                                        null,
-                                                                                                        null,
-                                                                                                        VALID_NAME,
-                                                                                                        null,
-                                                                                                        null).toJsonString()
+                                      ? new ChannelRegistryPublisher(pid, null, null, VALID_NAME, null, null)
+                                            .toJsonString()
                                                                                                     : null)));
     }
 }

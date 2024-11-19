@@ -83,9 +83,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
-                                                                             publicationChannelClient,
-                                                                             cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
         this.output = new ByteArrayOutputStream();
     }
 
@@ -135,8 +133,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var testChannel = new TestChannel(year, identifier);
         mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBodyWithoutLevel());
 
-        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE),
-                                       output,
+        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
                                        context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
@@ -297,13 +294,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccursAndPublisherNotCached()
-        throws IOException, InterruptedException {
+    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccursAndPublisherNotCached() throws IOException,
+                                                                                      InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
-                                                                             publicationChannelClient,
-                                                                             cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -350,8 +345,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
 
         super.loadCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
-                                                                             channelRegistryClient,
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
                                                                              cacheService);
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -371,7 +365,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
         super.loadCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null, cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
+                                                                             cacheService);
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -388,7 +383,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null, cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
+                                                                             cacheService);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -401,23 +397,21 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var testChannel = new TestChannel(year, identifier);
         var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private void mockPublisherFound(int year, String identifier, String channelRegistryPublisherBody) {
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT,
-                                    String.valueOf(year),
-                                    identifier,
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
                                     channelRegistryPublisherBody);
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier).withScientificValueReviewNotice(Map.of("en",
-                                                                                                   "some comment",
-                                                                                                   "no",
-                                                                                                   "vedtak"));
+        var testChannel = new TestChannel(year, identifier)
+                              .withScientificValueReviewNotice(Map.of("en", "some comment",
+                                                                      "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);

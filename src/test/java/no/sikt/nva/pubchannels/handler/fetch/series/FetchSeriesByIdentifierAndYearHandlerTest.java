@@ -268,8 +268,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     @Test
-    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndSeriesIsNotCached()
-        throws IOException {
+    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndSeriesIsNotCached() throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 

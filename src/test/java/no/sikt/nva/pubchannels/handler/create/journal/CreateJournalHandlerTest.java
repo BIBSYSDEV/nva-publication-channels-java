@@ -362,25 +362,13 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
     private void stubFetchResponse(String expectedPid) {
         stubFor(get("/findjournal/" + expectedPid + "/" + Year.now()).withHeader("Accept",
-                                                                                 WireMock.equalTo("application/json"))
-                                                                     .willReturn(aResponse().withStatus(
-                                                                                                HttpURLConnection.HTTP_OK)
-                                                                                            .withHeader("Content-Type",
-                                                                                                        "application"
-                                                                                                        + "/json;"
-                                                                                                        + "charset"
-                                                                                                        + "=UTF-8")
-                                                                                            .withBody(
-                                                                                                nonNull(expectedPid)
-                                                                                                    ?
-                                                                                                    new ChannelRegistryJournal(
-                                                                                                        expectedPid,
-                                                                                                        VALID_NAME,
-                                                                                                        null,
-                                                                                                        null,
-                                                                                                        null,
-                                                                                                        null,
-                                                                                                        null).toJsonString()
+                                                                                 WireMock.equalTo(
+                                                                                     "application/json"))
+                    .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
+                                    .withHeader("Content-Type", "application/json;charset=UTF-8")
+                                    .withBody(nonNull(expectedPid)
+                                                  ? new ChannelRegistryJournal(expectedPid, VALID_NAME, null, null,
+                                                                               null, null, null).toJsonString()
                                                                                                     : null)));
     }
 }
