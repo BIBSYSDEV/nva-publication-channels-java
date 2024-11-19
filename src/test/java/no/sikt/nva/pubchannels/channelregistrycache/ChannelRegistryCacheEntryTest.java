@@ -21,15 +21,6 @@ class ChannelRegistryCacheEntryTest {
         assertTrue(beans.stream().allMatch(Objects::nonNull));
     }
 
-    @Test
-    void shouldReturnLevelForYearAsObject() throws FileNotFoundException {
-        var channelRegistryCacheEntry = getChannelRegistryCacheEntries().get(2);
-        var levelForYearList = channelRegistryCacheEntry.getLevelHistory();
-
-        assertNotNull(channelRegistryCacheEntry.getCurrentLevel());
-        assertTrue(levelForYearList.stream().allMatch(Objects::nonNull));
-    }
-
     private static List<ChannelRegistryCacheEntry> getChannelRegistryCacheEntries() throws FileNotFoundException {
         return new CsvToBeanBuilder<ChannelRegistryCacheEntry>(new FileReader(TEST_CSV)).withType(
                 ChannelRegistryCacheEntry.class)

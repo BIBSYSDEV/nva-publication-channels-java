@@ -35,9 +35,10 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
-import no.sikt.nva.pubchannels.handler.fetch.ChannelRegistryCacheSetup;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
@@ -57,13 +58,16 @@ import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetup {
+class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
 
+    public static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
+    public static final String SERIES_YEAR_FROM_CACHE = "2024";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
     private ByteArrayOutputStream output;
+    private CacheService cacheService;
     private Environment environment;
     private String channelRegistryBaseUri;
 
@@ -79,9 +83,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment,
-                                                                          publicationChannelClient,
-                                                                          super.getS3Client());
+        cacheService = new CacheService(super.getClient());
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
         this.output = new ByteArrayOutputStream();
     }
 
@@ -293,8 +296,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          super.getS3Client());
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -333,17 +335,19 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
 
     @Test
     void shouldReturnSeriesWhenChannelRegistryIsUnavailableAndSeriesIsCached() throws IOException {
-        var identifier = super.getCachedJournalSeriesIdentifier();
-        var year = super.getCachedJournalSeriesYear();
+        var identifier = SERIES_IDENTIFIER_FROM_CACHE;
+        var year = SERIES_YEAR_FROM_CACHE;
 
         mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
+
+        super.loadCache();
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
@@ -351,20 +355,21 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
     }
 
     @Test
-    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
-        var year = Integer.parseInt(super.getCachedJournalSeriesYear());
-        var identifier = super.getCachedJournalSeriesIdentifier();
+    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentVariableIsTrue() throws IOException {
+        var identifier = SERIES_IDENTIFIER_FROM_CACHE;
+        var year = SERIES_YEAR_FROM_CACHE;
 
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
+        super.loadCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        assertThat(appender.getMessages(), containsString("Fetching series from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
@@ -373,7 +378,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends ChannelRegistryCacheSetu
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, super.getS3Client());
+        super.loadCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
