@@ -35,8 +35,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
         var year = request.getYear();
         var identifier = request.getIdentifier();
 
-        var series = super.shouldUseCache()
-                         ? super.fetchChannelFromCache(SERIES, identifier, year)
+        var series = super.shouldUseCache() ? super.fetchChannelFromCache(SERIES, identifier, year)
                          : super.fetchChannelOrFetchFromCache(SERIES, identifier, year);
         return SeriesDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
     }

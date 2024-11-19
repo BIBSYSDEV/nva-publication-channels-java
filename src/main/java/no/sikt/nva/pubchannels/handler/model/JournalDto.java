@@ -10,21 +10,13 @@ import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.paths.UriWrapper;
 
-public record JournalDto(URI id,
-                         String identifier,
-                         String name,
-                         String onlineIssn,
-                         String printIssn,
-                         ScientificValue scientificValue,
-                         URI sameAs,
-                         String discontinued,
-                         String year,
+public record JournalDto(URI id, String identifier, String name, String onlineIssn, String printIssn,
+                         ScientificValue scientificValue, URI sameAs, String discontinued, String year,
                          ScientificValueReviewNotice reviewNotice) implements JsonSerializable {
 
     public static final String TYPE = "Journal";
 
-    public static JournalDto create(
-        URI selfUriBase, ThirdPartySerialPublication journal, String requestedYear) {
+    public static JournalDto create(URI selfUriBase, ThirdPartySerialPublication journal, String requestedYear) {
         var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase).addChild(journal.identifier(), year).getUri();
         return new JournalDto(id,

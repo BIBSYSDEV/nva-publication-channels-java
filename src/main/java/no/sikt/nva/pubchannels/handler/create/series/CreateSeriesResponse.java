@@ -130,14 +130,27 @@ public class CreateSeriesResponse {
     @Override
     public String toString() {
         return "FetchByIdAndYearResponse{"
-               + "type='" + TYPE + '\''
-               + ", context=" + context
-               + ", id=" + id
-               + ", name='" + name + '\''
-               + ", onlineIssn='" + onlineIssn + '\''
-               + ", printIssn='" + printIssn + '\''
-               + ", scientificValue='" + scientificValue + '\''
-               + ", sameAs=" + sameAs
+               + "type='"
+               + TYPE
+               + '\''
+               + ", context="
+               + context
+               + ", id="
+               + id
+               + ", name='"
+               + name
+               + '\''
+               + ", onlineIssn='"
+               + onlineIssn
+               + '\''
+               + ", printIssn='"
+               + printIssn
+               + '\''
+               + ", scientificValue='"
+               + scientificValue
+               + '\''
+               + ", sameAs="
+               + sameAs
                + '}';
     }
 }

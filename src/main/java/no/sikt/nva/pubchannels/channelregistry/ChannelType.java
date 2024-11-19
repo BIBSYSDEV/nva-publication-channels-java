@@ -13,9 +13,12 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public enum ChannelType {
 
-    JOURNAL("findjournal", ChannelRegistryJournal.class, ChannelRegistrySearchJournalResponse.class),
-    PUBLISHER("findpublisher", ChannelRegistryPublisher.class, ChannelRegistrySearchPublisherResponse.class),
-    SERIES("findseries", ChannelRegistrySeries.class, ChannelRegistrySearchSeriesResponse.class),
+    JOURNAL("findjournal", ChannelRegistryJournal.class, ChannelRegistrySearchJournalResponse.class), PUBLISHER(
+        "findpublisher",
+        ChannelRegistryPublisher.class,
+        ChannelRegistrySearchPublisherResponse.class), SERIES("findseries",
+                                                              ChannelRegistrySeries.class,
+                                                              ChannelRegistrySearchSeriesResponse.class),
     SERIAL_PUBLICATION(
         "findjournalserie",
         ChannelRegistrySerialPublication.class,
@@ -26,7 +29,8 @@ public enum ChannelType {
 
     public final Class<? extends ThirdPartySearchResponse> searchResponseClass;
 
-    ChannelType(String pathElement, Class<? extends ThirdPartyPublicationChannel> fetchResponseClass,
+    ChannelType(String pathElement,
+                Class<? extends ThirdPartyPublicationChannel> fetchResponseClass,
                 Class<? extends ThirdPartySearchResponse> searchResponseClass) {
         this.pathElement = pathElement;
         this.fetchResponseClass = fetchResponseClass;

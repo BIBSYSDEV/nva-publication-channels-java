@@ -51,8 +51,10 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         this.channelType = channelType;
     }
 
-    protected SearchByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient,
-                                   String pathElement, ChannelType channelType) {
+    protected SearchByQueryHandler(Environment environment,
+                                   PublicationChannelClient publicationChannelClient,
+                                   String pathElement,
+                                   ChannelType channelType) {
         super(Void.class, environment);
         this.publicationChannelClient = publicationChannelClient;
         this.pathElement = pathElement;
@@ -61,10 +63,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
 
     @Override
     protected List<MediaType> listSupportedMediaTypes() {
-        return List.of(
-            JSON_UTF_8,
-            APPLICATION_JSON_LD
-                      );
+        return List.of(JSON_UTF_8, APPLICATION_JSON_LD);
     }
 
     @Override
@@ -73,8 +72,8 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     @Override
-    protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo,
-                                                    Context context) throws ApiGatewayException {
+    protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var searchParameters = SearchParameters.fromRequestInfo(requestInfo);
         var searchResult = searchChannel(searchParameters);
 
@@ -85,14 +84,12 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
             baseQueryParameters.put(YEAR_QUERY_PARAM, searchParameters.year());
         }
 
-        return PaginatedSearchResult.create(
-            constructBaseUri(),
-            searchParameters.offset(),
-            searchParameters.size(),
-            searchResult.pageInformation().totalResults(),
-            getHits(constructBaseUri(), searchResult, searchParameters.year()),
-            baseQueryParameters
-                                           );
+        return PaginatedSearchResult.create(constructBaseUri(),
+                                            searchParameters.offset(),
+                                            searchParameters.size(),
+                                            searchResult.pageInformation().totalResults(),
+                                            getHits(constructBaseUri(), searchResult, searchParameters.year()),
+                                            baseQueryParameters);
     }
 
     @Override
@@ -105,9 +102,7 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     protected URI constructBaseUri() {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
-        return new UriWrapper(HTTPS, apiDomain)
-                   .addChild(customDomainBasePath, pathElement)
-                   .getUri();
+        return new UriWrapper(HTTPS, apiDomain).addChild(customDomainBasePath, pathElement).getUri();
     }
 
     private void validate(RequestInfo requestInfo) throws BadRequestException {
@@ -120,14 +115,15 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         }).orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
     }
 
-    private ThirdPartySearchResponse searchChannel(SearchParameters searchParameters)
-        throws ApiGatewayException {
+    private ThirdPartySearchResponse searchChannel(SearchParameters searchParameters) throws ApiGatewayException {
         var queryParams = getQueryParams(searchParameters);
         return publicationChannelClient.searchChannel(channelType, queryParams);
     }
 
     private List<T> getHits(URI baseUri, ThirdPartySearchResponse searchResult, String requestedYear) {
-        return searchResult.resultSet().pageResult().stream()
+        return searchResult.resultSet()
+                           .pageResult()
+                           .stream()
                            .map(result -> createResult(baseUri, result, requestedYear))
                            .toList();
     }

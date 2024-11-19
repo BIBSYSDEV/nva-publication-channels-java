@@ -26,7 +26,6 @@ public class SearchJournalByQueryHandler extends SearchByQueryHandler<JournalDto
 
     @Override
     protected JournalDto createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
-        return JournalDto.create(
-            baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
+        return JournalDto.create(baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
     }
 }

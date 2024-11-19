@@ -67,8 +67,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
-        var publicationChannelSource =
-            new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
         handlerUnderTest = new CreatePublisherHandler(environment, publicationChannelSource);
     }
@@ -83,14 +82,13 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreatePublisherResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, PUBLISHER_PATH,
-                                                                          TestUtils.currentYear()))));
+        assertThat(actualLocation,
+                   is(equalTo(createPublicationChannelUri(expectedPid, PUBLISHER_PATH, TestUtils.currentYear()))));
 
         var expectedPublisher = constructExpectedPublisher(expectedPid);
         assertThat(response.getBodyObject(CreatePublisherResponse.class), is(equalTo(expectedPublisher)));
@@ -112,8 +110,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -147,15 +144,15 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null),
+        setupStub(null,
+                  new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null),
                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -167,13 +164,12 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
-        HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
+    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
+        HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
         var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
@@ -188,8 +184,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -246,10 +241,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withHomepage(url)
-                                .build();
+        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -267,14 +259,10 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withIsbnPrefix(isbnPrefix)
-                                .build();
+        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withIsbnPrefix(isbnPrefix).build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreatePublisherResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -287,26 +275,19 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withHomepage(homepage)
-                                .build();
+        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
         handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreatePublisherResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .build();
-        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper)
-                          .withBody(testPublisher)
-                          .build();
+        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
+        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper).withBody(testPublisher)
+                                                                                        .build();
         handlerUnderTest.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -332,35 +313,40 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     private void setupStub(String expectedPid,
                            ChannelRegistryCreatePublisherRequest request,
-                           int clientResponseHttpCode)
-        throws JsonProcessingException {
+                           int clientResponseHttpCode) throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(clientResponseHttpCode, "/createpublisher/createpid",
+        stubResponse(clientResponseHttpCode,
+                     "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request)
-        throws JsonProcessingException {
+    private void setupBadRequestStub(ChannelRegistryCreatePublisherRequest request) throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createpublisher/createpid",
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
+                     "/createpublisher/createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String pid) {
-        stubFor(
-            get("/findpublisher/" + pid + "/" + Year.now())
-                .withHeader("Accept", WireMock.equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_OK)
-                        .withHeader("Content-Type", "application/json;charset=UTF-8")
-                        .withBody(nonNull(pid)
-                                      ? new ChannelRegistryPublisher(pid, null, null, VALID_NAME, null, null)
-                                            .toJsonString()
-                                      : null)));
+        stubFor(get("/findpublisher/" + pid + "/" + Year.now()).withHeader("Accept",
+                                                                           WireMock.equalTo("application/json"))
+                                                               .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
+                                                                                      .withHeader("Content-Type",
+                                                                                                  "application/json;"
+                                                                                                  + "charset=UTF-8")
+                                                                                      .withBody(nonNull(pid)
+                                                                                                    ?
+                                                                                                    new ChannelRegistryPublisher(
+                                                                                                        pid,
+                                                                                                        null,
+                                                                                                        null,
+                                                                                                        VALID_NAME,
+                                                                                                        null,
+                                                                                                        null).toJsonString()
+                                                                                                    : null)));
     }
 }

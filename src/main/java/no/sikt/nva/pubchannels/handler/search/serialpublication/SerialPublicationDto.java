@@ -10,39 +10,27 @@ import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.paths.UriWrapper;
 
-public record SerialPublicationDto(
-    URI id,
-    String identifier,
-    String name,
-    String onlineIssn,
-    String printIssn,
-    ScientificValue scientificValue,
-    URI sameAs,
-    String discontinued,
-    String type,
-    String year,
-    ScientificValueReviewNotice reviewNotice)
-    implements JsonSerializable {
+public record SerialPublicationDto(URI id, String identifier, String name, String onlineIssn, String printIssn,
+                                   ScientificValue scientificValue, URI sameAs, String discontinued, String type,
+                                   String year, ScientificValueReviewNotice reviewNotice) implements JsonSerializable {
 
-    public static SerialPublicationDto create(
-        URI selfUriBase,
-        ThirdPartySerialPublication series,
-        String type,
-        String requestedYear) {
+    public static SerialPublicationDto create(URI selfUriBase,
+                                              ThirdPartySerialPublication series,
+                                              String type,
+                                              String requestedYear) {
         var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase).addChild(series.identifier(), year).getUri();
-        return new SerialPublicationDto(
-            id,
-            series.identifier(),
-            series.name(),
-            series.onlineIssn(),
-            series.printIssn(),
-            series.getScientificValue(),
-            series.homepage(),
-            series.discontinued(),
-            year,
-            type,
-            series.reviewNotice());
+        return new SerialPublicationDto(id,
+                                        series.identifier(),
+                                        series.name(),
+                                        series.onlineIssn(),
+                                        series.printIssn(),
+                                        series.getScientificValue(),
+                                        series.homepage(),
+                                        series.discontinued(),
+                                        year,
+                                        type,
+                                        series.reviewNotice());
     }
 
     @JsonProperty("@context")

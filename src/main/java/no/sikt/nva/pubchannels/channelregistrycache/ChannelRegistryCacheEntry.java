@@ -13,11 +13,9 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
 import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
 public class ChannelRegistryCacheEntry {
@@ -48,16 +46,16 @@ public class ChannelRegistryCacheEntry {
 
     public static ChannelRegistryCacheEntry fromDao(ChannelRegistryCacheDao dao) {
         return ChannelRegistryCacheEntry.builder()
-                   .withPid(dao.identifier())
-                   .withType(dao.type())
-                   .withOriginalTitle(dao.title())
-                   .withPrintIssn(dao.printIssn())
-                   .withOnlineIssn(dao.onlineIssn())
-                   .withIsbn(dao.isbn())
-                   .withCeased(dao.ceased())
-                   .withLevelHistory(dao.levelHistory())
-                   .withUri(dao.uri().toString())
-                   .build();
+                                        .withPid(dao.identifier())
+                                        .withType(dao.type())
+                                        .withOriginalTitle(dao.title())
+                                        .withPrintIssn(dao.printIssn())
+                                        .withOnlineIssn(dao.onlineIssn())
+                                        .withIsbn(dao.isbn())
+                                        .withCeased(dao.ceased())
+                                        .withLevelHistory(dao.levelHistory())
+                                        .withUri(dao.uri().toString())
+                                        .build();
     }
 
     public String getPidAsString() {
@@ -118,31 +116,45 @@ public class ChannelRegistryCacheEntry {
 
     public ChannelRegistryCacheDao toDao() {
         return ChannelRegistryCacheDao.builder()
-                   .identifier(getPid())
-                   .type(getType())
-                   .title(getOriginalTitle())
-                   .printIssn(getPrintIssn())
-                   .onlineIssn(getOnlineIssn())
-                   .isbn(getIsbn())
-                   .ceased(getCeased())
-                   .levelHistory(getLevelHistory())
-                   .uri(getUri())
-                   .build();
+                                      .identifier(getPid())
+                                      .type(getType())
+                                      .title(getOriginalTitle())
+                                      .printIssn(getPrintIssn())
+                                      .onlineIssn(getOnlineIssn())
+                                      .isbn(getIsbn())
+                                      .ceased(getCeased())
+                                      .levelHistory(getLevelHistory())
+                                      .uri(getUri())
+                                      .build();
     }
 
     public ThirdPartyPublisher toPublisher(String year) {
-        return new ChannelRegistryPublisher(getPidAsString(), getChannelRegistryLevel(year), getIsbn(),
-                                            getOriginalTitle(), getUri(), getCeased());
+        return new ChannelRegistryPublisher(getPidAsString(),
+                                            getChannelRegistryLevel(year),
+                                            getIsbn(),
+                                            getOriginalTitle(),
+                                            getUri(),
+                                            getCeased());
     }
 
     public ThirdPartySerialPublication toSeries(String year) {
-        return new ChannelRegistrySeries(getPidAsString(), getOriginalTitle(), getOnlineIssn(), getPrintIssn(),
-                                         getChannelRegistryLevel(year), getUri(), getCeased());
+        return new ChannelRegistrySeries(getPidAsString(),
+                                         getOriginalTitle(),
+                                         getOnlineIssn(),
+                                         getPrintIssn(),
+                                         getChannelRegistryLevel(year),
+                                         getUri(),
+                                         getCeased());
     }
 
     public ThirdPartySerialPublication toJournal(String year) {
-        return new ChannelRegistryJournal(getPidAsString(), getOriginalTitle(), getOnlineIssn(), getPrintIssn(),
-                                          getChannelRegistryLevel(year), getUri(), getCeased());
+        return new ChannelRegistryJournal(getPidAsString(),
+                                          getOriginalTitle(),
+                                          getOnlineIssn(),
+                                          getPrintIssn(),
+                                          getChannelRegistryLevel(year),
+                                          getUri(),
+                                          getCeased());
     }
 
     private List<LevelForYear> parseLevels() {

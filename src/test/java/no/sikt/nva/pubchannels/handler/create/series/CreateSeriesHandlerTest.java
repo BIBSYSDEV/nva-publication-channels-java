@@ -66,8 +66,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource = new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
-        var publicationChannelSource =
-            new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
+        var publicationChannelSource = new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
 
         handlerUnderTest = new CreateSeriesHandler(environment, publicationChannelSource);
     }
@@ -82,13 +81,12 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreateSeriesResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, SERIES_PATH,
-                                                                          TestUtils.currentYear()))));
+        assertThat(actualLocation,
+                   is(equalTo(createPublicationChannelUri(expectedPid, SERIES_PATH, TestUtils.currentYear()))));
 
         var expectedSeries = constructExpectedSeries(expectedPid);
         assertThat(response.getBodyObject(CreateSeriesResponse.class), is(equalTo(expectedSeries)));
@@ -110,8 +108,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -145,15 +142,15 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
-        setupStub(null, new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null),
+        setupStub(null,
+                  new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null),
                   HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -165,13 +162,12 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
-        HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
+    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
+        HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
@@ -186,8 +182,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -228,8 +223,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME)
-                                                          .withPrintIssn(issn).build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -244,17 +238,14 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedWhenValidPissn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
 
-        setupStub(expectedPid, new ChannelRegistryCreateSeriesRequest(VALID_NAME, issn, null, null),
+        setupStub(expectedPid,
+                  new ChannelRegistryCreateSeriesRequest(VALID_NAME, issn, null, null),
                   HttpURLConnection.HTTP_OK);
 
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withPrintIssn(issn)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreateSeriesResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -262,10 +253,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withOnlineIssn(issn)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -278,10 +266,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withHomepage(url)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -298,10 +283,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, printIssn, null, null);
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withPrintIssn(printIssn)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(printIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
@@ -317,14 +299,10 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withOnlineIssn(onlineIssn)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(onlineIssn).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreateSeriesResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -337,26 +315,19 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withHomepage(homepage)
-                              .build();
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
         handlerUnderTest.handleRequest(constructRequest(testJournal), output, context);
 
-        var response = GatewayResponse
-                           .fromOutputStream(output, CreateSeriesResponse.class);
+        var response = GatewayResponse.fromOutputStream(output, CreateSeriesResponse.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var testJournal = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .build();
-        var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper)
-                          .withBody(testJournal)
+        var testJournal = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
+        var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper).withBody(testJournal)
 
-                          .build();
+                                                                                     .build();
         handlerUnderTest.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -376,37 +347,45 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         return new CreateSeriesResponse(uri, VALID_NAME, null, null, ScientificValue.UNASSIGNED, null);
     }
 
-    private void setupStub(String expectedPid,
-                           ChannelRegistryCreateSeriesRequest request,
-                           int clientResponseHttpCode)
+    private void setupStub(String expectedPid, ChannelRegistryCreateSeriesRequest request, int clientResponseHttpCode)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(clientResponseHttpCode, "/createseries/createpid",
+        stubResponse(clientResponseHttpCode,
+                     "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(expectedPid);
     }
 
-    private void setupBadRequestStub(ChannelRegistryCreateSeriesRequest request)
-        throws JsonProcessingException {
+    private void setupBadRequestStub(ChannelRegistryCreateSeriesRequest request) throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST, "/createseries/createpid",
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
+                     "/createseries/createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
         stubFetchResponse(null);
     }
 
     private void stubFetchResponse(String expectedPid) {
-        stubFor(
-            get("/findseries/" + expectedPid + "/" + Year.now())
-                .withHeader("Accept", WireMock.equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_OK)
-                        .withHeader("Content-Type", "application/json;charset=UTF-8")
-                        .withBody(nonNull(expectedPid)
-                                      ? new ChannelRegistrySeries(expectedPid, VALID_NAME, null, null, null, null, null)
-                                            .toJsonString()
-                                      : null)));
+        stubFor(get("/findseries/" + expectedPid + "/" + Year.now()).withHeader("Accept",
+                                                                                WireMock.equalTo("application/json"))
+                                                                    .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK)
+                                                                                           .withHeader("Content-Type",
+                                                                                                       "application"
+                                                                                                       + "/json;"
+                                                                                                       + "charset=UTF"
+                                                                                                       + "-8")
+                                                                                           .withBody(
+                                                                                               nonNull(expectedPid)
+                                                                                                   ?
+                                                                                                   new ChannelRegistrySeries(
+                                                                                                       expectedPid,
+                                                                                                       VALID_NAME,
+                                                                                                       null,
+                                                                                                       null,
+                                                                                                       null,
+                                                                                                       null,
+                                                                                                       null).toJsonString()
+                                                                                                   : null)));
     }
 }

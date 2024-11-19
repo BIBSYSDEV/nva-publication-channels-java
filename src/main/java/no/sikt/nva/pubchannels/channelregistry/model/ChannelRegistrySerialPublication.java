@@ -13,14 +13,13 @@ import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.unit.nva.commons.json.JsonSerializable;
 
 @JsonSerialize
-public record ChannelRegistrySerialPublication(
-    @JsonProperty(IDENTIFIER_FIELD) String identifier,
-    @JsonProperty(NAME_FIELD) String name,
-    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-    @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
-    @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-    @JsonProperty(DISCONTINUED) String discontinued)
+public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) String identifier,
+                                               @JsonProperty(NAME_FIELD) String name,
+                                               @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+                                               @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+                                               @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
+                                               @JsonProperty(HOMEPAGE_FIELD) URI homepage,
+                                               @JsonProperty(DISCONTINUED) String discontinued)
     implements Immutable, ThirdPartySerialPublication, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";

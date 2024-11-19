@@ -61,10 +61,10 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
 
-    private static final int YEAR_START = 2004;
-    private static final Context context = new FakeContext();
     public static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     public static final String JOURNAL_YEAR_FROM_CACHE = "2024";
+    private static final int YEAR_START = 2004;
+    private static final Context context = new FakeContext();
     private FetchJournalByIdentifierAndYearHandler handlerUnderTest;
     private PublicationChannelMockClient mockRegistry;
     private CacheService cacheService;
@@ -85,7 +85,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var httpClient = WiremockHttpClient.create();
         var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
     }
@@ -244,7 +246,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -274,7 +278,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
 
         var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
@@ -359,7 +365,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
 
         var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
         var year = JOURNAL_YEAR_FROM_CACHE;
@@ -384,7 +392,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
 
         var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
         var year = JOURNAL_YEAR_FROM_CACHE;
@@ -409,7 +419,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
+                                                                           publicationChannelSource,
+                                                                           cacheService);
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();

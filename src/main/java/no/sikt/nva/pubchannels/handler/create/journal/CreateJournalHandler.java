@@ -39,19 +39,21 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Cr
     }
 
     @Override
-    protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo,
-                                                 Context context) throws ApiGatewayException {
+    protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
         var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return CreateJournalResponse.create(
-            createdUri,
-            (ThirdPartySerialPublication)
-                publicationChannelClient.getChannel(JOURNAL, response.pid(), getYear()));
+        return CreateJournalResponse.create(createdUri,
+                                            (ThirdPartySerialPublication) publicationChannelClient.getChannel(JOURNAL,
+                                                                                                              response.pid(),
+                                                                                                              getYear()));
     }
 
     private static ChannelRegistryCreateJournalRequest getClientRequest(CreateJournalRequest request) {
-        return new ChannelRegistryCreateJournalRequest(request.name(), request.printIssn(), request.onlineIssn(),
+        return new ChannelRegistryCreateJournalRequest(request.name(),
+                                                       request.printIssn(),
+                                                       request.onlineIssn(),
                                                        request.homepage());
     }
 
