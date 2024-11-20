@@ -30,6 +30,7 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     private static final String HOMEPAGE_FIELD = "kurl";
     private static final String DISCONTINUED_FIELD = "ceased";
     private static final String TYPE_FIELD = "type";
+    private static final String PUBLISHER = "Publisher";
 
     @Override
     public String getYear() {
@@ -42,7 +43,7 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     @Override
     public String type() {
         if ("publisher".equalsIgnoreCase(type)) {
-            return "Publisher";
+            return PUBLISHER;
         } else {
             throw new IllegalArgumentException("Unknown type found. Expected 'publisher'.");
         }

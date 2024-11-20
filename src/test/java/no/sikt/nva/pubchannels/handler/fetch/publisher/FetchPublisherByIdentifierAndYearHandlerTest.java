@@ -41,7 +41,6 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -105,7 +104,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
@@ -141,7 +140,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
 
     @Test
     void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
         var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
@@ -155,7 +154,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
 
     @Test
     void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
 
@@ -185,7 +184,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
     }
@@ -204,7 +203,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));

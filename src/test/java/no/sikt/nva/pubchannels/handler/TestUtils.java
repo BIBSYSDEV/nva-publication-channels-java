@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
 import java.io.IOException;
@@ -47,7 +46,7 @@ import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Named;
 
-public class TestUtils {
+public final class TestUtils {
 
     public static final String PAGERESULT_FIELD = "pageresult";
     public static final int YEAR_START = 1900;
@@ -68,7 +67,7 @@ public class TestUtils {
                                                    String responseBody) {
         stubFor(
             get(channelRegistryPathElement + identifier + "/" + year)
-                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .withHeader("Accept", equalTo("application/json"))
                 .willReturn(
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_OK)
@@ -133,7 +132,7 @@ public class TestUtils {
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
         var queryParams = new HashMap<String, StringValuePattern>();
         for (int i = 0; i < queryValue.length; i = i + 2) {
-            queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
+            queryParams.put(queryValue[i], equalTo(queryValue[i + 1]));
         }
         return queryParams;
     }
@@ -159,7 +158,7 @@ public class TestUtils {
                                                   String identifier,
                                                   String year,
                                                   int httpStatus) {
-        stubFor(get(pathParameter + identifier + "/" + year).withHeader("Accept", WireMock.equalTo("application/json"))
+        stubFor(get(pathParameter + identifier + "/" + year).withHeader("Accept", equalTo("application/json"))
                                                             .willReturn(aResponse().withStatus(httpStatus)));
     }
 

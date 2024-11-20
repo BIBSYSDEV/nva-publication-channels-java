@@ -44,17 +44,16 @@ public class ChannelRegistryCacheEntry {
     }
 
     public static ChannelRegistryCacheEntry fromDao(ChannelRegistryCacheDao dao) {
-        return ChannelRegistryCacheEntry.builder()
-                                        .withPid(dao.identifier())
-                                        .withType(dao.type())
-                                        .withOriginalTitle(dao.title())
-                                        .withPrintIssn(dao.printIssn())
-                                        .withOnlineIssn(dao.onlineIssn())
-                                        .withIsbn(dao.isbn())
-                                        .withCeased(dao.ceased())
-                                        .withLevelHistory(dao.levelHistory())
-                                        .withUri(dao.uri().toString())
-                                        .build();
+        return builder().withPid(dao.identifier())
+                        .withType(dao.type())
+                        .withOriginalTitle(dao.title())
+                        .withPrintIssn(dao.printIssn())
+                        .withOnlineIssn(dao.onlineIssn())
+                        .withIsbn(dao.isbn())
+                        .withCeased(dao.ceased())
+                        .withLevelHistory(dao.levelHistory())
+                        .withUri(dao.uri().toString())
+                        .build();
     }
 
     public String getPidAsString() {

@@ -1,5 +1,8 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
@@ -29,7 +32,6 @@ import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -213,7 +215,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -230,7 +232,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -258,7 +260,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -284,7 +286,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
@@ -303,7 +305,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -327,7 +329,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -345,7 +347,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
+        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
         var expectedLocation = constructExpectedLocation(newIdentifier, year);
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
