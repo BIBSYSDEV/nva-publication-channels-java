@@ -55,6 +55,12 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
         return new UriWrapper(HTTPS, apiDomain).addChild(customDomainBasePath, path, pid, CURRENT_YEAR).getUri();
     }
 
+    protected URI constructBaseUri(String path) {
+        var apiDomain = environment.readEnv(ENV_API_DOMAIN);
+        var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
+        return new UriWrapper(HTTPS, apiDomain).addChild(customDomainBasePath, path).getUri();
+    }
+
     protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
         if (isNull(requestInfo.getCurrentCustomer())) {
             throw new UnauthorizedException();

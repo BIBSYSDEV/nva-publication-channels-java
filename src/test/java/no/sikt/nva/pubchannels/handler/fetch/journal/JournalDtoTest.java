@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,7 @@ class JournalDtoTest {
     }
 
     private static JournalDto randomJournal() {
-        var journal = new ThirdPartyJournal() {
+        var journal = new ThirdPartySerialPublication() {
 
             @Override
             public String identifier() {
@@ -72,6 +72,11 @@ class JournalDtoTest {
             @Override
             public ScientificValueReviewNotice reviewNotice() {
                 return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
+            }
+
+            @Override
+            public String type() {
+                return "journal";
             }
 
             @Override

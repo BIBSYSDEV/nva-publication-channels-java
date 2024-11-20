@@ -1,14 +1,18 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
+import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
-import static no.sikt.nva.pubchannels.TestCommons.SERIES_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
@@ -29,18 +33,14 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.unit.nva.stubs.FakeContext;
@@ -51,7 +51,6 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -64,7 +63,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
     public static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     public static final String SERIES_YEAR_FROM_CACHE = "2024";
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
+    private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + SERIES_PATH);
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
     private static final Context context = new FakeContext();
     private FetchSeriesByIdentifierAndYearHandler handlerUnderTest;
@@ -109,7 +108,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
@@ -129,9 +128,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
-    @ParameterizedTest
-    @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
@@ -149,7 +147,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
     }
@@ -168,7 +166,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualSeries = response.getBodyObject(SeriesDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
@@ -176,7 +174,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
     @Test
     void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
         var expectedSeries = mockSeriesWithScientificValueReviewNotice(year, identifier);
@@ -190,7 +188,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
     @Test
     void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
 
@@ -205,7 +203,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
         mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
         handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
@@ -216,7 +214,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
@@ -225,7 +223,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -242,7 +240,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -254,7 +252,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -262,7 +260,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -274,7 +272,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -286,7 +284,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -309,7 +307,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
@@ -321,14 +319,14 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
+                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                                   .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
+        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
         var expectedLocation = createPublicationChannelUri(newIdentifier, SERIES_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
@@ -339,7 +337,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var identifier = SERIES_IDENTIFIER_FROM_CACHE;
         var year = SERIES_YEAR_FROM_CACHE;
 
-        mockResponseWithHttpStatus("/findseries/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus("/findseries/", identifier, year, HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -373,7 +371,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
     }
 
     @Test
@@ -398,13 +396,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
-    }
-
     private SeriesDto mockSeriesFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
         var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
@@ -419,7 +412,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier)
+        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -430,7 +423,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     }
 
     private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier);
+        var testChannel = new TestChannel(null, identifier, SeriesDto.TYPE);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
                                     testChannel.asChannelRegistrySeriesBody());

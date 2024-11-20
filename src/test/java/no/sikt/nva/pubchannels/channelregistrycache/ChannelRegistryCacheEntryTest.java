@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;

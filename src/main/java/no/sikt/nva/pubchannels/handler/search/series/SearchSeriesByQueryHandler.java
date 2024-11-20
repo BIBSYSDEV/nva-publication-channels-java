@@ -1,14 +1,16 @@
 package no.sikt.nva.pubchannels.handler.search.series;
 
-import java.net.URI;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
+
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+
+import java.net.URI;
 
 public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesDto> {
 
@@ -26,6 +28,6 @@ public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SeriesDto> 
 
     @Override
     protected SeriesDto createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
-        return SeriesDto.create(baseUri, (ThirdPartySeries) entityResult, requestedYear);
+        return SeriesDto.create(baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
     }
 }

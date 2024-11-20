@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ class SeriesDtoTest {
     }
 
     private static SeriesDto randomSeries() {
-        var series = new ThirdPartySeries() {
+        var series = new ThirdPartySerialPublication() {
 
             @Override
             public String identifier() {
@@ -74,6 +74,11 @@ class SeriesDtoTest {
             @Override
             public ScientificValueReviewNotice reviewNotice() {
                 return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
+            }
+
+            @Override
+            public String type() {
+                return "series";
             }
 
             @Override

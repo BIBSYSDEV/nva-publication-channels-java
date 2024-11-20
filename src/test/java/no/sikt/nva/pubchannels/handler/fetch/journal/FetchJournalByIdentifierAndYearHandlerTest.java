@@ -1,15 +1,18 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.JOURNAL_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,14 +32,12 @@ import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
@@ -51,7 +52,6 @@ import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -91,9 +91,8 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         this.output = new ByteArrayOutputStream();
     }
 
-    @ParameterizedTest
-    @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         final var expectedMediaType =
             mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
@@ -150,7 +149,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = TestUtils.randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, JournalDto.TYPE);
 
         mockRegistry.mockChannelRegistry(year, testChannel, testChannel.asChannelRegistryJournalBodyWithoutLevel());
         var input = constructRequest(String.valueOf(year), identifier);
@@ -207,7 +206,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString());
@@ -216,7 +215,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -233,7 +232,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -261,7 +260,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -287,7 +286,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
@@ -306,7 +305,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -330,7 +329,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
         var problem = response.getBodyObject(Problem.class);
 
@@ -343,12 +342,12 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild("findjournal", newIdentifier, year)
-                                             .toString();
+                                                   .addChild("findjournal", newIdentifier, year)
+                                                   .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
+        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
         var expectedLocation = constructExpectedLocation(newIdentifier, year);
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
@@ -430,27 +429,22 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
 
     private static String constructExpectedLocation(String newIdentifier, String year) {
         return UriWrapper.fromHost(API_DOMAIN)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
-                   .toString();
+                         .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
+                         .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
         throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                   .withPathParameters(Map.of("identifier",
-                                              identifier,
-                                              "year",
-                                              year))
-                   .build();
+                                                               .withPathParameters(Map.of("identifier",
+                                                                                          identifier,
+                                                                                          "year",
+                                                                                          year))
+                                                               .build();
     }
 
     private static InputStream constructRequest(String year, String identifier) throws JsonProcessingException {
         return constructRequest(year, identifier, MediaType.JSON_UTF_8);
-    }
-
-    private static Stream<String> invalidYearsProvider() {
-        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     private String randomYear() {

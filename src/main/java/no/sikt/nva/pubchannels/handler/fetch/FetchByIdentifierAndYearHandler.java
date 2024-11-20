@@ -27,6 +27,7 @@ import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
 import nva.commons.core.paths.UriWrapper;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +92,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
             case JOURNAL -> JOURNAL_PATH_PARAM;
             case PUBLISHER -> PUBLISHER_PATH_PARAM;
             case SERIES -> SERIES_PATH_PARAM;
+            case SERIAL_PUBLICATION -> throw new NotImplementedException("Serial publication not implemented yet");
         };
     }
 

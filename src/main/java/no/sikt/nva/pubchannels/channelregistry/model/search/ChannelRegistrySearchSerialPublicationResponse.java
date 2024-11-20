@@ -6,7 +6,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublic
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 @JsonSerialize
-public record ChannelRegistrySearchSeriesResponse(
+public record ChannelRegistrySearchSerialPublicationResponse(
     @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
     @JsonProperty(ENTITY_RESULT_SET) ChannelRegistryEntityResultSet<ChannelRegistrySerialPublication> resultSet)
     implements ThirdPartySearchResponse {

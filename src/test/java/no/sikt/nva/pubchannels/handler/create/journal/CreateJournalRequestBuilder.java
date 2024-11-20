@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
-
 public class CreateJournalRequestBuilder {
     private String name;
     private String printIssn = null;
