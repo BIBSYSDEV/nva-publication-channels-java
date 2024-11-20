@@ -80,6 +80,11 @@ class PublisherDtoTest {
             public ScientificValueReviewNotice reviewNotice() {
                 return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
             }
+
+            @Override
+            public String type() {
+                return "publisher";
+            }
         };
         return PublisherDto.create(randomUri(), publisher, randomString());
     }

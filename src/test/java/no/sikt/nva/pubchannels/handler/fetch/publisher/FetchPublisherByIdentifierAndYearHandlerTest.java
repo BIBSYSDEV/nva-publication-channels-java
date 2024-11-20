@@ -3,12 +3,12 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestCommons.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.LOCATION;
-import static no.sikt.nva.pubchannels.TestCommons.PUBLISHER_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.WILD_CARD;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
@@ -35,15 +35,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -53,7 +50,6 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -108,7 +104,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
@@ -132,7 +128,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBodyWithoutLevel());
 
         handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
@@ -144,7 +140,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
 
     @Test
     void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
         var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
@@ -158,7 +154,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
 
     @Test
     void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-        var year = TestUtils.randomYear();
+        var year = randomYear();
         var identifier = UUID.randomUUID().toString();
         var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
 
@@ -169,9 +165,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         assertNull(actualPublisher.reviewNotice());
     }
 
-    @ParameterizedTest
-    @DisplayName("Should return requested media type")
-    @MethodSource("no.sikt.nva.pubchannels.TestCommons#mediaTypeProvider")
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
@@ -189,7 +184,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
     }
@@ -208,14 +203,14 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
         var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_OK)));
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("invalidYearsProvider")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
 
         var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
@@ -324,8 +319,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
+                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                                   .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
@@ -335,11 +330,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var expectedLocation = createPublicationChannelUri(newIdentifier, PUBLISHER_PATH, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
-    }
-
-    private static Stream<String> invalidYearsProvider() {
-        var yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     @Test
@@ -401,7 +391,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier);
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
@@ -416,7 +406,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier)
+        var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "some comment",
                                                                       "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
@@ -427,7 +417,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     }
 
     private PublisherDto mockPublisherFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier);
+        var testChannel = new TestChannel(null, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);

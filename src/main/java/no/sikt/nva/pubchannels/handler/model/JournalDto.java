@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.model.Contexts;
 import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.paths.UriWrapper;
@@ -23,7 +23,7 @@ public record JournalDto(URI id,
 
     public static final String TYPE = "Journal";
 
-    public static JournalDto create(URI selfUriBase, ThirdPartyJournal journal, String requestedYear) {
+    public static JournalDto create(URI selfUriBase, ThirdPartySerialPublication journal, String requestedYear) {
         var year = Optional.ofNullable(journal.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase).addChild(journal.identifier(), year).getUri();
         return new JournalDto(id,

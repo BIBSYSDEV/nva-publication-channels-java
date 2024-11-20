@@ -4,7 +4,7 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
-import no.sikt.nva.pubchannels.handler.ThirdPartyJournal;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
@@ -40,6 +40,6 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
         var journal = super.shouldUseCache()
                           ? super.fetchChannelFromCache(JOURNAL, identifier, year)
                           : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
-        return JournalDto.create(journalIdBaseUri, (ThirdPartyJournal) journal, year);
+        return JournalDto.create(journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
     }
 }

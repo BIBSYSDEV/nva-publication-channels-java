@@ -5,8 +5,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.TestCommons.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestCommons.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.net.MediaType;
 import java.io.IOException;
@@ -35,14 +34,19 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.apigateway.MediaTypes;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.paths.UriWrapper;
+import org.junit.jupiter.api.Named;
 
-public class TestUtils {
+public final class TestUtils {
 
     public static final String PAGERESULT_FIELD = "pageresult";
     public static final int YEAR_START = 1900;
@@ -53,16 +57,17 @@ public class TestUtils {
     }
 
     public static URI createPublicationChannelUri(String pid, String channelPathElement, String year) {
-        return new UriWrapper(HTTPS, API_DOMAIN)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, channelPathElement, pid, year)
-                   .getUri();
+        return new UriWrapper(HTTPS, API_DOMAIN).addChild(CUSTOM_DOMAIN_BASE_PATH, channelPathElement, pid, year)
+                                                .getUri();
     }
 
-    public static void mockChannelRegistryResponse(String channelRegistryPathElement, String year, String identifier,
+    public static void mockChannelRegistryResponse(String channelRegistryPathElement,
+                                                   String year,
+                                                   String identifier,
                                                    String responseBody) {
         stubFor(
             get(channelRegistryPathElement + identifier + "/" + year)
-                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .withHeader("Accept", equalTo("application/json"))
                 .willReturn(
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_OK)
@@ -70,20 +75,20 @@ public class TestUtils {
                         .withBody(responseBody)));
     }
 
-    public static void mockRedirectedClient(String requestedIdentifier, String location, String year,
-                                            String path) {
-        stubFor(
-            get(path + requestedIdentifier + "/" + year)
-                .withHeader(ACCEPT, equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_MOVED_PERM)
-                        .withHeader("Location", location)));
+    public static void mockRedirectedClient(String requestedIdentifier, String location, String year, String path) {
+        stubFor(get(path + requestedIdentifier + "/" + year).withHeader(ACCEPT, equalTo("application/json"))
+                                                            .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_MOVED_PERM)
+                                                                                   .withHeader("Location", location)));
     }
 
     public static int randomYear() {
         var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
         return YEAR_START + randomInteger(bound);
+    }
+
+    public static Stream<String> invalidYearsProvider() {
+        String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
+        return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
     }
 
     public static InputStream constructRequest(String year, String identifier, MediaType mediaType)
@@ -93,16 +98,23 @@ public class TestUtils {
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year
-                   ))
+                                             ))
                    .build();
+    }
+
+    public static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType)
+        throws JsonProcessingException {
+        return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
+                                                               .withQueryParameters(queryParameters)
+                                                               .build();
     }
 
     public static String scientificValueToLevel(ScientificValue scientificValue) {
         return ScientificValueMapper.VALUES.entrySet()
-                   .stream()
-                   .filter(item -> item.getValue().equals(scientificValue))
-                   .map(Map.Entry::getKey)
-                   .collect(SingletonCollector.collectOrElse(null));
+                                           .stream()
+                                           .filter(item -> item.getValue().equals(scientificValue))
+                                           .map(Map.Entry::getKey)
+                                           .collect(SingletonCollector.collectOrElse(null));
     }
 
     public static String validIsbnPrefix() {
@@ -110,21 +122,17 @@ public class TestUtils {
     }
 
     public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
-        return IntStream.range(0, maxNr)
-                   .mapToObj(i -> generateChannelRegistryJournalBody(year, name))
-                   .collect(Collectors.toList());
+        return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryJournalBody(year, name)).toList();
     }
 
     public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
-        return IntStream.range(0, maxNr)
-                   .mapToObj(i -> generateChannelRegistryPublisherBody(year, name))
-                   .collect(Collectors.toList());
+        return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryPublisherBody(year, name)).toList();
     }
 
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
         var queryParams = new HashMap<String, StringValuePattern>();
         for (int i = 0; i < queryValue.length; i = i + 2) {
-            queryParams.put(queryValue[i], WireMock.equalTo(queryValue[i + 1]));
+            queryParams.put(queryValue[i], equalTo(queryValue[i + 1]));
         }
         return queryParams;
     }
@@ -143,24 +151,19 @@ public class TestUtils {
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
         var dataportenBaseUri = URI.create("https://localhost:9898");
 
-        return new ChannelRegistryClient(httpClient,
-                                         dataportenBaseUri, null);
+        return new ChannelRegistryClient(httpClient, dataportenBaseUri, null);
     }
 
-    public static void mockResponseWithHttpStatus(String pathParameter, String identifier, String year,
+    public static void mockResponseWithHttpStatus(String pathParameter,
+                                                  String identifier,
+                                                  String year,
                                                   int httpStatus) {
-        stubFor(
-            get(pathParameter + identifier + "/" + year)
-                .withHeader("Accept", WireMock.equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(httpStatus)));
+        stubFor(get(pathParameter + identifier + "/" + year).withHeader("Accept", equalTo("application/json"))
+                                                            .willReturn(aResponse().withStatus(httpStatus)));
     }
 
     public static URI constructPublicationChannelUri(String pathElement, Map<String, String> queryParams) {
-        var uri = new UriWrapper(HTTPS, API_DOMAIN)
-                      .addChild(CUSTOM_DOMAIN_BASE_PATH, pathElement)
-                      .getUri();
+        var uri = new UriWrapper(HTTPS, API_DOMAIN).addChild(CUSTOM_DOMAIN_BASE_PATH, pathElement).getUri();
         if (Objects.nonNull(queryParams)) {
             return UriWrapper.fromUri(uri).addQueryParameters(queryParams).getUri();
         }
@@ -168,12 +171,11 @@ public class TestUtils {
     }
 
     public static String getChannelRegistrySearchResponseBody(List<String> results, int offset, int size) {
-        var resultsWithOffsetAndSize =
-            results.stream()
-                .skip(offset)
-                .limit(size)
-                .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
-                .collect(Collectors.toList());
+        var resultsWithOffsetAndSize = results.stream()
+                                              .skip(offset)
+                                              .limit(size)
+                                              .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
+                                              .toList();
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildChannelRegistrySearchResponse(results, entityResult);
     }
@@ -198,25 +200,32 @@ public class TestUtils {
         return String.valueOf(LocalDate.now().getYear());
     }
 
+    public static Integer currentYearAsInteger() {
+        return Integer.parseInt(currentYear());
+    }
+
+    public static Stream<Named<MediaType>> mediaTypeProvider() {
+        return Stream.of(Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
+                         Named.of("ANY", MediaType.ANY_TYPE),
+                         Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
+    }
+
     private static String generateChannelRegistryPublisherBody(Integer year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
-                   .asChannelRegistryPublisherBody();
+        return new TestChannel(year, UUID.randomUUID().toString(), PublisherDto.TYPE).withName(name)
+                                                                                     .asChannelRegistryPublisherBody();
     }
 
     private static String generateChannelRegistryJournalBody(Integer year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString()).withName(name)
-                   .asChannelRegistryJournalBody();
+        return new TestChannel(year, UUID.randomUUID().toString(), JournalDto.TYPE).withName(name)
+                                                                                   .asChannelRegistryJournalBody();
     }
 
     private static Map<String, String> getQueryParameters(URI uri) {
-        return uri.getQuery() == null
-                   ? Map.of()
-                   : Arrays.stream(uri.getQuery().split("&"))
-                         .map(param -> param.split("="))
-                         .collect(
-                             Collectors.toMap(
-                                 param -> param[0],
-                                 param -> param.length > 1 ? param[1] : ""));
+        return uri.getQuery() == null ? Map.of() : Arrays.stream(uri.getQuery().split("&"))
+                                                         .map(param -> param.split("="))
+                                                         .collect(Collectors.toMap(param -> param[0],
+                                                                                   param -> param.length > 1 ? param[1]
+                                                                                                : ""));
     }
 
     private static String buildChannelRegistrySearchResponse(List<String> results, ObjectNode entityResult) {

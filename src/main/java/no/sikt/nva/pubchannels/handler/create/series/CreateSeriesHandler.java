@@ -9,8 +9,9 @@ import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
-import no.sikt.nva.pubchannels.handler.ThirdPartySeries;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -18,7 +19,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, CreateSeriesResponse> {
+public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, SeriesDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -39,22 +40,26 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Crea
     }
 
     @Override
-    protected CreateSeriesResponse processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
+    protected SeriesDto processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createSeries(getClientRequest(input));
-        var createdUri = constructIdUri(SERIES_PATH_ELEMENT, response.pid());
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return CreateSeriesResponse.create(
-            createdUri,
-            (ThirdPartySeries) publicationChannelClient.getChannel(SERIES, response.pid(), getYear()));
+
+        // Fetch the new series from the channel registry to build the full response
+        var year = getYear();
+        var newSeries = (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIES,
+                                                                                          response.pid(),
+                                                                                          year);
+        var seriesDto = SeriesDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
+
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, seriesDto.id().toString()));
+        return seriesDto;
     }
 
     private static ChannelRegistryCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {
-        return new ChannelRegistryCreateSeriesRequest(
-            request.name(),
-            request.printIssn(),
-            request.onlineIssn(),
-            request.homepage());
+        return new ChannelRegistryCreateSeriesRequest(request.name(),
+                                                      request.printIssn(),
+                                                      request.onlineIssn(),
+                                                      request.homepage());
     }
 
     private void validate(CreateSeriesRequest input) throws BadRequestException {
