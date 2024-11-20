@@ -3,24 +3,25 @@ package no.sikt.nva.pubchannels.handler.create.publisher;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.validIsbnPrefix;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-
-import static java.util.Objects.nonNull;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
-
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.time.Year;
+import java.util.UUID;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
@@ -28,24 +29,15 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelRespons
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.time.Year;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 class CreatePublisherHandlerTest extends CreateHandlerTest {
 
@@ -153,7 +145,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadGateway for response code \"{0}\"")
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
         HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
@@ -194,7 +186,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid name \"{0}\"")
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
@@ -208,7 +200,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Name is too")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid ISBN prefix \"{0}\"")
     @MethodSource("invalidIsbnPrefixes")
     void shouldReturnBadRequestWhenIsbnPrefixInvalid(String isbnPrefix) throws IOException {
 
@@ -224,7 +216,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Isbn prefix")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid URL \"{0}\"")
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
         var requestBody = new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(url).build();

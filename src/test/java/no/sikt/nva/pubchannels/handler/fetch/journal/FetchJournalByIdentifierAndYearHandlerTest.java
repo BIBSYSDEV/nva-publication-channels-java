@@ -50,7 +50,6 @@ import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -90,8 +89,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         this.output = new ByteArrayOutputStream();
     }
 
-    @ParameterizedTest
-    @DisplayName("Should return requested media type")
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
     @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
         final var expectedMediaType =

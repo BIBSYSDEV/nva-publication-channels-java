@@ -32,7 +32,6 @@ import no.unit.nva.stubs.FakeContext;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -53,8 +52,7 @@ class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest
         this.handlerUnderTest = new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
     }
 
-    @ParameterizedTest
-    @DisplayName("Should return requested media type")
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
     @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
         throws IOException, UnprocessableContentException {

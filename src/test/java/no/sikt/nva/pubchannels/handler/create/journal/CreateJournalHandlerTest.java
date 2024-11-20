@@ -139,7 +139,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadGateway for response code \"{0}\"")
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
         HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
@@ -180,7 +180,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid name \"{0}\"")
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
@@ -194,7 +194,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Name is too")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid print ISSN \"{0}\"")
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
         var requestBody =
@@ -208,7 +208,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("PrintIssn has an invalid ISSN format")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid online ISSN \"{0}\"")
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidElectronicIssn(String issn) throws IOException {
         var requestBody =
@@ -222,7 +222,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("OnlineIssn has an invalid ISSN format")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return BadRequest for invalid URL \"{0}\"")
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
         var requestBody =
@@ -236,7 +236,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(problem.getDetail(), is(containsString("Homepage has an invalid URL format")));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should create series for print ISSN \"{0}\"")
     @MethodSource("validIssn")
     void shouldCreateJournalWithNameAndPrintIssn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
@@ -257,7 +257,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should create series for online ISSN \"{0}\"")
     @MethodSource("validIssn")
     void shouldCreateJournalWithNameAndOnlineIssn(String issn) throws IOException {
         var expectedPid = UUID.randomUUID().toString();
