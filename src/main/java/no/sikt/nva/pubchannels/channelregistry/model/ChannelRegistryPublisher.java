@@ -18,7 +18,9 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
                                        @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
                                        @JsonProperty(NAME_FIELD) String name,
                                        @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-                                       @JsonProperty(DISCONTINUED) String discontinued)
+                                       @JsonProperty(DISCONTINUED_FIELD) String discontinued,
+                                       @JsonProperty(TYPE_FIELD) String type
+)
     implements Immutable, ThirdPartyPublisher, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
@@ -26,7 +28,8 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     private static final String ISBN_PREFIX_FIELD = "isbnprefix";
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
-    private static final String DISCONTINUED = "ceased";
+    private static final String DISCONTINUED_FIELD = "ceased";
+    private static final String TYPE_FIELD = "type";
 
     @Override
     public String getYear() {
@@ -34,6 +37,15 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
                    .map(ChannelRegistryLevel::year)
                    .map(String::valueOf)
                    .orElse(null);
+    }
+
+    @Override
+    public String type() {
+        if ("publisher".equalsIgnoreCase(type)) {
+            return "Publisher";
+        } else {
+            throw new IllegalArgumentException("Unknown type found. Expected 'publisher'.");
+        }
     }
 
     @Override

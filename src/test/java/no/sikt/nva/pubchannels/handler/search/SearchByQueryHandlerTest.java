@@ -42,6 +42,7 @@ import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,7 @@ public abstract class SearchByQueryHandlerTest {
 
     private static final Context context = new FakeContext();
     protected SearchByQueryHandler<?> handlerUnderTest;
-    protected ByteArrayOutputStream output;
+    protected final ByteArrayOutputStream output = new ByteArrayOutputStream();
     protected static Environment environment;
     protected ChannelRegistryClient publicationChannelClient;
 
@@ -104,7 +105,11 @@ public abstract class SearchByQueryHandlerTest {
         var channelRegistryBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         publicationChannelClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.output = new ByteArrayOutputStream();
+    }
+
+    @AfterEach
+    void tearDown() throws IOException {
+        output.flush();
     }
 
     @ParameterizedTest(name = "year {0} is invalid")

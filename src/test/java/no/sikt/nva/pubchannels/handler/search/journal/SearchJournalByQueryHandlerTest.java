@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
@@ -303,7 +303,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
     private static List<JournalDto> mapToJournalResults(List<String> channelRegistryResults, String requestedYear) {
         return channelRegistryResults.stream()
                                      .map(result -> attempt(() -> objectMapper.readValue(result,
-                                                                                         ChannelRegistryJournal.class)).orElseThrow())
+                                                                                         ChannelRegistrySerialPublication.class)).orElseThrow())
                                      .map(journal -> toJournalResult(journal, requestedYear))
                                      .toList();
     }

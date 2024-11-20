@@ -17,4 +17,6 @@ public interface ThirdPartyPublicationChannel {
     String discontinued();
 
     ScientificValueReviewNotice reviewNotice();
+
+    String type();
 }

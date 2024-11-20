@@ -1,9 +1,7 @@
 package no.sikt.nva.pubchannels.channelregistry;
 
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchJournalResponse;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchPublisherResponse;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchSerialPublicationResponse;
@@ -13,11 +11,13 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public enum ChannelType {
 
-    JOURNAL("findjournal", ChannelRegistryJournal.class, ChannelRegistrySearchJournalResponse.class), PUBLISHER(
+    JOURNAL("findjournal",
+            ChannelRegistrySerialPublication.class,
+            ChannelRegistrySearchJournalResponse.class), PUBLISHER(
         "findpublisher",
         ChannelRegistryPublisher.class,
         ChannelRegistrySearchPublisherResponse.class), SERIES("findseries",
-                                                              ChannelRegistrySeries.class,
+                                                              ChannelRegistrySerialPublication.class,
                                                               ChannelRegistrySearchSeriesResponse.class),
     SERIAL_PUBLICATION(
         "findjournalserie",

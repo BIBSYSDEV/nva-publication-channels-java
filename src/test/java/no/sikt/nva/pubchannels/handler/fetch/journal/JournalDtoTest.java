@@ -75,6 +75,11 @@ class JournalDtoTest {
             }
 
             @Override
+            public String type() {
+                return "journal";
+            }
+
+            @Override
             public String onlineIssn() {
                 return randomString();
             }

@@ -11,6 +11,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -18,7 +19,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, CreateJournalResponse> {
+public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, JournalDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -39,15 +40,19 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Cr
     }
 
     @Override
-    protected CreateJournalResponse processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
+    protected JournalDto processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
-        var createdUri = constructIdUri(JOURNAL_PATH_ELEMENT, response.pid());
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-        return CreateJournalResponse.create(createdUri,
-                                            (ThirdPartySerialPublication) publicationChannelClient.getChannel(JOURNAL,
-                                                                                                              response.pid(),
-                                                                                                              getYear()));
+
+        // Fetch the new journal from the channel registry to build the full response
+        var year = getYear();
+        var newJournal = (ThirdPartySerialPublication) publicationChannelClient.getChannel(JOURNAL,
+                                                                                           response.pid(),
+                                                                                           year);
+        var journalDto = JournalDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
+
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, journalDto.id().toString()));
+        return journalDto;
     }
 
     private static ChannelRegistryCreateJournalRequest getClientRequest(CreateJournalRequest request) {

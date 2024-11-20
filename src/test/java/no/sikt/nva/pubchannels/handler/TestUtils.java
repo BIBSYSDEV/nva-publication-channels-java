@@ -201,6 +201,10 @@ public class TestUtils {
         return String.valueOf(LocalDate.now().getYear());
     }
 
+    public static Integer currentYearAsInteger() {
+        return Integer.parseInt(currentYear());
+    }
+
     public static Stream<Named<MediaType>> mediaTypeProvider() {
         return Stream.of(Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
                          Named.of("ANY", MediaType.ANY_TYPE),

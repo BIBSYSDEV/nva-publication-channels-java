@@ -4,6 +4,7 @@ import java.net.URI;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandler;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
@@ -27,6 +28,6 @@ public class SearchSerialPublicationByQueryHandler extends SearchByQueryHandler<
     protected SerialPublicationDto createResult(URI baseUri,
                                                 ThirdPartyPublicationChannel entityResult,
                                                 String requestedYear) {
-        return null;
+        return SerialPublicationDto.create(baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
     }
 }

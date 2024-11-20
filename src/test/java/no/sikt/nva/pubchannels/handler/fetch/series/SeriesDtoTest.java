@@ -77,6 +77,11 @@ class SeriesDtoTest {
             }
 
             @Override
+            public String type() {
+                return "series";
+            }
+
+            @Override
             public String onlineIssn() {
                 return randomString();
             }

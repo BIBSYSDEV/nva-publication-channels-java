@@ -19,7 +19,8 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
                                                @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
                                                @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
                                                @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-                                               @JsonProperty(DISCONTINUED) String discontinued)
+                                               @JsonProperty(DISCONTINUED_FIELD) String discontinued,
+                                               @JsonProperty(TYPE_FIELD) String type)
     implements Immutable, ThirdPartySerialPublication, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
@@ -28,8 +29,8 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
     private static final String PRINT_ISSN_FIELD = "pissn";
     private static final String LEVEL_FIELD = "levelElementDto";
     private static final String HOMEPAGE_FIELD = "kurl";
-    private static final String DISCONTINUED = "ceased";
-    private static final String TYPE = "type";
+    private static final String DISCONTINUED_FIELD = "ceased";
+    private static final String TYPE_FIELD = "type";
 
     @Override
     public String getYear() {
@@ -37,6 +38,15 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
                        .map(ChannelRegistryLevel::year)
                        .map(String::valueOf)
                        .orElse(null);
+    }
+
+    @Override
+    public String type() {
+        return switch (type.toLowerCase()) {
+            case "journal" -> "Journal";
+            case "series" -> "Series";
+            default -> throw new IllegalArgumentException("Unknown type found. Expected one of ['journal', 'series'].");
+        };
     }
 
     @Override

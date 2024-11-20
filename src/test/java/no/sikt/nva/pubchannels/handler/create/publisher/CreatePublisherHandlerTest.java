@@ -357,9 +357,12 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
-                                                                                      .withBody(nonNull(pid)
-                                      ? new ChannelRegistryPublisher(pid, null, null, VALID_NAME, null, null)
-                                            .toJsonString()
-                                                                                                    : null)));
+                        .withBody(nonNull(pid) ? new ChannelRegistryPublisher(pid,
+                                                                              null,
+                                                                              null,
+                                                                              VALID_NAME,
+                                                                              null,
+                                                                              null,
+                                                                              "publisher").toJsonString() : null)));
     }
 }

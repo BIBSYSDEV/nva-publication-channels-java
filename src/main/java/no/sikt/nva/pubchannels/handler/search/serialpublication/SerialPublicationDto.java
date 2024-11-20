@@ -16,7 +16,6 @@ public record SerialPublicationDto(URI id, String identifier, String name, Strin
 
     public static SerialPublicationDto create(URI selfUriBase,
                                               ThirdPartySerialPublication series,
-                                              String type,
                                               String requestedYear) {
         var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
         var id = UriWrapper.fromUri(selfUriBase).addChild(series.identifier(), year).getUri();
@@ -28,8 +27,8 @@ public record SerialPublicationDto(URI id, String identifier, String name, Strin
                                         series.getScientificValue(),
                                         series.homepage(),
                                         series.discontinued(),
+                                        series.type(),
                                         year,
-                                        type,
                                         series.reviewNotice());
     }
 

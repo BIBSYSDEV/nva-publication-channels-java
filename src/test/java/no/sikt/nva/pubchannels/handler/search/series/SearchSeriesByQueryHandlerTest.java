@@ -30,12 +30,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
@@ -55,7 +56,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<SeriesDto>> TYPE_REF = new TypeReference<>() {
     };
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIES_PATH;
+    private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + SERIES_PATH);
 
     @Override
     protected String getPath() {
@@ -290,7 +291,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     private static List<SeriesDto> mapToSeriesResults(List<String> results, String requestedYear) {
         return results.stream()
                       .map(result -> attempt(() -> objectMapper.readValue(result,
-                                                                          ChannelRegistrySeries.class)).orElseThrow())
+                                                                          ChannelRegistrySerialPublication.class)).orElseThrow())
                       .map(series -> toResult(series, requestedYear))
                       .toList();
     }

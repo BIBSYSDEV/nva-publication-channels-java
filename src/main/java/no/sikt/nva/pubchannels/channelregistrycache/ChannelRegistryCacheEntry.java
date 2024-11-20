@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryJournal;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
-import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySeries;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
@@ -133,28 +132,27 @@ public class ChannelRegistryCacheEntry {
                                             getChannelRegistryLevel(year),
                                             getIsbn(),
                                             getOriginalTitle(),
-                                            getUri(),
-                                            getCeased());
+                                            getUri(), getCeased(), "publisher");
     }
 
     public ThirdPartySerialPublication toSeries(String year) {
-        return new ChannelRegistrySeries(getPidAsString(),
+        return new ChannelRegistrySerialPublication(getPidAsString(),
                                          getOriginalTitle(),
                                          getOnlineIssn(),
                                          getPrintIssn(),
                                          getChannelRegistryLevel(year),
-                                         getUri(),
-                                         getCeased());
+                                                    getUri(), getCeased(), "series");
     }
 
     public ThirdPartySerialPublication toJournal(String year) {
-        return new ChannelRegistryJournal(getPidAsString(),
-                                          getOriginalTitle(),
-                                          getOnlineIssn(),
-                                          getPrintIssn(),
-                                          getChannelRegistryLevel(year),
-                                          getUri(),
-                                          getCeased());
+        return new ChannelRegistrySerialPublication(getPidAsString(),
+                                                    getOriginalTitle(),
+                                                    getOnlineIssn(),
+                                                    getPrintIssn(),
+                                                    getChannelRegistryLevel(year),
+                                                    getUri(),
+                                                    getCeased(),
+                                                    "journal");
     }
 
     private List<LevelForYear> parseLevels() {
