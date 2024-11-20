@@ -38,7 +38,6 @@ import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.unit.nva.stubs.WiremockHttpClient;
-import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -76,11 +75,11 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     void shouldReturnCreatedPublisherWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
-        var testPublisher = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
+        var requestBody = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
 
         setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
 
@@ -215,8 +214,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
-        var testPublisher = new CreatePublisherRequestBuilder().withName(name).build();
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var requestBody = new CreatePublisherRequestBuilder().withName(name).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -229,10 +228,12 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @MethodSource("invalidIsbnPrefixes")
     void shouldReturnBadRequestWhenIsbnPrefixInvalid(String isbnPrefix) throws IOException {
 
-        var testPublisher = new CreatePublisherRequestBuilder().withName(randomString())
-                                                               .withIsbnPrefix(isbnPrefix)
-                                                               .build();
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var requestBody =
+            new CreatePublisherRequestBuilder()
+                .withName(randomString())
+                .withIsbnPrefix(isbnPrefix)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -244,11 +245,9 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withHomepage(url)
-                                .build();
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var requestBody =
+            new CreatePublisherRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -265,11 +264,12 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withIsbnPrefix(isbnPrefix)
-                                .build();
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var requestBody =
+            new CreatePublisherRequestBuilder()
+                .withName(VALID_NAME)
+                .withIsbnPrefix(isbnPrefix)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse
                            .fromOutputStream(output, CreatePublisherResponse.class);
@@ -285,11 +285,12 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
         setupStub(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .withHomepage(homepage)
-                                .build();
-        handlerUnderTest.handleRequest(constructRequest(testPublisher), output, context);
+        var requestBody =
+            new CreatePublisherRequestBuilder()
+                .withName(VALID_NAME)
+                .withHomepage(homepage)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse
                            .fromOutputStream(output, CreatePublisherResponse.class);
@@ -299,13 +300,8 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var testPublisher = new CreatePublisherRequestBuilder()
-                                .withName(VALID_NAME)
-                                .build();
-        var request = new HandlerRequestBuilder<CreatePublisherRequest>(dtoObjectMapper)
-                          .withBody(testPublisher)
-                                                                                        .build();
-        handlerUnderTest.handleRequest(request, output, context);
+        var requestBody = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructUnauthorizedRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));

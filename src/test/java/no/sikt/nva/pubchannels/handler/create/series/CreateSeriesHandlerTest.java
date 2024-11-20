@@ -23,7 +23,6 @@ import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
-import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -55,8 +54,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
@@ -190,8 +189,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
-        var inputBody = new CreateSeriesRequestBuilder().withName(name).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody = new CreateSeriesRequestBuilder().withName(name).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -203,9 +202,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var inputBody = new CreateSeriesRequestBuilder().withName(VALID_NAME)
-                              .withPrintIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -217,11 +216,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
-        var inputBody = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withOnlineIssn(issn)
-                              .build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -233,11 +230,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var inputBody = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withHomepage(url)
-                              .build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -257,8 +252,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
@@ -277,8 +273,9 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                                                                                                .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
 
@@ -299,11 +296,12 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                               .withSameAs(URI.create(homepage));
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .withHomepage(homepage)
-                              .build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateSeriesRequestBuilder()
+                .withName(VALID_NAME)
+                .withHomepage(homepage)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
@@ -311,13 +309,8 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var inputBody = new CreateSeriesRequestBuilder()
-                              .withName(VALID_NAME)
-                              .build();
-        var request = new HandlerRequestBuilder<CreateSeriesRequest>(dtoObjectMapper).withBody(inputBody)
-
-                                                                                     .build();
-        handlerUnderTest.handleRequest(request, output, context);
+        var requestBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructUnauthorizedRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));

@@ -22,7 +22,6 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelRespons
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -54,8 +53,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
@@ -185,8 +184,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
 
-        var inputBody = new CreateJournalRequestBuilder().withName(name).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody = new CreateJournalRequestBuilder().withName(name).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -198,8 +197,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -211,8 +211,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidElectronicIssn(String issn) throws IOException {
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -224,8 +225,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     @ParameterizedTest
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
@@ -246,8 +248,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                                                                                 .withPrintIssn(issn);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
@@ -266,8 +269,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                                                                                 .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
@@ -288,8 +292,12 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                                   URI.create(homepage));
         stubFetchOKResponse(testChannel);
 
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).withHomepage(homepage).build();
-        handlerUnderTest.handleRequest(constructRequest(inputBody), output, context);
+        var requestBody =
+            new CreateJournalRequestBuilder()
+                .withName(VALID_NAME)
+                .withHomepage(homepage)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 
@@ -298,9 +306,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var inputBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
-        var request = new HandlerRequestBuilder<CreateJournalRequest>(dtoObjectMapper).withBody(inputBody).build();
-        handlerUnderTest.handleRequest(request, output, context);
+        var requestBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructUnauthorizedRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));
