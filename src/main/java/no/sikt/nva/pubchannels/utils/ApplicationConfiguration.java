@@ -11,7 +11,7 @@ import software.amazon.awssdk.services.appconfig.model.GetConfigurationRequest;
 public class ApplicationConfiguration {
 
     public static final String PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM = "publicationChannelCacheEnabled";
-    private final static Environment ENVIRONMENT = new Environment();
+    private static final Environment ENVIRONMENT = new Environment();
     private final AppConfigClient client;
 
     public ApplicationConfiguration(AppConfigClient client) {
@@ -23,10 +23,10 @@ public class ApplicationConfiguration {
         return new ApplicationConfiguration(AppConfigClient.create());
     }
 
-    public boolean shouldUseCache()  {
+    public boolean shouldUseCache() {
         var responseBody = client.getConfiguration(createRequest()).content().asUtf8String();
-        return attempt(() -> JsonUtils.dtoObjectMapper.readTree(responseBody))
-                   .map(jsonNode -> jsonNode.get(PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM))
+        return attempt(() -> JsonUtils.dtoObjectMapper.readTree(responseBody)).map(
+                jsonNode -> jsonNode.get(PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM))
                    .map(JsonNode::asBoolean)
                    .orElse(failure -> false);
     }

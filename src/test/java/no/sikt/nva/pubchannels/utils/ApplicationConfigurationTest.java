@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.SdkBytes;
@@ -15,17 +14,12 @@ import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
 class ApplicationConfigurationTest {
 
     @Test
-    void shouldReturnTrueWhenAppConfigHasCachingEnabled() throws IOException {
+    void shouldReturnTrueWhenAppConfigHasCachingEnabled() {
         var client = mock(AppConfigClient.class);
         when(client.getConfiguration(any(GetConfigurationRequest.class))).thenReturn(mockedResponse());
         var appConfig = new ApplicationConfiguration(client);
 
         assertTrue(appConfig.shouldUseCache());
-    }
-
-    @Test
-    void some() throws IOException {
-        var s = new ApplicationConfiguration(AppConfigClient.create()).shouldUseCache();
     }
 
     private static GetConfigurationResponse mockedResponse() {
