@@ -196,6 +196,15 @@ Resources:
               - appconfig:GetLatestConfiguration
             Resource: '*'
 
+  AppConfigExtensionLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: AWS-AppConfig-Extension
+      Description: A Lambda layer that provides extension for AppConfig configurations.
+      ContentUri: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:AWS-AppConfig-Extension
+      CompatibleRuntimes:
+        - java21
+
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -216,7 +225,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Layers:
-        - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:appconfig-layer-${ApplicationConfigName}-${ConfigurationProfileName}-${EnvironmentName}
+        - !Ref AppConfigExtensionLayer
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
