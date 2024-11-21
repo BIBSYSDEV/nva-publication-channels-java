@@ -19,6 +19,7 @@ import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -84,6 +85,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected boolean shouldUseCache() {
+        ApplicationConfiguration.defaultAppConfigClientInstance().shouldUseCache();
         return Boolean.parseBoolean(environment.readEnv(SHOULD_USE_CACHE));
     }
 

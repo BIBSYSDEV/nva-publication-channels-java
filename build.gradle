@@ -13,4 +13,5 @@ test {
     environment("APPLICATION_CONFIG_NAME", "ApplicationConfig")
     environment("APPLICATION_CONFIG_PROFILE_NAME", "ApplicationConfigurationProfile")
     environment("APPLICATION_CONFIG_ENVIRONMENT_NAME", "Live")
+    environment("AWS_APPCONFIG_EXTENSION_PREFETCH_LIST", "path/path/path")
 }

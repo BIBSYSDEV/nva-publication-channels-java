@@ -14,10 +14,11 @@ import org.junit.jupiter.api.Test;
 class ApplicationConfigurationTest {
 
     @Test
-    void some() throws IOException, InterruptedException {
+    void shouldReturnTrueWhenAppConfigHasCachingEnabled() throws IOException, InterruptedException {
         var client = mock(HttpClient.class);
-        when(client.send(any(),eq(BodyHandlers.ofString())))
-            .thenReturn(response());
+        var response = response();
+        when(client.send(any(), eq(BodyHandlers.ofString())))
+            .thenReturn(response);
         var configuration = new ApplicationConfiguration(client);
 
 

@@ -238,6 +238,7 @@ Resources:
           APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
           APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
           APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          AWS_APPCONFIG_EXTENSION_PREFETCH_LIST: !Sub /applications/${ApplicationConfigName}/environments/{EnvironmentName}/configurations/{ConfigurationProfileName}
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
