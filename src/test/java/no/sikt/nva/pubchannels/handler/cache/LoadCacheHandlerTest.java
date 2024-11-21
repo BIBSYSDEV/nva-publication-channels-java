@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceSetup;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.FakeS3Client;
@@ -16,7 +16,7 @@ import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UnixPath;
 import org.junit.jupiter.api.Test;
 
-class LoadCacheHandlerTest extends CacheServiceDynamoDbSetup {
+class LoadCacheHandlerTest extends CacheServiceSetup {
 
     public static final String CHANNEL_ID_FROM_CSV = "1013C82D-B452-43E4-9396-FA958F2BC2E9";
 

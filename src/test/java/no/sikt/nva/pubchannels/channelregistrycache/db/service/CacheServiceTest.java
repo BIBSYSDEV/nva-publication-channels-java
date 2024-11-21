@@ -23,7 +23,7 @@ import nva.commons.core.paths.UnixPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class CacheServiceTest extends CacheServiceDynamoDbSetup {
+class CacheServiceTest extends CacheServiceSetup {
 
     private CacheService cacheService;
 

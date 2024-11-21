@@ -68,6 +68,10 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Description: The name of the AppConfig Environment
     Default: '/NVA/AppConfig/ApplicationEnvironmentName'
+  ApplicationIdName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: The name of the AppConfig Id
+    Default: '/NVA/AppConfig/ApplicationConfigId'
 
 Resources:
 
@@ -196,15 +200,6 @@ Resources:
               - appconfig:GetLatestConfiguration
             Resource: '*'
 
-  AppConfigExtensionLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: AWS-AppConfig-Extension
-      Description: A Lambda layer that provides extension for AppConfig configurations.
-      ContentUri: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:AWS-AppConfig-Extension
-      CompatibleRuntimes:
-        - java21
-
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -224,8 +219,6 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
-      Layers:
-        - !Ref AppConfigExtensionLayer
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
@@ -247,7 +240,7 @@ Resources:
           APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
           APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
           APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
-          AWS_APPCONFIG_EXTENSION_PREFETCH_LIST: !Sub /applications/${ApplicationConfigName}/environments/{EnvironmentName}/configurations/{ConfigurationProfileName}
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission

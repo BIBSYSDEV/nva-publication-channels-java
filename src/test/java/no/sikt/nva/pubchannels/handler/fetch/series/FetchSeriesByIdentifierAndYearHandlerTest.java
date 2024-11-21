@@ -26,6 +26,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -39,10 +40,11 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
@@ -57,9 +59,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
+import software.amazon.awssdk.services.appconfig.AppConfigClient;
 
 @WireMockTest(httpsEnabled = true)
-class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
+class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceSetup {
 
     public static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     public static final String SERIES_YEAR_FROM_CACHE = "2024";
@@ -85,7 +88,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                          cacheService, super.getApplicationConfiguration());
         this.output = new ByteArrayOutputStream();
     }
 
@@ -295,7 +299,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                          cacheService, super.getApplicationConfiguration());
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -362,7 +367,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.mockCacheEnabledResponse();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService, super.getApplicationConfiguration());
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -378,7 +384,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetu
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.mockCacheEnabledResponse();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService, super.getApplicationConfiguration());
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());

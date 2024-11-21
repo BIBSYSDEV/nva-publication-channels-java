@@ -2,33 +2,36 @@ package no.sikt.nva.pubchannels.utils;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.appconfig.AppConfigClient;
+import software.amazon.awssdk.services.appconfig.model.GetConfigurationRequest;
+import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
 
 class ApplicationConfigurationTest {
 
     @Test
-    void shouldReturnTrueWhenAppConfigHasCachingEnabled() throws IOException, InterruptedException {
-        var client = mock(HttpClient.class);
-        var response = response();
-        when(client.send(any(), eq(BodyHandlers.ofString())))
-            .thenReturn(response);
-        var configuration = new ApplicationConfiguration(client);
+    void shouldReturnTrueWhenAppConfigHasCachingEnabled() throws IOException {
+        var client = mock(AppConfigClient.class);
+        when(client.getConfiguration(any(GetConfigurationRequest.class))).thenReturn(mockedResponse());
+        var appConfig = new ApplicationConfiguration(client);
 
-
-        assertTrue(configuration.shouldUseCache());
+        assertTrue(appConfig.shouldUseCache());
     }
 
-    private HttpResponse<String> response() {
-        var response = mock(HttpResponse.class);
-        when(response.body()).thenReturn(configContent());
-        return response;
+    @Test
+    void some() throws IOException {
+        var s = new ApplicationConfiguration(AppConfigClient.create()).shouldUseCache();
+    }
+
+    private static GetConfigurationResponse mockedResponse() {
+        return GetConfigurationResponse.builder()
+                   .content(SdkBytes.fromString(configContent(), StandardCharsets.UTF_8))
+                   .build();
     }
 
     private static String configContent() {

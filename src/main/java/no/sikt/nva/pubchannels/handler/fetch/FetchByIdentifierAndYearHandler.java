@@ -50,19 +50,23 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
+    protected final ApplicationConfiguration applicationConfiguration;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
         this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
         this.cacheService = CacheService.defaultInstance();
+        this.applicationConfiguration = ApplicationConfiguration.defaultAppConfigClientInstance();
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,
-                                              PublicationChannelClient client, CacheService cacheService) {
+                                              PublicationChannelClient client, CacheService cacheService,
+                                              ApplicationConfiguration applicationConfiguration) {
         super(requestClass, environment);
         this.publicationChannelClient = client;
         this.cacheService = cacheService;
+        this.applicationConfiguration = applicationConfiguration;
     }
 
     protected RequestInfo validate(RequestInfo requestInfo) {
@@ -85,8 +89,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected boolean shouldUseCache() {
-        ApplicationConfiguration.defaultAppConfigClientInstance().shouldUseCache();
-        return Boolean.parseBoolean(environment.readEnv(SHOULD_USE_CACHE));
+        return applicationConfiguration.shouldUseCache();
     }
 
     private static String getPathElement(ChannelType type) {
