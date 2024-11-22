@@ -234,7 +234,6 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
           APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
           APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
@@ -268,11 +267,11 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
           APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
           APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
           APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -301,11 +300,11 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
           APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
           APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
           APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
