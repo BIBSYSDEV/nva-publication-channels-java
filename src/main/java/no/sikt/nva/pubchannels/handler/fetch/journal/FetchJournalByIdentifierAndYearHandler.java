@@ -2,7 +2,6 @@ package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
 import com.amazonaws.services.lambda.runtime.Context;
-import java.net.http.HttpClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
