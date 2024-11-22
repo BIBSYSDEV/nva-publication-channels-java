@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
-public class CacheServiceSetup {
+public class CacheServiceTestSetup {
 
     private DynamoDbClient client;
     private ApplicationConfiguration applicationConfiguration;

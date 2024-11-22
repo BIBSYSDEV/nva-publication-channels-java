@@ -196,8 +196,7 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - appconfig:StartConfigurationSession
-              - appconfig:GetLatestConfiguration
+              - appconfig:GetConfiguration
             Resource: '*'
 
   LoadCacheButtonHandler:

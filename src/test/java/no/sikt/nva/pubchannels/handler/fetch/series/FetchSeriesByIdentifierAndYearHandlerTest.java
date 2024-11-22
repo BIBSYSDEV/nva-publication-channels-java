@@ -40,11 +40,10 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.SeriesDto;
-import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
@@ -59,10 +58,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
-import software.amazon.awssdk.services.appconfig.AppConfigClient;
 
 @WireMockTest(httpsEnabled = true)
-class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceSetup {
+class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
     public static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     public static final String SERIES_YEAR_FROM_CACHE = "2024";

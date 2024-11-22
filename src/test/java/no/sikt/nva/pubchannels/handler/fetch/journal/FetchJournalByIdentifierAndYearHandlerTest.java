@@ -40,11 +40,10 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -59,10 +58,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
-import software.amazon.awssdk.services.appconfig.AppConfigClient;
 
 @WireMockTest(httpsEnabled = true)
-class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceSetup {
+class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
     private static final int YEAR_START = 2004;
     private static final Context context = new FakeContext();
