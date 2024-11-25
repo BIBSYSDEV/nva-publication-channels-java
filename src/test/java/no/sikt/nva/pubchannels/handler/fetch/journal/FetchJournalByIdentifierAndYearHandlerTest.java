@@ -6,6 +6,7 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
@@ -61,6 +62,29 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
                                                                            this.cacheService,
                                                                            super.getAppConfigWithCacheEnabled(false));
         this.mockRegistry = new PublicationChannelMockClient();
+    }
+
+    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
+    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
+    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
+        final var expectedMediaType =
+            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
+        var year = TestUtils.randomYear();
+        var identifier = mockRegistry.randomJournal(year);
+        var input = constructRequest(String.valueOf(year), identifier, mediaType);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
+        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        assertThat(contentType, is(equalTo(expectedMediaType)));
+
+        var actualJournal = response.getBodyObject(JournalDto.class);
+        var expectedJournal = mockRegistry.getJournal(identifier);
+        assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
 
     @Test
