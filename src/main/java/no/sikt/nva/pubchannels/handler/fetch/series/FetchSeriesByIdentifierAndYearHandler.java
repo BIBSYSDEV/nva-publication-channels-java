@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.fetch.series;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
@@ -39,5 +40,10 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
                          ? super.fetchChannelFromCache(SERIES, identifier, year)
                          : super.fetchChannelOrFetchFromCache(SERIES, identifier, year);
         return SeriesDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
+    }
+
+    @Override
+    protected String getPathElement() {
+        return SERIES_PATH_ELEMENT;
     }
 }

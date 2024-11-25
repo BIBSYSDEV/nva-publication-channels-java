@@ -1,14 +1,13 @@
 package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICATION;
-import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
 import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -43,5 +42,10 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
                          ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
                          : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
         return SerialPublicationDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
+    }
+
+    @Override
+    protected String getPathElement() {
+        return SERIAL_PUBLICATION_PATH_ELEMENT;
     }
 }

@@ -6,7 +6,6 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
@@ -313,16 +312,13 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
                                                                            cacheService);
 
-        var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
-        var year = JOURNAL_YEAR_FROM_CACHE;
-
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Fetching JOURNAL from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching JOURNAL from cache: " + JOURNAL_IDENTIFIER_FROM_CACHE));
 
         var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
 

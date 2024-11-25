@@ -323,10 +323,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
     @Test
     void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentVariableIsTrue() throws IOException {
-        var identifier = SERIES_IDENTIFIER_FROM_CACHE;
-        var year = SERIES_YEAR_FROM_CACHE;
 
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(SERIES_YEAR_FROM_CACHE, SERIES_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadCache();
@@ -336,7 +334,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
+        assertThat(appender.getMessages(),
+                   containsString("Fetching SERIAL_PUBLICATION from cache: " + SERIES_IDENTIFIER_FROM_CACHE));
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));

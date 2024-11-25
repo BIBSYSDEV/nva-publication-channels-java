@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.PUBLISHER;
 import com.amazonaws.services.lambda.runtime.Context;
+import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
@@ -40,5 +41,10 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
                             ? super.fetchChannelFromCache(PUBLISHER, identifier, year)
                             : super.fetchChannelOrFetchFromCache(PUBLISHER, identifier, year);
         return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
+    }
+
+    @Override
+    protected String getPathElement() {
+        return PUBLISHER_PATH_ELEMENT;
     }
 }
