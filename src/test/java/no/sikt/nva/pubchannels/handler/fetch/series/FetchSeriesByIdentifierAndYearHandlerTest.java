@@ -335,7 +335,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
         assertThat(appender.getMessages(),
-                   containsString("Fetching SERIAL_PUBLICATION from cache: " + SERIES_IDENTIFIER_FROM_CACHE));
+                   containsString("Fetching SERIES from cache: " + SERIES_IDENTIFIER_FROM_CACHE));
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
