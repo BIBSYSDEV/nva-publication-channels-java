@@ -29,8 +29,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
     @Override
     @BeforeEach
-    public void setup() {
-        super.setup();
+    public void setupDynamoDbTable() {
+        super.setupDynamoDbTable();
         var client = super.getClient();
         cacheService = new CacheService(client);
     }

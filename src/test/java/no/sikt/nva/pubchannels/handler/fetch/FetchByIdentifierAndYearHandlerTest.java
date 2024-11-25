@@ -25,8 +25,6 @@ import org.mockito.Mockito;
 @WireMockTest(httpsEnabled = true)
 public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
-    public static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
-    public static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     protected static final int YEAR_START = 2004;
     protected static final Context context = new FakeContext();
     protected static Environment environment;
@@ -46,7 +44,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     @BeforeEach
     void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
-        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
+        super.setupDynamoDbTable();
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         HttpClient httpClient = WiremockHttpClient.create();
         channelRegistryClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);

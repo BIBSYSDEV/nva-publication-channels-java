@@ -47,8 +47,8 @@ import org.zalando.problem.Problem;
 
 public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
-    public static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
-    public static final String SERIES_YEAR_FROM_CACHE = "2024";
+    private static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
+    private static final String SERIES_YEAR_FROM_CACHE = "2024";
     private static final URI SELF_URI_BASE = URI.create(
         "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournalserie/";

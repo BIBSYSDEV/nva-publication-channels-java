@@ -46,7 +46,7 @@ import org.zalando.problem.Problem;
 
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
-    public static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
+    private static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
 

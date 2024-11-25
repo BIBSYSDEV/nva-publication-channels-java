@@ -53,6 +53,9 @@ import org.zalando.problem.Problem;
 
 class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
+    private static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
+    private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
+
     private PublicationChannelMockClient mockRegistry;
 
     @BeforeEach
