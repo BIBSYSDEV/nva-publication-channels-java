@@ -11,6 +11,7 @@ import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UnixPath;
+import org.junit.jupiter.api.BeforeEach;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
@@ -24,7 +25,8 @@ public class CacheServiceDynamoDbSetup {
 
     private DynamoDbClient client;
 
-    public void setup(){
+    @BeforeEach
+    void setup(){
         this.client = DynamoDBEmbedded.create().dynamoDbClient();
         createTable(new Environment().readEnv("TABLE_NAME"));
     }

@@ -22,7 +22,6 @@ class LoadCacheHandlerTest extends CacheServiceDynamoDbSetup {
 
     @Test
     void shouldLoadCache() throws IOException {
-        super.setup();
         var s3Client = insertCacheCsvToS3();
         var cacheService = new CacheService(super.getClient());
         var handler = getLoadCacheHandler(cacheService, s3Client);
