@@ -6,6 +6,8 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
+import no.sikt.nva.pubchannels.utils.AppConfig;
+import no.sikt.nva.pubchannels.utils.FakeAppConfig;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;
@@ -21,7 +23,7 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
-public class CacheServiceDynamoDbSetup {
+public class CacheServiceTestSetup {
 
     private DynamoDbClient client;
 
@@ -31,7 +33,11 @@ public class CacheServiceDynamoDbSetup {
         createTable(new Environment().readEnv("TABLE_NAME"));
     }
 
-    public void loadCache() {
+    public AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
+        return new FakeAppConfig(cacheEnabled);
+    }
+
+    public void loadAndEnableCache() {
         var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
         var s3Client = new FakeS3Client();
         var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
@@ -46,31 +52,25 @@ public class CacheServiceDynamoDbSetup {
 
     public void createTable(String tableName) {
         var request = CreateTableRequest.builder()
-                                         .attributeDefinitions(
-                                             AttributeDefinition.builder()
-                                                 .attributeName(PRIMARY_KEY)
-                                                 .attributeType(ScalarAttributeType.S) // UUID as String
-                                                 .build(),
-                                             AttributeDefinition.builder()
-                                                 .attributeName(SORT_KEY)
-                                                 .attributeType(ScalarAttributeType.S) // type as String
-                                                 .build())
-                                         .keySchema(
-                                             KeySchemaElement.builder()
-                                                 .attributeName(PRIMARY_KEY)
-                                                 .keyType(KeyType.HASH) // Partition key
-                                                 .build(),
-                                             KeySchemaElement.builder()
-                                                 .attributeName(SORT_KEY)
-                                                 .keyType(KeyType.RANGE) // Sort key
-                                                 .build())
-                                         .provisionedThroughput(
-                                             ProvisionedThroughput.builder()
-                                                 .readCapacityUnits(10L)
-                                                 .writeCapacityUnits(10L)
-                                                 .build())
-                                         .tableName(tableName)
-                                         .build();
+                          .attributeDefinitions(AttributeDefinition.builder()
+                                                    .attributeName(PRIMARY_KEY)
+                                                    .attributeType(ScalarAttributeType.S) // UUID as String
+                                                    .build(), AttributeDefinition.builder()
+                                                                  .attributeName(SORT_KEY)
+                                                                  .attributeType(
+                                                                      ScalarAttributeType.S) // type as String
+                                                                  .build())
+                          .keySchema(KeySchemaElement.builder()
+                                         .attributeName(PRIMARY_KEY)
+                                         .keyType(KeyType.HASH) // Partition key
+                                         .build(), KeySchemaElement.builder()
+                                                       .attributeName(SORT_KEY)
+                                                       .keyType(KeyType.RANGE) // Sort key
+                                                       .build())
+                          .provisionedThroughput(
+                              ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(10L).build())
+                          .tableName(tableName)
+                          .build();
 
         client.createTable(request);
     }

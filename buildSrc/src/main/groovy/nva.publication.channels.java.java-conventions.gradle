@@ -19,6 +19,7 @@ dependencies {
     implementation libs.open.csv
     implementation libs.aws.sdk2.s3
     implementation libs.aws.sdk2.dynamodb.enhanced
+    implementation libs.aws.appconfig
     implementation libs.guava
 
     testImplementation libs.dynamodDbLocal

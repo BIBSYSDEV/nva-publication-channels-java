@@ -44,6 +44,7 @@ aws-lambda-java-core = { group = 'com.amazonaws', name = 'aws-lambda-java-core',
 aws-sdk2-s3 = { group = 'software.amazon.awssdk', name = 's3', version = '2.27.24' }
 aws-lambda-log4j2 = { group = 'com.amazonaws', name = 'aws-lambda-java-log4j2', version.ref = 'awslog4j2'}
 aws-sdk2-dynamodb-enhanced = { group = 'software.amazon.awssdk', name = 'dynamodb-enhanced', version.ref = 'awsSdk2' }
+aws-appconfig = { group = 'software.amazon.awssdk', name = 'appconfig', version.ref = 'awsSdk2' }
 
 log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
 log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }

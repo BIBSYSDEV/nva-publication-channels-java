@@ -19,6 +19,8 @@ import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.utils.AppConfig;
+import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -40,24 +42,27 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String YEAR = "Year";
     private static final String PID = "Pid";
     private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
-    private static final String SHOULD_USE_CACHE = "SHOULD_USE_CACHE";
     private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
+    protected final AppConfig appConfig;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
         this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
         this.cacheService = CacheService.defaultInstance();
+        this.appConfig = ApplicationConfiguration.defaultAppConfigClientInstance();
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,
-                                              PublicationChannelClient client, CacheService cacheService) {
+                                              PublicationChannelClient client, CacheService cacheService,
+                                              AppConfig appConfig) {
         super(requestClass, environment);
         this.publicationChannelClient = client;
         this.cacheService = cacheService;
+        this.appConfig = appConfig;
     }
 
     protected RequestInfo validate(RequestInfo requestInfo) {
@@ -81,7 +86,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected boolean shouldUseCache() {
-        return Boolean.parseBoolean(environment.readEnv(SHOULD_USE_CACHE));
+        return appConfig.shouldUseCache();
     }
 
     protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(ChannelType type, String identifier,
