@@ -46,7 +46,8 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
         return switch (type.toLowerCase(Locale.ROOT)) {
             case "journal" -> "Journal";
             case "series" -> "Series";
-            default -> throw new IllegalArgumentException("Unknown type found. Expected one of ['journal', 'series'].");
+            case null, default -> throw new IllegalArgumentException("Unknown type found. Expected one of " +
+                                                                      "['journal', 'series'].");
         };
     }
 

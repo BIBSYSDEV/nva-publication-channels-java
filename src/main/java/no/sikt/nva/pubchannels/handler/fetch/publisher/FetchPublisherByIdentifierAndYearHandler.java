@@ -8,6 +8,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
+import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
@@ -24,8 +25,8 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
 
     public FetchPublisherByIdentifierAndYearHandler(Environment environment,
                                                     PublicationChannelClient publicationChannelClient,
-                                                    CacheService cacheService) {
-        super(Void.class, environment, publicationChannelClient, cacheService);
+                                                    CacheService cacheService, AppConfig appConfig) {
+        super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 
     @Override

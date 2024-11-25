@@ -35,11 +35,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.FakeContext;
@@ -55,9 +56,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
 
 @WireMockTest(httpsEnabled = true)
-class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
+class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
     public static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
@@ -81,7 +84,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false));
         this.output = new ByteArrayOutputStream();
     }
 
@@ -295,7 +300,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
                                                                                       InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService);
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -341,9 +348,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
 
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -361,9 +369,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -379,9 +388,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -423,5 +433,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbS
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    private static GetConfigurationResponse noMockedConfigurationResponse() {
+        return GetConfigurationResponse.builder()
+                   .content(SdkBytes.fromString("", StandardCharsets.UTF_8))
+                   .build();
     }
 }

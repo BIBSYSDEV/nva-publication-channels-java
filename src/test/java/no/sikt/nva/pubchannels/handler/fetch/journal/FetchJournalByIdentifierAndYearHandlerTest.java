@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
@@ -60,7 +60,7 @@ import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
+class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
     private static final int YEAR_START = 2004;
     private static final Context context = new FakeContext();
@@ -86,7 +86,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var httpClient = WiremockHttpClient.create();
         var publicationChannelSource = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(false));
         this.mockRegistry = new PublicationChannelMockClient();
         this.output = new ByteArrayOutputStream();
     }
@@ -244,7 +246,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(false));
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
@@ -274,7 +278,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(randomYear(), UUID.randomUUID().toString());
 
@@ -358,8 +364,10 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(true));
 
         var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
         var year = JOURNAL_YEAR_FROM_CACHE;
@@ -383,8 +391,10 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(true));
 
         var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
         var year = JOURNAL_YEAR_FROM_CACHE;
@@ -408,8 +418,10 @@ class FetchJournalByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSet
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
         var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
+                                                                           cacheService,
+                                                                           super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();

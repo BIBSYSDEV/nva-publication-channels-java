@@ -56,6 +56,22 @@ Parameters:
     Type: 'String'
     Default: "channel-register-cache"
     Description: Name of bucket for channel register cache csv
+  ApplicationConfigName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: The name of the AppConfig Application
+    Default: '/NVA/AppConfig/ApplicationConfigName'
+  ConfigurationProfileName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: The name of the AppConfig Configuration Profile
+    Default: '/NVA/AppConfig/ApplicationConfigProfileName'
+  EnvironmentName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: The name of the AppConfig Environment
+    Default: '/NVA/AppConfig/ApplicationEnvironmentName'
+  ApplicationIdName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: The name of the AppConfig Id
+    Default: '/NVA/AppConfig/ApplicationConfigId'
 
 Resources:
 
@@ -172,6 +188,17 @@ Resources:
             Resource:
               - !GetAtt ChannelRegisterCacheTable.Arn
 
+  AppConfigActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - appconfig:GetConfiguration
+            Resource: '*'
+
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -193,6 +220,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt AppConfigActionsPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -206,8 +234,11 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
+          APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
+          APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
+          APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchJournalByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -222,6 +253,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt AppConfigActionsPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -235,8 +267,11 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
+          APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
+          APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
+          APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchSeriesByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -251,6 +286,7 @@ Resources:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt AppConfigActionsPolicy.PolicyArn
       #      AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
@@ -264,8 +300,11 @@ Resources:
             Method: get
       Environment:
         Variables:
-          SHOULD_USE_CACHE: "false"
           TABLE_NAME: !Ref ChannelRegisterCacheTable
+          APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
+          APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
+          APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
 
   FetchPublisherByIdentifierAndYearFunctionPermission:
     Type: AWS::Lambda::Permission
