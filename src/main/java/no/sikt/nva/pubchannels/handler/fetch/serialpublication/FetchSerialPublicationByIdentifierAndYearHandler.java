@@ -8,6 +8,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
+import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
@@ -25,8 +26,9 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
 
     public FetchSerialPublicationByIdentifierAndYearHandler(Environment environment,
                                                             ChannelRegistryClient channelRegistryClient,
-                                                            CacheService cacheService) {
-        super(Void.class, environment, channelRegistryClient, cacheService);
+                                                            CacheService cacheService,
+                                                            AppConfig appConfig) {
+        super(Void.class, environment, channelRegistryClient, cacheService, appConfig);
     }
 
     @Override

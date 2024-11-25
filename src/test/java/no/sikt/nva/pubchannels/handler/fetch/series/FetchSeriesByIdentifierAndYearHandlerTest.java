@@ -57,7 +57,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
     void setup() {
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment,
                                                                           this.channelRegistryClient,
-                                                                          this.cacheService);
+                                                                          this.cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(false));
     }
 
     @Test
@@ -263,7 +264,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          cacheService);
+                                                                          cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -311,7 +313,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
-        super.loadCache();
+        super.loadAndEnableCache();
         handlerUnderTest.handleRequest(input, output, context);
 
         assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
@@ -327,8 +329,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
         var input = constructRequest(SERIES_YEAR_FROM_CACHE, SERIES_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -344,8 +347,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());

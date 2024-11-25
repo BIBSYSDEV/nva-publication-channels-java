@@ -25,7 +25,8 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
 
     public FetchSeriesByIdentifierAndYearHandler(Environment environment,
                                                  PublicationChannelClient publicationChannelClient,
-                                                 CacheService cacheService, AppConfig appConfig) {
+                                                 CacheService cacheService,
+                                                 AppConfig appConfig) {
         super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 

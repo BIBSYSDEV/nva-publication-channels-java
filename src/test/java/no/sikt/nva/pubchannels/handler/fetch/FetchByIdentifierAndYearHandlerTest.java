@@ -13,7 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceDynamoDbSetup;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.Environment;
@@ -23,15 +23,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 @WireMockTest(httpsEnabled = true)
-public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceDynamoDbSetup {
+public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
     public static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     public static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     protected static final int YEAR_START = 2004;
     protected static final Context context = new FakeContext();
+    protected static Environment environment;
     protected CacheService cacheService;
     protected ByteArrayOutputStream output;
-    protected static Environment environment;
     protected String channelRegistryBaseUri;
     protected ChannelRegistryClient channelRegistryClient;
     protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
@@ -53,6 +53,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceDy
         cacheService = new CacheService(super.getClient());
         output = new ByteArrayOutputStream();
     }
+
     @AfterEach
     void tearDown() throws IOException {
         output.flush();

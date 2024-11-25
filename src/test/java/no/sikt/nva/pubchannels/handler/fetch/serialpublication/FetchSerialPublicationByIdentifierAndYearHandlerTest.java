@@ -31,7 +31,6 @@ import java.net.URI;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler;
@@ -58,7 +57,9 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
     void setup() {
         this.handlerUnderTest = new FetchSerialPublicationByIdentifierAndYearHandler(environment,
                                                                                      this.channelRegistryClient,
-                                                                                     this.cacheService);
+                                                                                     this.cacheService,
+                                                                                     super.getAppConfigWithCacheEnabled(
+                                                                                         false));
     }
 
     @ParameterizedTest
@@ -268,10 +269,11 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
 
     @Test
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
-        ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
+        var publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          cacheService);
+                                                                          cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -319,7 +321,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
-        super.loadCache();
+        super.loadAndEnableCache();
         handlerUnderTest.handleRequest(input, output, context);
 
         assertThat(appender.getMessages(), containsString("Fetching SERIAL_PUBLICATION from cache: " + identifier));
@@ -334,8 +336,9 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         var input = constructRequest(SERIES_YEAR_FROM_CACHE, SERIES_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -351,8 +354,9 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService);
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());

@@ -54,7 +54,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void setup() {
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
                                                                              this.channelRegistryClient,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false));
     }
 
     @Test
@@ -263,7 +264,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false)
+        );
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -309,9 +312,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
 
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -329,9 +333,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -347,9 +352,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService);
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
 
         handlerUnderTest.handleRequest(input, output, context);
 
