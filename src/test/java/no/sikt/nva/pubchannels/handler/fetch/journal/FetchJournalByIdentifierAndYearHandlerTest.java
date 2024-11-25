@@ -335,16 +335,13 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
                                                                            cacheService);
 
-        var identifier = JOURNAL_IDENTIFIER_FROM_CACHE;
-        var year = JOURNAL_YEAR_FROM_CACHE;
-
-        var input = constructRequest(year, identifier);
+        var input = constructRequest(JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Fetching JOURNAL from cache: " + identifier));
+        assertThat(appender.getMessages(), containsString("Fetching JOURNAL from cache: " + JOURNAL_IDENTIFIER_FROM_CACHE));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
