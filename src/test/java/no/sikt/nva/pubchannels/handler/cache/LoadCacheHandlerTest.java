@@ -22,6 +22,7 @@ class LoadCacheHandlerTest extends CacheServiceTestSetup {
 
     @Test
     void shouldLoadCache() throws IOException {
+        super.setupDynamoDbTable();
         var s3Client = insertCacheCsvToS3();
         var cacheService = new CacheService(super.getClient());
         var handler = getLoadCacheHandler(cacheService, s3Client);
@@ -29,7 +30,7 @@ class LoadCacheHandlerTest extends CacheServiceTestSetup {
         handler.handleRequest(null, null, new FakeContext());
 
         assertDoesNotThrow(() -> cacheService.getChannel(ChannelType.JOURNAL, CHANNEL_ID_FROM_CSV,
-                                                     String.valueOf(randomYear())));
+                                                         String.valueOf(randomYear())));
     }
 
     private static LoadCacheHandler getLoadCacheHandler(CacheService cacheService, FakeS3Client s3Client) {
