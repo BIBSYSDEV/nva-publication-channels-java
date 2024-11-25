@@ -30,7 +30,6 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
 
     @Override
     protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
-
         var request = new FetchByIdAndYearRequest(requestInfo);
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
