@@ -8,7 +8,7 @@ import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
+import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
@@ -25,8 +25,8 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
 
     public FetchJournalByIdentifierAndYearHandler(Environment environment,
                                                   PublicationChannelClient publicationChannelClient,
-                                                  CacheService cacheService, ApplicationConfiguration applicationConfiguration) {
-        super(Void.class, environment, publicationChannelClient, cacheService, applicationConfiguration);
+                                                  CacheService cacheService, AppConfig appConfig) {
+        super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 
     @Override

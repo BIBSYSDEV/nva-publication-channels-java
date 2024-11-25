@@ -10,8 +10,8 @@ test {
     environment("CHANNEL_REGISTER_CACHE_BUCKET", "someBucket")
     environment("CHANNEL_REGISTER_CACHE_S3_OBJECT", "someFile")
     environment("TABLE_NAME", "someTable")
-    environment("APPLICATION_CONFIG_NAME", "comeConfing")
-    environment("APPLICATION_CONFIG_PROFILE_NAME", "comeProfile")
+    environment("APPLICATION_CONFIG_NAME", "someConfing")
+    environment("APPLICATION_CONFIG_PROFILE_NAME", "someProfile")
     environment("APPLICATION_CONFIG_ENVIRONMENT_NAME", "someEnvironment")
     environment("APPLICATION_ID", "someId")
 }

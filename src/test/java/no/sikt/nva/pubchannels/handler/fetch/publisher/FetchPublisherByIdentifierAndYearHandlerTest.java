@@ -24,7 +24,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -86,7 +85,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             cacheService, super.getApplicationConfiguration());
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false));
         this.output = new ByteArrayOutputStream();
     }
 
@@ -301,7 +301,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             cacheService, super.getApplicationConfiguration());
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -347,9 +348,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
 
-        super.loadCache();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
-                                                                             cacheService, super.getApplicationConfiguration());
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -367,10 +369,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
-        super.loadCache();
-        super.mockCacheEnabledResponse();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService, super.getApplicationConfiguration());
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -386,10 +388,10 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        super.mockCacheEnabledResponse();
+        super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService, super.getApplicationConfiguration());
+                                                                             cacheService,
+                                                                             super.getAppConfigWithCacheEnabled(true));
 
         handlerUnderTest.handleRequest(input, output, context);
 

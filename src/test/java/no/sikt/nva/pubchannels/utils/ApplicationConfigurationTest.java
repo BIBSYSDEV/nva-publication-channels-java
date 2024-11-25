@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.utils;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.appconfig.AppConfigClient;
 import software.amazon.awssdk.services.appconfig.model.GetConfigurationRequest;
 import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
+import software.amazon.awssdk.services.appconfig.model.ResourceNotFoundException;
 
 class ApplicationConfigurationTest {
 
@@ -20,6 +22,15 @@ class ApplicationConfigurationTest {
         var appConfig = new ApplicationConfiguration(client);
 
         assertTrue(appConfig.shouldUseCache());
+    }
+
+    @Test
+    void shouldReturnFalseWhenFetchingConfigurationFails() {
+        var client = mock(AppConfigClient.class);
+        when(client.getConfiguration(any(GetConfigurationRequest.class))).thenThrow(ResourceNotFoundException.class);
+        var appConfig = new ApplicationConfiguration(client);
+
+        assertFalse(appConfig.shouldUseCache());
     }
 
     private static GetConfigurationResponse mockedResponse() {

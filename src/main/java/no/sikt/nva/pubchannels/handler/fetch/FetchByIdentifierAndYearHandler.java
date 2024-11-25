@@ -19,6 +19,7 @@ import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.utils.AppConfig;
 import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -49,23 +50,23 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
 
     protected final PublicationChannelClient publicationChannelClient;
     protected final CacheService cacheService;
-    protected final ApplicationConfiguration applicationConfiguration;
+    protected final AppConfig appConfig;
 
     @JacocoGenerated
     protected FetchByIdentifierAndYearHandler(Class<I> iclass, Environment environment) {
         super(iclass, environment);
         this.publicationChannelClient = ChannelRegistryClient.defaultInstance();
         this.cacheService = CacheService.defaultInstance();
-        this.applicationConfiguration = ApplicationConfiguration.defaultAppConfigClientInstance();
+        this.appConfig = ApplicationConfiguration.defaultAppConfigClientInstance();
     }
 
     protected FetchByIdentifierAndYearHandler(Class<I> requestClass, Environment environment,
                                               PublicationChannelClient client, CacheService cacheService,
-                                              ApplicationConfiguration applicationConfiguration) {
+                                              AppConfig appConfig) {
         super(requestClass, environment);
         this.publicationChannelClient = client;
         this.cacheService = cacheService;
-        this.applicationConfiguration = applicationConfiguration;
+        this.appConfig = appConfig;
     }
 
     protected RequestInfo validate(RequestInfo requestInfo) {
@@ -88,7 +89,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
 
     protected boolean shouldUseCache() {
-        return applicationConfiguration.shouldUseCache();
+        return appConfig.shouldUseCache();
     }
 
     private static String getPathElement(ChannelType type) {

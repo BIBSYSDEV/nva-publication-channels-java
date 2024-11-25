@@ -26,7 +26,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -81,13 +80,14 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
         when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
-
+        super.loadAndEnableCache();
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
         var httpClient = WiremockHttpClient.create();
         var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          cacheService, super.getApplicationConfiguration());
+                                                                          cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(false));
         this.output = new ByteArrayOutputStream();
     }
 
@@ -298,7 +298,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          cacheService, super.getApplicationConfiguration());
+                                                                          cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(false));
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -346,7 +347,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
-        super.loadCache();
+        super.loadAndEnableCache();
         handlerUnderTest.handleRequest(input, output, context);
 
         assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
@@ -364,9 +365,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        super.mockCacheEnabledResponse();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService, super.getApplicationConfiguration());
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -381,9 +382,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadCache();
-        super.mockCacheEnabledResponse();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService, super.getApplicationConfiguration());
+        super.loadAndEnableCache();
+        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
+                                                                          super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
