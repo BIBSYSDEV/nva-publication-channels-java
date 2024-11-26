@@ -1,7 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -21,15 +20,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
@@ -48,15 +44,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
     private static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
+    private static final String CHANNEL_REGISTRY_PATH_PARAMETER = "/findjournal/";
 
     private PublicationChannelMockClient mockRegistry;
+
+    @Override
+    protected String getChannelRegistryPathParameter() {
+        return CHANNEL_REGISTRY_PATH_PARAMETER;
+    }
 
     @BeforeEach
     void setup() {
@@ -164,58 +165,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
     }
 
     @Test
-    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.randomJournalWithThirdPartyYearValueNull(year);
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-
-        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
-        var expectedJournal = mockRegistry.getJournal(identifier);
-        assertThat(actualJournal, is(equalTo(expectedJournal)));
-    }
-
-    @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
-
-        var input = constructRequest(year, UUID.randomUUID().toString());
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Year")));
-    }
-
-    @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
-
-        var input = constructRequest(randomYear(), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Pid")));
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenChannelRegistryIsUnavailableAndChannelIsNotCached() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
@@ -233,7 +182,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var upstreamUrl = "https://localhost:9898/findjournal/" + identifier + "/" + year;
+        var upstreamUrl = "https://localhost:9898" + CHANNEL_REGISTRY_PATH_PARAMETER + identifier + "/" + year;
         assertThat(appender.getMessages(), containsString("Unable to reach upstream: " + upstreamUrl));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -246,83 +195,12 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
     }
 
     @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
-        var httpClient = mock(HttpClient.class);
-        when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
-        var channelRegistryBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
-                                                                           cacheService,
-                                                                           super.getAppConfigWithCacheEnabled(false));
-
-        var input = constructRequest(randomYear(), UUID.randomUUID().toString());
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
-        var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
-
-        mockRegistry.notFoundJournal(identifier, year);
-
-        var input = constructRequest(year, identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
-    }
-
-    @Test
-    void shouldLogAndReturnBadGatewayWhenChannelRegistryReturnsUnhandledResponseCode() throws IOException {
-        var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
-
-        mockRegistry.internalServerErrorJournal(identifier, year);
-
-        var input = constructRequest(year, identifier);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
-        assertThat(appender.getMessages(), containsString("500"));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
-    }
-
-    @Test
     void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
         var year = randomYear();
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild("findjournal", newIdentifier, year)
+                                             .addChild(CHANNEL_REGISTRY_PATH_PARAMETER, newIdentifier, year)
                                              .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);

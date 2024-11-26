@@ -41,7 +41,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
@@ -49,6 +48,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     private static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
+
+    @Override
+    protected String getChannelRegistryPathParameter() {
+        return CHANNEL_REGISTRY_PATH_ELEMENT;
+    }
 
     @BeforeEach
     void setup() {
@@ -175,60 +179,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
         var actualPublisher = response.getBodyObject(PublisherDto.class);
         assertThat(actualPublisher, is(equalTo(expectedPublisher)));
-    }
-
-    @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
-
-        var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Year")));
-    }
-
-    @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
-
-        var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Pid")));
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
-        var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
-
-        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT, identifier, year, HttpURLConnection.HTTP_NOT_FOUND);
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_NOT_FOUND)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
     }
 
     @Test

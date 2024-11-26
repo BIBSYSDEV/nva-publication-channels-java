@@ -32,7 +32,6 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
@@ -45,13 +44,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
-public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
+public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
+                                                                  no.sikt.nva.pubchannels.handler.fetch.FetchSerialPublicationByIdentifierAndYearHandlerTest {
 
     private static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     private static final String SERIES_YEAR_FROM_CACHE = "2024";
     private static final URI SELF_URI_BASE = URI.create(
         "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournalserie/";
+
+    @Override
+    protected String getChannelRegistryPathParameter() {
+        return CHANNEL_REGISTRY_PATH_ELEMENT;
+    }
 
     @BeforeEach
     void setup() {
@@ -186,85 +191,6 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertEquals(HTTP_OK, response.getStatusCode());
-    }
-
-    @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String year) throws IOException {
-
-        var input = constructRequest(year, UUID.randomUUID().toString(), MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Year")));
-    }
-
-    @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
-
-        var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(containsString("Pid")));
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
-        var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
-
-        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT, identifier, year, HTTP_NOT_FOUND);
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
-    }
-
-    @Test
-    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndSeriesIsNotCached()
-        throws IOException {
-        var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
-
-        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT, identifier, year, HTTP_INTERNAL_ERROR);
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
-        assertThat(appender.getMessages(), containsString("500"));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
