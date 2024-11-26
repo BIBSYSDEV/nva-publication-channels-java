@@ -19,7 +19,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.net.MediaType;
@@ -101,6 +100,17 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
+    @Override
+    protected void mockChannelFound(int year, String identifier, String channelRegistryResponseBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistryResponseBody);
+    }
+
+    @Override
+    protected TestChannel generateTestChannel(int year, String identifier) {
+        return new TestChannel(year, identifier, "Journal");
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
@@ -108,35 +118,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
                                                                            this.cacheService,
                                                                            super.getAppConfigWithCacheEnabled(false));
         this.mockRegistry = new PublicationChannelMockClient();
-    }
-
-    @Test
-    void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier, "Journal");
-
-        mockRegistry.mockChannelRegistry(year, testChannel, testChannel.asChannelRegistryJournalBodyWithoutLevel());
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        assertEquals(HTTP_OK, response.getStatusCode());
-    }
-
-    @Test
-    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.journalWithScientificValueReviewNotice(year);
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualJournalReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
-        var expectedJournalReviewNotice = mockRegistry.getJournal(identifier).reviewNotice();
-        assertThat(actualJournalReviewNotice, is(equalTo(expectedJournalReviewNotice)));
     }
 
     @Test

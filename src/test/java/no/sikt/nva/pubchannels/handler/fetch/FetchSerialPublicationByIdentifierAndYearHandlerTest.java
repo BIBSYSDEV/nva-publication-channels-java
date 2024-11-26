@@ -7,9 +7,11 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.util.UUID;
+import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,10 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
     protected abstract SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier);
 
     protected abstract SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier);
+
+    protected abstract void mockChannelFound(int year, String identifier, String channelRegistryResponseBody);
+
+    protected abstract TestChannel generateTestChannel(int year, String identifier);
 
     @Test
     void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
@@ -116,5 +122,19 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         var actualReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
         assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
+    }
+
+    @Test
+    void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var testChannel = generateTestChannel(year, identifier);
+        mockChannelFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
+
+        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
+                                       context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        assertEquals(HTTP_OK, response.getStatusCode());
     }
 }

@@ -92,26 +92,23 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
         return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
+    @Override
+    protected void mockChannelFound(int year, String identifier, String channelRegistryResponseBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    channelRegistryResponseBody);
+    }
+
+    @Override
+    protected TestChannel generateTestChannel(int year, String identifier) {
+        return new TestChannel(year, identifier, "Series");
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment,
                                                                           this.channelRegistryClient,
                                                                           this.cacheService,
                                                                           super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Test
-    void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier, "Series");
-        mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
-
-        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
-                                       context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        assertEquals(HTTP_OK, response.getStatusCode());
     }
 
     @Test
