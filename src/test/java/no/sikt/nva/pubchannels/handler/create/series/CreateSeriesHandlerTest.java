@@ -21,8 +21,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalRequestBuilder;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -39,32 +38,32 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
     void setUp() {
         handlerUnderTest = new CreateSeriesHandler(environment, publicationChannelClient);
         baseUri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                            .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                            .addChild(SERIES_PATH)
-                            .getUri();
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(SERIES_PATH)
+                      .getUri();
     }
 
     @Test
-    void shouldReturnCreatedJournalWithSuccess() throws IOException {
+    void shouldReturnCreatedSeriesWithSuccess() throws IOException {
         var expectedPid = UUID.randomUUID().toString();
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
         stubPostResponse(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "Series").withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
         var requestBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, SERIES_PATH, currentYear()))));
 
-        var expectedSeries = testChannel.asSeriesDto(baseUri, currentYear());
-        assertThat(response.getBodyObject(SeriesDto.class), is(equalTo(expectedSeries)));
+        var expectedSeries = testChannel.asSerialPublicationDto(baseUri, currentYear());
+        assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedSeries)));
     }
 
     @Test
@@ -89,7 +88,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
-        var input = constructRequest(new CreateJournalRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
         var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
 
         setupBadRequestStub(request);
@@ -256,7 +255,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
             new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -270,18 +269,17 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME)
-                                                                                               .withOnlineIssn(issn);
+                              .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
             new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
-
 
     @Test
     void shouldCreateSeriesWithNameAndHomepage() throws IOException {
@@ -303,7 +301,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                 .build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
@@ -342,5 +340,4 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
     }
-
 }

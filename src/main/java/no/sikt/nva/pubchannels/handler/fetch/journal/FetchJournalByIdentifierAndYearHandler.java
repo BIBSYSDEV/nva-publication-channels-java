@@ -7,14 +7,14 @@ import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, JournalDto> {
+public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -30,7 +30,7 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
     }
 
     @Override
-    protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected SerialPublicationDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
@@ -39,7 +39,7 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
         var journal = super.shouldUseCache()
                           ? super.fetchChannelFromCache(JOURNAL, identifier, year)
                           : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
-        return JournalDto.create(journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
+        return SerialPublicationDto.create(journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
     }
 
     @Override

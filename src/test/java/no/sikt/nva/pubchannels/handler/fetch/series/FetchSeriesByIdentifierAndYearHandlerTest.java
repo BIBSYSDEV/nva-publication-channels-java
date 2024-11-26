@@ -34,8 +34,7 @@ import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -72,12 +71,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
 
-        var actualSeries = response.getBodyObject(SeriesDto.class);
+        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
@@ -90,8 +89,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        var actualYear = response.getBodyObject(SeriesDto.class).year();
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualYear = response.getBodyObject(SerialPublicationDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
@@ -109,9 +108,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
-        var actualSeries = response.getBodyObject(SeriesDto.class);
+        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
@@ -130,12 +129,12 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
 
-        var actualSeries = response.getBodyObject(SeriesDto.class);
+        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
@@ -148,8 +147,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        var actualReviewNotice = response.getBodyObject(SeriesDto.class).reviewNotice();
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
         assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
     }
 
@@ -161,8 +160,8 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
-        var actualSeries = response.getBodyObject(SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertNull(actualSeries.reviewNotice());
     }
 
@@ -170,13 +169,13 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
+        var testChannel = new TestChannel(year, identifier, "Series");
         mockSeriesFound(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
         handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
                                        context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertEquals(HTTP_OK, response.getStatusCode());
     }
 
@@ -318,7 +317,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
     }
@@ -336,7 +335,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, SeriesDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(appender.getMessages(),
                    containsString("Fetching SERIES from cache: " + SERIES_IDENTIFIER_FROM_CACHE));
 
@@ -367,14 +366,14 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
         assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
-    private SeriesDto mockSeriesFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE);
+    private SerialPublicationDto mockSeriesFound(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Series");
         var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
                                     body);
 
-        return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private void mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
@@ -382,23 +381,23 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYear
                                     channelRegistrySeriesBody);
     }
 
-    private SeriesDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, SeriesDto.TYPE)
+    private SerialPublicationDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Series")
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return testChannel.asSeriesDto(SELF_URI_BASE, String.valueOf(year));
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
-    private SeriesDto mockSeriesFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier, SeriesDto.TYPE);
+    private SerialPublicationDto mockSeriesFoundYearValueNull(String year, String identifier) {
+        var testChannel = new TestChannel(null, identifier, "Series");
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
                                     testChannel.asChannelRegistrySeriesBody());
 
-        return testChannel.asSeriesDto(SELF_URI_BASE, year);
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, year);
     }
 }

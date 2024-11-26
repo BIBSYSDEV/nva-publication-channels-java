@@ -34,7 +34,7 @@ import java.util.UUID;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -381,7 +381,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
                                     body);
 
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year), type);
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private SerialPublicationDto mockSerialPublicationWithScientificValueReviewNotice(int year, String identifier,
@@ -393,7 +393,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year), type);
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private SerialPublicationDto mockSeriesFoundYearValueNull(String year, String identifier, String type) {
@@ -402,6 +402,6 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
                                     testChannel.asChannelRegistrySeriesBody());
 
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, year, type);
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, year);
     }
 }

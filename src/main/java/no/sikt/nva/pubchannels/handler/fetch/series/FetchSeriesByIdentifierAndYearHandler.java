@@ -7,14 +7,14 @@ import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SeriesDto> {
+public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -31,7 +31,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
     }
 
     @Override
-    protected SeriesDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected SerialPublicationDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
         var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
         var year = request.getYear();
@@ -40,7 +40,7 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
         var series = super.shouldUseCache()
                          ? super.fetchChannelFromCache(SERIES, identifier, year)
                          : super.fetchChannelOrFetchFromCache(SERIES, identifier, year);
-        return SeriesDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
+        return SerialPublicationDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
     }
 
     @Override

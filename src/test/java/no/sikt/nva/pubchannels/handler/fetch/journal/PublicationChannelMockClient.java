@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 
 public class PublicationChannelMockClient {
 
@@ -18,7 +18,7 @@ public class PublicationChannelMockClient {
     public static final String APPLICATION_JSON = "application/json";
     public static final String CHANNEL_REGISTRY_JOURNAL_PATH = "/findjournal/";
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/journal");
-    private final Map<String, JournalDto> journalsByIdentifier = new ConcurrentHashMap<>();
+    private final Map<String, SerialPublicationDto> journalsByIdentifier = new ConcurrentHashMap<>();
 
     public void notFoundJournal(String identifier, String year) {
         mockJournalNotFound(identifier, year);
@@ -28,13 +28,13 @@ public class PublicationChannelMockClient {
         mockJournalInternalServerError(identifier, year);
     }
 
-    public JournalDto getJournal(String identifier) {
+    public SerialPublicationDto getJournal(String identifier) {
         return journalsByIdentifier.get(identifier);
     }
 
     public String randomJournal(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifierString, JournalDto.TYPE);
+        var testChannel = new TestChannel(year, identifierString, "Journal");
 
         mockChannelRegistry(year, testChannel);
         return identifierString;
@@ -42,7 +42,7 @@ public class PublicationChannelMockClient {
 
     public String journalWithScientificValueReviewNotice(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifierString, JournalDto.TYPE)
+        var testChannel = new TestChannel(year, identifierString, "Journal")
                               .withScientificValueReviewNotice(Map.of("en", "some comment",
                                                                       "no", "vedtak"));
 
@@ -52,10 +52,10 @@ public class PublicationChannelMockClient {
 
     public String randomJournalWithThirdPartyYearValueNull(int year) {
         var identifierString = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, identifierString, JournalDto.TYPE);
+        var testChannel = new TestChannel(null, identifierString, "Journal");
 
         mockChannelRegistry(year, identifierString, testChannel.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(identifierString, testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+        journalsByIdentifier.put(identifierString, testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
 
         return identifierString;
     }
@@ -77,7 +77,7 @@ public class PublicationChannelMockClient {
     public void mockChannelRegistry(int year, TestChannel testChannel, String channelRegistryJournalBody) {
         mockChannelRegistry(year, testChannel.getIdentifier(), channelRegistryJournalBody);
         journalsByIdentifier.put(testChannel.getIdentifier(),
-                                 testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+                                 testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
     }
 
     private static void mockChannelRegistry(int year, String identifier, String responseBody) {

@@ -11,7 +11,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -19,7 +19,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, SeriesDto> {
+public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, SerialPublicationDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -40,7 +40,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Seri
     }
 
     @Override
-    protected SeriesDto processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
+    protected SerialPublicationDto processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createSeries(getClientRequest(input));
 
@@ -49,7 +49,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Seri
         var newSeries = (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIES,
                                                                                           response.pid(),
                                                                                           year);
-        var seriesDto = SeriesDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
+        var seriesDto = SerialPublicationDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
 
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, seriesDto.id().toString()));
         return seriesDto;

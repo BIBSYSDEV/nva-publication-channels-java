@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.search.serialpublication;
+package no.sikt.nva.pubchannels.handler.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;

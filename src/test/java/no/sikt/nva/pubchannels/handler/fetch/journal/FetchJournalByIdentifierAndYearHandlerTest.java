@@ -38,7 +38,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -78,14 +78,14 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
 
-        var actualJournal = response.getBodyObject(JournalDto.class);
+        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
@@ -98,12 +98,12 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(JournalDto.class);
+        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
@@ -116,8 +116,8 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
-        var actualYear = response.getBodyObject(JournalDto.class).year();
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualYear = response.getBodyObject(SerialPublicationDto.class).year();
         assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
@@ -125,14 +125,14 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
     void shouldNotFailWhenChannelRegistryLevelNull() throws IOException {
         var year = TestUtils.randomYear();
         var identifier = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, identifier, JournalDto.TYPE);
+        var testChannel = new TestChannel(year, identifier, "Journal");
 
         mockRegistry.mockChannelRegistry(year, testChannel, testChannel.asChannelRegistryJournalBodyWithoutLevel());
         var input = constructRequest(String.valueOf(year), identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertEquals(HTTP_OK, response.getStatusCode());
     }
 
@@ -144,8 +144,8 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
-        var actualJournalReviewNotice = response.getBodyObject(JournalDto.class).reviewNotice();
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualJournalReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
         var expectedJournalReviewNotice = mockRegistry.getJournal(identifier).reviewNotice();
         assertThat(actualJournalReviewNotice, is(equalTo(expectedJournalReviewNotice)));
     }
@@ -158,8 +158,8 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
-        var actualJournal = response.getBodyObject(JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
         assertNull(actualJournal.reviewNotice());
     }
 
@@ -171,12 +171,12 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
 
-        var actualJournal = response.getBodyObject(JournalDto.class);
+        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
         var expectedJournal = mockRegistry.getJournal(identifier);
         assertThat(actualJournal, is(equalTo(expectedJournal)));
     }
@@ -352,7 +352,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
         assertThat(appender.getMessages(),
                    containsString("Fetching JOURNAL from cache: " + JOURNAL_IDENTIFIER_FROM_CACHE));
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
     }

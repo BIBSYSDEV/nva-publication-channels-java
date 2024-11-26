@@ -42,7 +42,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -61,7 +61,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
                                                        .addChild(JOURNAL_PATH)
                                                        .getUri();
     private static final Context context = new FakeContext();
-    private static final TypeReference<PaginatedSearchResult<JournalDto>> TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
 
     @Override
@@ -277,7 +277,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
         assertTrue(areEqualURIs(actualUri, expectedUri));
     }
 
-    private static PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchJournalResultNameSearch(List<String> channelRegistryResults,
+    private static PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchJournalResultNameSearch(List<String> channelRegistryResults,
                                                                                                        String year,
                                                                                                        String name,
                                                                                                        int queryOffset,
@@ -298,7 +298,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
                                             expectedParams);
     }
 
-    private static List<JournalDto> mapToJournalResults(List<String> channelRegistryResults, String requestedYear) {
+    private static List<SerialPublicationDto> mapToJournalResults(List<String> channelRegistryResults, String requestedYear) {
         return channelRegistryResults.stream()
                                      .map(result -> attempt(() -> objectMapper.readValue(result,
                                                                                          ChannelRegistrySerialPublication.class)).orElseThrow())
@@ -306,11 +306,11 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
                                      .toList();
     }
 
-    private static JournalDto toJournalResult(ThirdPartySerialPublication journal, String requestedYear) {
-        return JournalDto.create(constructPublicationChannelUri(JOURNAL_PATH, null), journal, requestedYear);
+    private static SerialPublicationDto toJournalResult(ThirdPartySerialPublication journal, String requestedYear) {
+        return SerialPublicationDto.create(constructPublicationChannelUri(JOURNAL_PATH, null), journal, requestedYear);
     }
 
-    private static PaginatedSearchResult<JournalDto> getExpectedSearchResult(Integer year,
+    private static PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(Integer year,
                                                                              String printIssn,
                                                                              TestChannel testChannel)
         throws UnprocessableContentException {
@@ -320,7 +320,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
             expectedParams.put("year", String.valueOf(year));
         }
 
-        var expectedHits = List.of(testChannel.asJournalDto(SELF_URI_BASE, String.valueOf(year)));
+        var expectedHits = List.of(testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
 
         return PaginatedSearchResult.create(constructPublicationChannelUri(JOURNAL_PATH, expectedParams),
                                             DEFAULT_OFFSET_INT,
@@ -329,10 +329,10 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
                                             expectedHits);
     }
 
-    private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearch(Integer year, String printIssn)
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearch(Integer year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid, JournalDto.TYPE).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(year, pid, "Journal").withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,
@@ -341,11 +341,11 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
         return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
-    private PaginatedSearchResult<JournalDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
         Integer year,
         String printIssn) throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, pid, JournalDto.TYPE).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(null, pid, "Journal").withPrintIssn(printIssn);
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,

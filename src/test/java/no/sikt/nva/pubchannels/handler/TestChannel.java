@@ -13,10 +13,8 @@ import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
-import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.core.paths.UriWrapper;
 
 public record TestChannel(String identifier, Integer year, String name, ScientificValue scientificValue,
@@ -166,35 +164,7 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                             type).toJsonString();
     }
 
-    public JournalDto asJournalDto(URI selfUriBase, String requestedYear) {
-        var id = generateIdWithYear(selfUriBase, requestedYear);
-        return new JournalDto(id,
-                              identifier,
-                              name,
-                              getOnlineIssnValue(),
-                              getPrintIssnValue(),
-                              scientificValue,
-                              sameAs,
-                              discontinued,
-                              requestedYear,
-                              reviewNotice);
-    }
-
-    public SeriesDto asSeriesDto(URI selfUriBase, String requestedYear) {
-        var id = generateIdWithYear(selfUriBase, requestedYear);
-        return new SeriesDto(id,
-                             identifier,
-                             name,
-                             getOnlineIssnValue(),
-                             getPrintIssnValue(),
-                             scientificValue,
-                             sameAs,
-                             discontinued,
-                             requestedYear,
-                             reviewNotice);
-    }
-
-    public SerialPublicationDto asSerialPublicationDto(URI selfUriBase, String requestedYear, String type) {
+    public SerialPublicationDto asSerialPublicationDto(URI selfUriBase, String requestedYear) {
         var id = generateIdWithYear(selfUriBase, requestedYear);
         return new SerialPublicationDto(id,
                                         identifier,

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -60,7 +60,7 @@ class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest
         throws IOException, UnprocessableContentException {
         var year = randomYear();
         var issn = randomIssn();
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), JournalDto.TYPE).withPrintIssn(issn);
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), "Journal").withPrintIssn(issn);
         mockChannelRegistryResponse(String.valueOf(year), issn, List.of(testChannel.asChannelRegistryJournalBody()));
         var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
 
@@ -87,7 +87,7 @@ class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest
             expectedParams.put("year", year);
         }
 
-        var expectedHits = List.of(testChannel.asSerialPublicationDto(SELF_URI_BASE, year, testChannel.type()));
+        var expectedHits = List.of(testChannel.asSerialPublicationDto(SELF_URI_BASE, year));
 
         return PaginatedSearchResult.create(constructPublicationChannelUri(testChannel.type(), expectedParams),
                                             DEFAULT_OFFSET_INT,

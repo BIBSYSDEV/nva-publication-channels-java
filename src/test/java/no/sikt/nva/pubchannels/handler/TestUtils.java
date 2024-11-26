@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.MediaTypes;
@@ -216,7 +215,7 @@ public final class TestUtils {
     }
 
     private static String generateChannelRegistryJournalBody(Integer year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString(), JournalDto.TYPE).withName(name)
+        return new TestChannel(year, UUID.randomUUID().toString(), "Journal").withName(name)
                                                                                    .asChannelRegistryJournalBody();
     }
 
