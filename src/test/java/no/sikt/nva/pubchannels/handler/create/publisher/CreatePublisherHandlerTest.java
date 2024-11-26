@@ -274,7 +274,7 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     }
 
     private static Stream<String> invalidIsbnPrefixes() {
-        return Stream.of("12345678912345", "978-12345-1234567", "String-String", randomString());
+        return Stream.of("12345678912345", "978-12345-1234567", "String-String", "mWhEbgV6GfS6CQRWW");
     }
 
     private CreatePublisherResponse constructExpectedPublisher(String pid) {

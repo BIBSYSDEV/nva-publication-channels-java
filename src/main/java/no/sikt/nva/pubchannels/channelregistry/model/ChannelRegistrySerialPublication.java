@@ -36,19 +36,9 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
     @Override
     public String getYear() {
         return Optional.ofNullable(channelRegistryLevel())
-                       .map(ChannelRegistryLevel::year)
-                       .map(String::valueOf)
-                       .orElse(null);
-    }
-
-    @Override
-    public String type() {
-        return switch (type.toLowerCase(Locale.ROOT)) {
-            case "journal" -> "Journal";
-            case "series" -> "Series";
-            case null, default -> throw new IllegalArgumentException("Unknown type found. Expected one of " +
-                                                                      "['journal', 'series'].");
-        };
+                   .map(ChannelRegistryLevel::year)
+                   .map(String::valueOf)
+                   .orElse(null);
     }
 
     @Override
@@ -61,9 +51,19 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
         return nonNull(channelRegistryLevel) ? channelRegistryLevel.reviewNotice() : null;
     }
 
+    @Override
+    public String type() {
+        return switch (type.toLowerCase(Locale.ROOT)) {
+            case "journal", "tidsskrift" -> "Journal";
+            case "series", "serie" -> "Series";
+            case null, default -> throw new IllegalArgumentException("Unknown type found. Expected one of ['journal', "
+                                                                     + "'series'].");
+        };
+    }
+
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
         return Optional.ofNullable(channelRegistryLevel())
-                       .map(level -> mapper.map(level.level()))
-                       .orElse(ScientificValue.UNASSIGNED);
+                   .map(level -> mapper.map(level.level()))
+                   .orElse(ScientificValue.UNASSIGNED);
     }
 }

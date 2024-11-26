@@ -29,7 +29,6 @@ import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
 import nva.commons.core.paths.UriWrapper;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +41,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
     private static final String YEAR = "Year";
     private static final String PID = "Pid";
-    private static final String JOURNAL_PATH_PARAM = "journal";
-    private static final String PUBLISHER_PATH_PARAM = "publisher";
-    private static final String SERIES_PATH_PARAM = "series";
     private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
     private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE = "Fetching {} from channel register: {}";
 
@@ -76,29 +72,21 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         return requestInfo;
     }
 
-    protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(ChannelType type, String identifier, String year)
-        throws ApiGatewayException{
+    protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(ChannelType type, String identifier,
+                                                                           String year)
+        throws ApiGatewayException {
         try {
             LOGGER.info(FETCHING_FROM_CHANNEL_REGISTER_MESSAGE, type.name(), identifier);
             return publicationChannelClient.getChannel(type, identifier, year);
         } catch (PublicationChannelMovedException movedException) {
             throw new PublicationChannelMovedException(
                 "%s moved".formatted(type.name()),
-                constructNewLocation(getPathElement(type), movedException.getLocation(), year));
+                constructNewLocation(getPathElement(), movedException.getLocation(), year));
         }
     }
 
     protected boolean shouldUseCache() {
         return appConfig.shouldUseCache();
-    }
-
-    private static String getPathElement(ChannelType type) {
-        return switch (type) {
-            case JOURNAL -> JOURNAL_PATH_PARAM;
-            case PUBLISHER -> PUBLISHER_PATH_PARAM;
-            case SERIES -> SERIES_PATH_PARAM;
-            case SERIAL_PUBLICATION -> throw new NotImplementedException("Serial publication not implemented yet");
-        };
     }
 
     protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(ChannelType type, String identifier,
@@ -112,10 +100,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         }
     }
 
-    private static boolean isServerError(ApiGatewayException e) {
-        return e.getStatusCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR;
-    }
-
     protected ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(ChannelType type, String identifier,
                                                                         String year)
         throws ApiGatewayException {
@@ -124,11 +108,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         } catch (ApiGatewayException e) {
             return fetchFromCacheWhenServerError(type, identifier, year, e);
         }
-    }
-
-    private static Function<Failure<ThirdPartyPublicationChannel>, ApiGatewayException> throwOriginalException(
-        ApiGatewayException e) {
-        return failure -> e;
     }
 
     protected ThirdPartyPublicationChannel fetchChannelFromCache(ChannelType type, String identifier, String year)
@@ -170,5 +149,16 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     @Override
     protected Integer getSuccessStatusCode(I input, O output) {
         return HttpURLConnection.HTTP_OK;
+    }
+
+    protected abstract String getPathElement();
+
+    private static boolean isServerError(ApiGatewayException e) {
+        return e.getStatusCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR;
+    }
+
+    private static Function<Failure<ThirdPartyPublicationChannel>, ApiGatewayException> throwOriginalException(
+        ApiGatewayException e) {
+        return failure -> e;
     }
 }

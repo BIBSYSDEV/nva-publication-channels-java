@@ -42,4 +42,9 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
                             : super.fetchChannelOrFetchFromCache(PUBLISHER, identifier, year);
         return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
     }
+
+    @Override
+    protected String getPathElement() {
+        return PUBLISHER_PATH_ELEMENT;
+    }
 }

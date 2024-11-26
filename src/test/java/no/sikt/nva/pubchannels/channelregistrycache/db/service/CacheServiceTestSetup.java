@@ -26,16 +26,11 @@ public class CacheServiceTestSetup {
 
     private DynamoDbClient client;
 
-    public void setup() {
-        this.client = DynamoDBEmbedded.create().dynamoDbClient();
-        createTable(new Environment().readEnv("TABLE_NAME"));
-    }
-
-    public AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
+    protected AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
         return new FakeAppConfig(cacheEnabled);
     }
 
-    public void loadAndEnableCache() {
+    protected void loadAndEnableCache() {
         var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
         var s3Client = new FakeS3Client();
         var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
@@ -44,11 +39,16 @@ public class CacheServiceTestSetup {
         new CacheService(getClient()).loadCache(s3Client);
     }
 
-    public DynamoDbEnhancedClient getClient() {
+    protected DynamoDbEnhancedClient getClient() {
         return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
     }
 
-    public void createTable(String tableName) {
+    protected void setupDynamoDbTable() {
+        this.client = DynamoDBEmbedded.create().dynamoDbClient();
+        createTable(new Environment().readEnv("TABLE_NAME"));
+    }
+
+    private void createTable(String tableName) {
         var request = CreateTableRequest.builder()
                           .attributeDefinitions(AttributeDefinition.builder()
                                                     .attributeName(PRIMARY_KEY)

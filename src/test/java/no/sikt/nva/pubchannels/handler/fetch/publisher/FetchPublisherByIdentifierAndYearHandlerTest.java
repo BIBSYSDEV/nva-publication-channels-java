@@ -4,12 +4,9 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
-import static no.sikt.nva.pubchannels.handler.TestUtils.YEAR_START;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
@@ -24,75 +21,41 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.google.common.net.MediaType;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
 import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
-import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
 
-@WireMockTest(httpsEnabled = true)
-class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
+class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
-    public static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
+    private static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
-    private static final Context context = new FakeContext();
-    private FetchPublisherByIdentifierAndYearHandler handlerUnderTest;
-    private ByteArrayOutputStream output;
-    private Environment environment;
-    private String channelRegistryBaseUri;
-    private CacheService cacheService;
 
     @BeforeEach
-    void setup(WireMockRuntimeInfo runtimeInfo) {
-        super.setup();
-        environment = mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
-        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
-        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("false");
-        channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
-        var httpClient = WiremockHttpClient.create();
-        var publicationChannelClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        cacheService = new CacheService(super.getClient());
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
+    void setup() {
+        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
+                                                                             this.channelRegistryClient,
                                                                              cacheService,
                                                                              super.getAppConfigWithCacheEnabled(false));
-        this.output = new ByteArrayOutputStream();
-    }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        output.flush();
     }
 
     @Test
@@ -297,12 +260,13 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
 
     @Test
     void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccursAndPublisherNotCached() throws IOException,
-                                                                                      InterruptedException {
+                                                                                               InterruptedException {
         ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
 
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
                                                                              cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(false));
+                                                                             super.getAppConfigWithCacheEnabled(false)
+        );
 
         var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
@@ -326,8 +290,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                                   .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                                   .toString();
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .toString();
         mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
@@ -433,11 +397,5 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends CacheServiceTestSetup
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
-    }
-
-    private static GetConfigurationResponse noMockedConfigurationResponse() {
-        return GetConfigurationResponse.builder()
-                   .content(SdkBytes.fromString("", StandardCharsets.UTF_8))
-                   .build();
     }
 }

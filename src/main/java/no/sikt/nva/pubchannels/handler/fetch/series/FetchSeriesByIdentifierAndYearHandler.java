@@ -25,7 +25,8 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
 
     public FetchSeriesByIdentifierAndYearHandler(Environment environment,
                                                  PublicationChannelClient publicationChannelClient,
-                                                 CacheService cacheService, AppConfig appConfig) {
+                                                 CacheService cacheService,
+                                                 AppConfig appConfig) {
         super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 
@@ -40,5 +41,10 @@ public class FetchSeriesByIdentifierAndYearHandler extends FetchByIdentifierAndY
                          ? super.fetchChannelFromCache(SERIES, identifier, year)
                          : super.fetchChannelOrFetchFromCache(SERIES, identifier, year);
         return SeriesDto.create(publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
+    }
+
+    @Override
+    protected String getPathElement() {
+        return SERIES_PATH_ELEMENT;
     }
 }

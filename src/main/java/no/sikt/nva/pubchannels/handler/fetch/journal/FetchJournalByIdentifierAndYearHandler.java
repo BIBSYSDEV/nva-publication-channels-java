@@ -31,7 +31,6 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
 
     @Override
     protected JournalDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
-
         var request = new FetchByIdAndYearRequest(requestInfo);
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
@@ -41,5 +40,10 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
                           ? super.fetchChannelFromCache(JOURNAL, identifier, year)
                           : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
         return JournalDto.create(journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
+    }
+
+    @Override
+    protected String getPathElement() {
+        return JOURNAL_PATH_ELEMENT;
     }
 }

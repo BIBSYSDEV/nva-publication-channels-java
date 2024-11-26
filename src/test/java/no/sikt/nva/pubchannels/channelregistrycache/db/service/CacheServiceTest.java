@@ -29,8 +29,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
     @Override
     @BeforeEach
-    public void setup() {
-        super.setup();
+    public void setupDynamoDbTable() {
+        super.setupDynamoDbTable();
         var client = super.getClient();
         cacheService = new CacheService(client);
     }
@@ -94,7 +94,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
         var channelIdentifier = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
         var year = "2024";
 
-        var journal = (ChannelRegistryPublisher) cacheService.getChannel(ChannelType.PUBLISHER, channelIdentifier, year);
+        var journal = (ChannelRegistryPublisher) cacheService.getChannel(ChannelType.PUBLISHER, channelIdentifier,
+                                                                         year);
         var expectedJournal = createExpectedPublisher(channelIdentifier, year);
 
         assertEquals(expectedJournal, journal);
@@ -104,13 +105,15 @@ class CacheServiceTest extends CacheServiceTestSetup {
         return new ChannelRegistrySerialPublication(channelIdentifier,
                                                     "Tidsskrift for Den norske legeforening",
                                                     "0807-7096",
-                                          "0029-2001",
-                                          new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
-                                          URI.create(
-                                              "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo"
-                                              + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
+                                                    "0029-2001",
+                                                    new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null,
+                                                                             null),
+                                                    URI.create(
+                                                        "https://kanalregister.hkdir"
+                                                        + ".no/publiseringskanaler/KanalTidsskriftInfo"
+                                                        + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
                                                     null,
-                                                    "journal");
+                                                    "Tidsskrift");
     }
 
     private static FakeS3Client s3ClientWithCsvFileInCacheBucket() {
@@ -126,13 +129,15 @@ class CacheServiceTest extends CacheServiceTestSetup {
         return new ChannelRegistrySerialPublication(channelIdentifier,
                                                     "Tidsskrift for Den norske legeforening",
                                                     "0807-7096",
-                                         "0029-2001",
-                                         new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
-                                         URI.create(
-                                             "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo"
-                                             + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
+                                                    "0029-2001",
+                                                    new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null,
+                                                                             null),
+                                                    URI.create(
+                                                        "https://kanalregister.hkdir"
+                                                        + ".no/publiseringskanaler/KanalTidsskriftInfo"
+                                                        + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
                                                     null,
-                                                    "series");
+                                                    "Tidsskrift");
     }
 
     private ChannelRegistryPublisher createExpectedPublisher(String channelIdentifier, String year) {

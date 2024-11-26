@@ -194,8 +194,8 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                              reviewNotice);
     }
 
-    public SerialPublicationDto asSerialPublicationDto(String selfUriBase, String requestedYear, String type) {
-        var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
+    public SerialPublicationDto asSerialPublicationDto(URI selfUriBase, String requestedYear, String type) {
+        var id = generateIdWithYear(selfUriBase, requestedYear);
         return new SerialPublicationDto(id,
                                         identifier,
                                         name,

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest {
 
     private static final Context context = new FakeContext();
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH;
+    private static final URI SELF_URI_BASE = URI.create(
+        "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
 
