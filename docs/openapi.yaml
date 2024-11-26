@@ -65,13 +65,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JournalResponse'
+                $ref: '#/components/schemas/SerialPublication'
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalResponseExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/JournalResponse'
+                $ref: '#/components/schemas/SerialPublication'
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalResponseExample'
@@ -179,7 +179,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JournalResponse'
+                $ref: '#/components/schemas/SerialPublication'
         400:
           $ref: '#/components/responses/400'
         502:
@@ -387,13 +387,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Series'
+                $ref: '#/components/schemas/SerialPublication'
               examples:
                 objectExample:
                   $ref: '#/components/examples/SeriesExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/Series'
+                $ref: '#/components/schemas/SerialPublication'
               examples:
                 objectExample:
                   $ref: '#/components/examples/SeriesExample'
@@ -501,9 +501,74 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Series'
+                $ref: '#/components/schemas/SerialPublication'
         400:
           $ref: '#/components/responses/400'
+        502:
+          $ref: '#/components/responses/502'
+  /serial-publication/{identifier}/{year}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchSerialPublicationByIdentifierAndYearFunction.Arn}/invocations
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+            'method.request.path.identifier'
+          integration.request.path.year:
+            'method.request.path.year'
+        cacheKeyParameters:
+          - 'method.request.path.identifier'
+          - 'method.request.path.year'
+        type: "AWS_PROXY"
+      tags:
+        - SerialPublication
+      summary: Fetch journal or series by identifier and year
+      description: Returns a single Journal or Series with information for a specific year
+      operationId: FetchSerialPublicationByIdentifierAndYear
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of journal/series to return
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        - name: year
+          in: path
+          description: year for journal/series data
+          required: true
+          schema:
+            type: integer
+            description: can maximum be set to next year
+          example: '1910'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalResponseExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalResponseExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
         502:
           $ref: '#/components/responses/502'
 
@@ -562,35 +627,7 @@ components:
         hits:
           type: array
           items:
-            $ref: '#/components/schemas/JournalResponse'
-    JournalResponse:
-      type: object
-      properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
-        type:
-          type: string
-          pattern: 'Journal'
-          description: The type of the returned object, always Journal
-        name:
-          $ref: '#/components/schemas/Name'
-        onlineIssn:
-          type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
-          description: The ISSN of the online edition of the Journal
-        printIssn:
-          type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
-          nullable: true
-          description: The ISSN of the print edition of the Journal
-        scientificValue:
-          $ref: '#/components/schemas/ScientificValue'
-        year:
-          type: string
-          nullable: true
-        sameAs:
-          type: string
-          nullable: true
+            $ref: '#/components/schemas/SerialPublication'
     CreateJournal:
       type: object
       properties:
@@ -694,27 +731,27 @@ components:
         hits:
           type: array
           items:
-            $ref: '#/components/schemas/Series'
-    Series:
+            $ref: '#/components/schemas/SerialPublication'
+    SerialPublication:
       type: object
       properties:
         '@context':
           $ref: '#/components/schemas/Context'
         type:
           type: string
-          pattern: 'Series'
-          description: The type of the returned object, always Series
+          enum: ['Series', 'Journal']
+          description: The type of the returned object, either Series or Journal
         name:
           $ref: '#/components/schemas/Name'
         onlineIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
-          description: The ISSN of the online edition of the Series
+          description: The ISSN of the online edition of the series/journal
         printIssn:
           type: string
           pattern: '^[0-9]{4}-[0-9]{4}$'
           nullable: true
-          description: The ISSN of the print edition of the Series
+          description: The ISSN of the print edition of the series/journal
         scientificValue:
           $ref: '#/components/schemas/ScientificValue'
         year:
