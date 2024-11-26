@@ -36,8 +36,6 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
@@ -50,7 +48,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournalserie/";
 
     @Override
-    protected String getChannelRegistryPathParameter() {
+    protected String getChannelRegistryPathElement() {
         return CHANNEL_REGISTRY_PATH_ELEMENT;
     }
 
@@ -100,6 +98,11 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
         return new TestChannel(year, identifier, "Series");
     }
 
+    @Override
+    protected String getPath() {
+        return "serial-publication";
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchSerialPublicationByIdentifierAndYearHandler(environment,
@@ -107,25 +110,6 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                                      this.cacheService,
                                                                                      super.getAppConfigWithCacheEnabled(
                                                                                          false));
-    }
-
-    @Test
-    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-        var year = String.valueOf(randomYear());
-        var requestedIdentifier = UUID.randomUUID().toString();
-        var newIdentifier = UUID.randomUUID().toString();
-        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
-        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
-        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
-                                       output,
-                                       context);
-        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = createPublicationChannelUri(newIdentifier, SERIAL_PUBLICATION_PATH, year).toString();
-        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
-        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     @Test

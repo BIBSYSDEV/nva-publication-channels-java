@@ -65,7 +65,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
     }
 
-    protected abstract String getChannelRegistryPathParameter();
+    protected abstract String getChannelRegistryPathElement();
 
     protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
         ChannelRegistryClient publicationChannelClient);
@@ -119,7 +119,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus(getChannelRegistryPathParameter(), identifier, year, HTTP_NOT_FOUND);
+        mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -140,7 +140,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());
 
-        mockResponseWithHttpStatus(getChannelRegistryPathParameter(), identifier, year, HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 

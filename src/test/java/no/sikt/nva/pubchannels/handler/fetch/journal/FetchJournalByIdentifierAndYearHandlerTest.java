@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.FetchSerialPublicationByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
@@ -54,7 +53,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
     private PublicationChannelMockClient mockRegistry;
 
     @Override
-    protected String getChannelRegistryPathParameter() {
+    protected String getChannelRegistryPathElement() {
         return CHANNEL_REGISTRY_PATH_ELEMENT;
     }
 
@@ -111,6 +110,11 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         return new TestChannel(year, identifier, "Journal");
     }
 
+    @Override
+    protected String getPath() {
+        return "journal";
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment,
@@ -148,23 +152,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
-    }
-
-    @Test
-    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-        var year = randomYear();
-        var requestedIdentifier = UUID.randomUUID().toString();
-        var newIdentifier = UUID.randomUUID().toString();
-        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
-                                             .toString();
-        mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
-        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
-        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = constructExpectedLocation(newIdentifier, year);
-        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
-        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     @Test

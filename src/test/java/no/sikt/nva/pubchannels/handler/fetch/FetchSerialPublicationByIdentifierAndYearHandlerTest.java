@@ -1,8 +1,14 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -10,10 +16,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.common.net.MediaType;
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,6 +39,8 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
     protected abstract void mockChannelFound(int year, String identifier, String channelRegistryResponseBody);
 
     protected abstract TestChannel generateTestChannel(int year, String identifier);
+
+    protected abstract String getPath();
 
     @Test
     void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
@@ -108,6 +118,25 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
 
         var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
+    }
+
+    @Test
+    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
+        var year = String.valueOf(randomYear());
+        var requestedIdentifier = UUID.randomUUID().toString();
+        var newIdentifier = UUID.randomUUID().toString();
+        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
+                                             .addChild(getChannelRegistryPathElement(), newIdentifier, year)
+                                             .toString();
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, getChannelRegistryPathElement());
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
+                                       output,
+                                       context);
+        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
+        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
+        var expectedLocation = createPublicationChannelUri(newIdentifier, getPath(), year).toString();
+        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
+        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     @Test

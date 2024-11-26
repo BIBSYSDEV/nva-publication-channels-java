@@ -50,7 +50,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
 
     @Override
-    protected String getChannelRegistryPathParameter() {
+    protected String getChannelRegistryPathElement() {
         return CHANNEL_REGISTRY_PATH_ELEMENT;
     }
 
