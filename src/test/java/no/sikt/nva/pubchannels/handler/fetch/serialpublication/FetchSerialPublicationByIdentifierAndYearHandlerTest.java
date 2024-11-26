@@ -62,7 +62,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
                                                                                          false));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should return correct data for type \"{0}\"")
     @ValueSource(strings = {"Series", "Journal"})
     void shouldReturnCorrectDataWithSuccessWhenExists(String type) throws IOException {
         var year = randomYear();
@@ -83,7 +83,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should include year in response for type \"{0}\"")
     @ValueSource(strings = {"Series", "Journal"})
     void shouldIncludeYearInResponse(String type) throws IOException {
         var year = randomYear();
@@ -122,7 +122,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         assertThat(contentType, is(equalTo(expectedMediaType)));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should include year in response if third party does not provide year for type \"{0}\"")
     @ValueSource(strings = {"Series", "Journal"})
     void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear(String type) throws IOException {
         var year = String.valueOf(randomYear());
@@ -143,7 +143,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         assertThat(actualSeries, is(equalTo(expectedSeries)));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should include scientific review notice for type \"{0}\"")
     @ValueSource(strings = {"Series", "Journal"})
     void shouldIncludeScientificReviewNoticeWhenLevelDisplayX(String type) throws IOException {
         var year = randomYear();
@@ -171,7 +171,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends FetchB
         assertNull(actualSeries.reviewNotice());
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should not fail when channel registry level null for type \"{0}\"")
     @ValueSource(strings = {"Series", "Journal"})
     void shouldNotFailWhenChannelRegistryLevelNull(String type) throws IOException {
         var year = randomYear();
