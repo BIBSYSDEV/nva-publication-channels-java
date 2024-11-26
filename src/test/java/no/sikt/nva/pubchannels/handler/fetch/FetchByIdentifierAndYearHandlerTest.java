@@ -8,7 +8,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -17,7 +16,6 @@ import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestS
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.Environment;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
@@ -50,10 +48,5 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         channelRegistryClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
         cacheService = new CacheService(super.getClient());
         output = new ByteArrayOutputStream();
-    }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        output.flush();
     }
 }
