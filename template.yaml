@@ -7,7 +7,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 40
+    Timeout: 30
     MemorySize: 1798
     Runtime: java21
     Architectures:
@@ -215,19 +215,15 @@ Resources:
           CHANNEL_REGISTER_CACHE_S3_OBJECT: "cache.csv"
 
   FetchJournalByIdentifierAndYearFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.journal.FetchJournalByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
-      #      AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
-      Timeout: 60
       Events:
         FetchJournalByIdentifierAndYearEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi
             Path: /journal/{identifier}/{year}
@@ -254,7 +250,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
-      Timeout: 30
       Events:
         FetchSerialPublicationByIdentifierAndYearEvent:
           Type: Api
@@ -278,19 +273,15 @@ Resources:
       Principal: 'apigateway.amazonaws.com'
 
   FetchSeriesByIdentifierAndYearFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
-      #      AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
-      Timeout: 60
       Events:
         FetchSeriesByIdentifierAndYearEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi
             Path: /series/{identifier}/{year}
@@ -311,19 +302,15 @@ Resources:
       Principal: 'apigateway.amazonaws.com'
 
   FetchPublisherByIdentifierAndYearFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.fetch.publisher.FetchPublisherByIdentifierAndYearHandler::handleRequest
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt AppConfigActionsPolicy.PolicyArn
-      #      AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
-      Timeout: 60
       Events:
         FetchPublisherByIdentifierAndYearEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi
             Path: /publisher/{identifier}/{year}
@@ -379,8 +366,6 @@ Resources:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
       AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
       Events:
         CreateJournalEvent:
           Type: Api
