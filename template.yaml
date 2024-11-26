@@ -247,6 +247,36 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  FetchSerialPublicationByIdentifierAndYearFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.fetch.serialpublication.FetchSerialPublicationByIdentifierAndYearHandler::handleRequest
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt AppConfigActionsPolicy.PolicyArn
+      Timeout: 30
+      Events:
+        FetchSerialPublicationByIdentifierAndYearEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /serial-publication/{identifier}/{year}
+            Method: get
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ChannelRegisterCacheTable
+          APPLICATION_CONFIG_NAME: !Ref ApplicationConfigName
+          APPLICATION_CONFIG_PROFILE_NAME: !Ref ConfigurationProfileName
+          APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
+          APPLICATION_ID: !Ref ApplicationIdName
+
+  FetchSerialPublicationByIdentifierAndYearFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FetchSerialPublicationByIdentifierAndYearFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   FetchSeriesByIdentifierAndYearFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
