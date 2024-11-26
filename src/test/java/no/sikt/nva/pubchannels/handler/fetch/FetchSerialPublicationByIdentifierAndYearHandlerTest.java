@@ -22,6 +22,10 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
 
     protected abstract SerialPublicationDto mockChannelFound(int year, String identifier);
 
+    protected abstract SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier);
+
+    protected abstract SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier);
+
     @Test
     void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
         var year = randomYear();
@@ -78,5 +82,39 @@ public abstract class FetchSerialPublicationByIdentifierAndYearHandlerTest exten
         assertThat(statusCode, is(equalTo(HTTP_OK)));
         var contentType = response.getHeaders().get(CONTENT_TYPE);
         assertThat(contentType, is(equalTo(expectedMediaType)));
+    }
+
+    @Test
+    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+
+        var expectedSeries = mockChannelFoundYearValueNull(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HTTP_OK)));
+
+        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
+        assertThat(actualSeries, is(equalTo(expectedSeries)));
+    }
+
+    @Test
+    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
+        var year = randomYear();
+        var identifier = UUID.randomUUID().toString();
+        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var expectedSeries = mockChannelWithScientificValueReviewNotice(year, identifier);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        var actualReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
+        assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
     }
 }

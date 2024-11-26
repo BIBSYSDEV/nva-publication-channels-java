@@ -19,7 +19,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import com.google.common.net.MediaType;
 import java.io.IOException;
@@ -52,6 +51,13 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
     }
 
     @Override
+    protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+        ChannelRegistryClient publicationChannelClient) {
+        return new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
+                                                         super.getAppConfigWithCacheEnabled(false));
+    }
+
+    @Override
     protected SerialPublicationDto mockChannelFound(int year, String identifier) {
         var testChannel = new TestChannel(year, identifier, "Series");
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -63,10 +69,27 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
     }
 
     @Override
-    protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
-        ChannelRegistryClient publicationChannelClient) {
-        return new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
-                                                         super.getAppConfigWithCacheEnabled(false));
+    protected SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Series")
+                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
+                                                                      "no", "Vedtak"));
+        var body = testChannel.asChannelRegistrySeriesBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Series")
+                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
+                                                                      "no", "Vedtak"));
+        var body = testChannel.asChannelRegistrySeriesBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     @BeforeEach
@@ -75,53 +98,6 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
                                                                           this.channelRegistryClient,
                                                                           this.cacheService,
                                                                           super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Test
-    void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
-        var year = String.valueOf(randomYear());
-        var identifier = UUID.randomUUID().toString();
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        var expectedSeries = mockSeriesFoundYearValueNull(year, identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-
-        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
-        assertThat(actualSeries, is(equalTo(expectedSeries)));
-    }
-
-    @Test
-    void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
-        var expectedSeries = mockSeriesWithScientificValueReviewNotice(year, identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualReviewNotice = response.getBodyObject(SerialPublicationDto.class).reviewNotice();
-        assertThat(actualReviewNotice, is(equalTo(expectedSeries.reviewNotice())));
-    }
-
-    @Test
-    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
-        assertNull(actualSeries.reviewNotice());
     }
 
     @Test
@@ -225,25 +201,5 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
     private void mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
                                     channelRegistrySeriesBody);
-    }
-
-    private SerialPublicationDto mockSeriesWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Series")
-                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
-                                                                      "no", "Vedtak"));
-        var body = testChannel.asChannelRegistrySeriesBody();
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
-    }
-
-    private SerialPublicationDto mockSeriesFoundYearValueNull(String year, String identifier) {
-        var testChannel = new TestChannel(null, identifier, "Series");
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier,
-                                    testChannel.asChannelRegistrySeriesBody());
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, year);
     }
 }

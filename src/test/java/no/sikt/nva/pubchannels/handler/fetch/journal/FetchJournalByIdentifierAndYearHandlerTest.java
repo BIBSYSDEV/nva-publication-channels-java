@@ -49,25 +49,14 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     private static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
-    private static final String CHANNEL_REGISTRY_PATH_PARAMETER = "/findjournal/";
+    private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournal/";
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
 
     private PublicationChannelMockClient mockRegistry;
 
     @Override
     protected String getChannelRegistryPathParameter() {
-        return CHANNEL_REGISTRY_PATH_PARAMETER;
-    }
-
-    @Override
-    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Journal");
-        var body = testChannel.asChannelRegistryJournalBody();
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_PARAMETER, String.valueOf(year), identifier,
-                                    body);
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
+        return CHANNEL_REGISTRY_PATH_ELEMENT;
     }
 
     @Override
@@ -75,6 +64,41 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         ChannelRegistryClient publicationChannelClient) {
         return new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
                                                           super.getAppConfigWithCacheEnabled(false));
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Journal");
+        var body = testChannel.asChannelRegistryJournalBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+                                    body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Journal")
+                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
+                                                                      "no", "Vedtak"));
+        var body = testChannel.asChannelRegistrySeriesBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Journal")
+                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
+                                                                      "no", "Vedtak"));
+        var body = testChannel.asChannelRegistrySeriesBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     @BeforeEach
@@ -116,19 +140,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
     }
 
     @Test
-    void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.randomJournal(year);
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
-        assertNull(actualJournal.reviewNotice());
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenChannelRegistryIsUnavailableAndChannelIsNotCached() throws IOException {
         var httpClient = WiremockHttpClient.create();
         var channelRegistryBaseUri = URI.create("https://localhost:9898");
@@ -146,7 +157,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
         handlerUnderTest.handleRequest(input, output, context);
 
-        var upstreamUrl = "https://localhost:9898" + CHANNEL_REGISTRY_PATH_PARAMETER + identifier + "/" + year;
+        var upstreamUrl = "https://localhost:9898" + CHANNEL_REGISTRY_PATH_ELEMENT + identifier + "/" + year;
         assertThat(appender.getMessages(), containsString("Unable to reach upstream: " + upstreamUrl));
 
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -164,7 +175,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_PARAMETER, newIdentifier, year)
+                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
                                              .toString();
         mockRegistry.redirect(requestedIdentifier, newChannelRegistryLocation, year);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier), output, context);
