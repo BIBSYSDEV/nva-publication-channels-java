@@ -10,6 +10,7 @@ import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
+import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -65,6 +66,9 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     }
 
     protected abstract String getChannelRegistryPathParameter();
+
+    protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+        ChannelRegistryClient publicationChannelClient);
 
     @BeforeEach
     void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
@@ -153,5 +157,27 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+    }
+
+    @Test
+    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
+        var publicationChannelClient = setupInterruptedClient();
+
+        this.handlerUnderTest = createHandler(publicationChannelClient);
+
+        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
+
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        handlerUnderTest.handleRequest(input, output, context);
+
+        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
+        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 }

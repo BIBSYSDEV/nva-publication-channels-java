@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -52,6 +53,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     @Override
     protected String getChannelRegistryPathParameter() {
         return CHANNEL_REGISTRY_PATH_ELEMENT;
+    }
+
+    @Override
+    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(ChannelRegistryClient publicationChannelClient) {
+        return new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
+                                                            super.getAppConfigWithCacheEnabled(false));
     }
 
     @BeforeEach
@@ -206,32 +213,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var problem = response.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
-    }
-
-    @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccursAndPublisherNotCached() throws IOException,
-                                                                                               InterruptedException {
-        ChannelRegistryClient publicationChannelClient = setupInterruptedClient();
-
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                             cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(false)
-        );
-
-        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test

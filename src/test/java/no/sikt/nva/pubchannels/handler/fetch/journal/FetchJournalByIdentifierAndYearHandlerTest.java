@@ -5,13 +5,13 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +33,8 @@ import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.TestUtils;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.fetch.FetchSerialPublicationByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -42,21 +43,38 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.zalando.problem.Problem;
 
-class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
+class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationByIdentifierAndYearHandlerTest {
 
     private static final String JOURNAL_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     private static final String CHANNEL_REGISTRY_PATH_PARAMETER = "/findjournal/";
+    private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
 
     private PublicationChannelMockClient mockRegistry;
 
     @Override
     protected String getChannelRegistryPathParameter() {
         return CHANNEL_REGISTRY_PATH_PARAMETER;
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
+        var testChannel = new TestChannel(year, identifier, "Journal");
+        var body = testChannel.asChannelRegistryJournalBody();
+
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_PARAMETER, String.valueOf(year), identifier,
+                                    body);
+
+        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
+    }
+
+    @Override
+    protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+        ChannelRegistryClient publicationChannelClient) {
+        return new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
+                                                          super.getAppConfigWithCacheEnabled(false));
     }
 
     @BeforeEach
@@ -66,60 +84,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYea
                                                                            this.cacheService,
                                                                            super.getAppConfigWithCacheEnabled(false));
         this.mockRegistry = new PublicationChannelMockClient();
-    }
-
-    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
-    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-        final var expectedMediaType =
-            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.randomJournal(year);
-        var input = constructRequest(String.valueOf(year), identifier, mediaType);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-        var contentType = response.getHeaders().get(CONTENT_TYPE);
-        assertThat(contentType, is(equalTo(expectedMediaType)));
-
-        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
-        var expectedJournal = mockRegistry.getJournal(identifier);
-        assertThat(actualJournal, is(equalTo(expectedJournal)));
-    }
-
-    @Test
-    void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.randomJournal(year);
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-
-        var actualJournal = response.getBodyObject(SerialPublicationDto.class);
-        var expectedJournal = mockRegistry.getJournal(identifier);
-        assertThat(actualJournal, is(equalTo(expectedJournal)));
-    }
-
-    @Test
-    void shouldIncludeYearInResponse() throws IOException {
-        var year = TestUtils.randomYear();
-        var identifier = mockRegistry.randomJournal(year);
-        var input = constructRequest(String.valueOf(year), identifier);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualYear = response.getBodyObject(SerialPublicationDto.class).year();
-        assertThat(actualYear, is(equalTo(String.valueOf(year))));
     }
 
     @Test

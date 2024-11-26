@@ -1,12 +1,10 @@
 package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.SERIAL_PUBLICATION_PATH;
@@ -31,7 +29,9 @@ import java.net.URI;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
@@ -40,7 +40,6 @@ import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
@@ -58,6 +57,19 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
         return CHANNEL_REGISTRY_PATH_ELEMENT;
     }
 
+    @Override
+    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
+        return mockSerialPublicationFound(year, identifier, "Series");
+    }
+
+    @Override
+    protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+        ChannelRegistryClient publicationChannelClient) {
+        return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient,
+                                                                    cacheService,
+                                                                    super.getAppConfigWithCacheEnabled(false));
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchSerialPublicationByIdentifierAndYearHandler(environment,
@@ -65,66 +77,6 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                                      this.cacheService,
                                                                                      super.getAppConfigWithCacheEnabled(
                                                                                          false));
-    }
-
-    @ParameterizedTest(name = "Should return correct data for type \"{0}\"")
-    @ValueSource(strings = {"Series", "Journal"})
-    void shouldReturnCorrectDataWithSuccessWhenExists(String type) throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
-
-        var expectedSeries = mockSerialPublicationFound(year, identifier, type);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-
-        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
-        assertThat(actualSeries, is(equalTo(expectedSeries)));
-    }
-
-    @ParameterizedTest(name = "Should include year in response for type \"{0}\"")
-    @ValueSource(strings = {"Series", "Journal"})
-    void shouldIncludeYearInResponse(String type) throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
-        mockSerialPublicationFound(year, identifier, type);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        var actualYear = response.getBodyObject(SerialPublicationDto.class).year();
-        assertThat(actualYear, is(equalTo(String.valueOf(year))));
-    }
-
-    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
-    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-        var year = randomYear();
-        var identifier = UUID.randomUUID().toString();
-
-        var input = constructRequest(String.valueOf(year), identifier, mediaType);
-
-        final var expectedMediaType =
-            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
-        var expectedSeries = mockSerialPublicationFound(year, identifier, "Series");
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        var actualSeries = response.getBodyObject(SerialPublicationDto.class);
-        assertThat(actualSeries, is(equalTo(expectedSeries)));
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-        var contentType = response.getHeaders().get(CONTENT_TYPE);
-        assertThat(contentType, is(equalTo(expectedMediaType)));
     }
 
     @ParameterizedTest(name = "Should include year in response if third party does not provide year for type \"{0}\"")
@@ -191,30 +143,6 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertEquals(HTTP_OK, response.getStatusCode());
-    }
-
-    @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs() throws IOException, InterruptedException {
-        var publicationChannelClient = setupInterruptedClient();
-
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                          cacheService,
-                                                                          super.getAppConfigWithCacheEnabled(false));
-
-        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test
