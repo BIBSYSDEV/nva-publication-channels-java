@@ -1,6 +1,5 @@
 package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
-import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -15,7 +14,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryRespo
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -58,16 +56,16 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
     }
 
     @Override
-    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
-        return mockSerialPublicationFound(year, identifier, "Series");
-    }
-
-    @Override
     protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
         ChannelRegistryClient publicationChannelClient) {
         return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient,
                                                                     cacheService,
                                                                     super.getAppConfigWithCacheEnabled(false));
+    }
+
+    @Override
+    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
+        return mockSerialPublicationFound(year, identifier, "Series");
     }
 
     @BeforeEach

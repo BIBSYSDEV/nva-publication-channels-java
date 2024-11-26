@@ -13,7 +13,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryRespo
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;

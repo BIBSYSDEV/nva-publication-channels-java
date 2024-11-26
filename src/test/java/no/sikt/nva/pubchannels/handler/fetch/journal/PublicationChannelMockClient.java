@@ -20,14 +20,6 @@ public class PublicationChannelMockClient {
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/journal");
     private final Map<String, SerialPublicationDto> journalsByIdentifier = new ConcurrentHashMap<>();
 
-    public void notFoundJournal(String identifier, String year) {
-        mockJournalNotFound(identifier, year);
-    }
-
-    public void internalServerErrorJournal(String identifier, String year) {
-        mockJournalInternalServerError(identifier, year);
-    }
-
     public SerialPublicationDto getJournal(String identifier) {
         return journalsByIdentifier.get(identifier);
     }
@@ -55,7 +47,8 @@ public class PublicationChannelMockClient {
         var testChannel = new TestChannel(null, identifierString, "Journal");
 
         mockChannelRegistry(year, identifierString, testChannel.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(identifierString, testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
+        journalsByIdentifier.put(identifierString,
+                                 testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
 
         return identifierString;
     }
@@ -89,23 +82,5 @@ public class PublicationChannelMockClient {
                         .withStatus(HttpURLConnection.HTTP_OK)
                         .withHeader("Content-Type", "application/json;charset=UTF-8")
                         .withBody(responseBody)));
-    }
-
-    private void mockJournalNotFound(String identifier, String year) {
-        stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_NOT_FOUND)));
-    }
-
-    private void mockJournalInternalServerError(String identifier, String year) {
-        stubFor(
-            get("/findjournal/" + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)));
     }
 }
