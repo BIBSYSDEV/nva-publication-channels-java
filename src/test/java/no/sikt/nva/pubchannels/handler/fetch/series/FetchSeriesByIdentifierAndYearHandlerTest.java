@@ -1,42 +1,15 @@
 package no.sikt.nva.pubchannels.handler.fetch.series;
 
-import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
-import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
-import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import com.google.common.net.MediaType;
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpResponse;
 import java.util.Map;
-import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.FetchSerialPublicationByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.zalando.problem.Problem;
 
 class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationByIdentifierAndYearHandlerTest {
 
@@ -44,6 +17,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
     private static final String SERIES_YEAR_FROM_CACHE = "2024";
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + SERIES_PATH);
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findseries/";
+    private static final String SERIES_PATH_ELEMENT = "series";
 
     @Override
     protected String getChannelRegistryPathElement() {
@@ -105,7 +79,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
 
     @Override
     protected String getPath() {
-        return "series";
+        return SERIES_PATH_ELEMENT;
     }
 
     @BeforeEach
@@ -114,75 +88,5 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
                                                                           this.channelRegistryClient,
                                                                           this.cacheService,
                                                                           super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Test
-    void shouldReturnSeriesWhenChannelRegistryIsUnavailableAndSeriesIsCached() throws IOException {
-        var identifier = SERIES_IDENTIFIER_FROM_CACHE;
-        var year = SERIES_YEAR_FROM_CACHE;
-
-        mockResponseWithHttpStatus("/findseries/", identifier, year, HTTP_INTERNAL_ERROR);
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-
-        super.loadAndEnableCache();
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Fetching SERIES from cache: " + identifier));
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-    }
-
-    @Test
-    void shouldReturnSeriesFromCacheWhenShouldUseCacheEnvironmentVariableIsTrue() throws IOException {
-
-        var input = constructRequest(SERIES_YEAR_FROM_CACHE, SERIES_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
-
-        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadAndEnableCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
-                                                                          super.getAppConfigWithCacheEnabled(true));
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
-        assertThat(appender.getMessages(),
-                   containsString("Fetching SERIES from cache: " + SERIES_IDENTIFIER_FROM_CACHE));
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HTTP_OK)));
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButSeriesIsNotCached() throws IOException {
-        when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadAndEnableCache();
-        this.handlerUnderTest = new FetchSeriesByIdentifierAndYearHandler(environment, null, cacheService,
-                                                                          super.getAppConfigWithCacheEnabled(true));
-
-        var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
-
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Could not find cached publication channel with"));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
-    }
-
-    private void mockSeriesFound(int year, String identifier, String channelRegistrySeriesBody) {
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    channelRegistrySeriesBody);
     }
 }

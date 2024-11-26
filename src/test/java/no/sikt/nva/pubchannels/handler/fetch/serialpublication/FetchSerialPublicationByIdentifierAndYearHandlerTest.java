@@ -46,6 +46,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
     private static final URI SELF_URI_BASE = URI.create(
         "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournalserie/";
+    private static final String SERIAL_PUBLICATION_PATH_ELEMENT = "serial-publication";
 
     @Override
     protected String getChannelRegistryPathElement() {
@@ -100,7 +101,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
     @Override
     protected String getPath() {
-        return "serial-publication";
+        return SERIAL_PUBLICATION_PATH_ELEMENT;
     }
 
     @BeforeEach

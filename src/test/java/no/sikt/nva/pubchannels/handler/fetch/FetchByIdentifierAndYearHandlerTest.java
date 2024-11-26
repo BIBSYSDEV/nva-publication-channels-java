@@ -135,7 +135,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     }
 
     @Test
-    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndSeriesIsNotCached()
+    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndChannelIsNotCached()
         throws IOException {
         var identifier = UUID.randomUUID().toString();
         var year = String.valueOf(randomYear());

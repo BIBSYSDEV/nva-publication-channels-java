@@ -1,16 +1,9 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
-import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
-import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
-import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -18,14 +11,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +28,6 @@ import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.unit.nva.stubs.WiremockHttpClient;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,8 +39,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournal/";
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
-
-    private PublicationChannelMockClient mockRegistry;
+    private static final String JOURNAL_PATH_ELEMENT = "journal";
 
     @Override
     protected String getChannelRegistryPathElement() {
@@ -112,7 +101,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     @Override
     protected String getPath() {
-        return "journal";
+        return JOURNAL_PATH_ELEMENT;
     }
 
     @BeforeEach
@@ -121,37 +110,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
                                                                            this.channelRegistryClient,
                                                                            this.cacheService,
                                                                            super.getAppConfigWithCacheEnabled(false));
-        this.mockRegistry = new PublicationChannelMockClient();
-    }
-
-    @Test
-    void shouldReturnBadGatewayWhenChannelRegistryIsUnavailableAndChannelIsNotCached() throws IOException {
-        var httpClient = WiremockHttpClient.create();
-        var channelRegistryBaseUri = URI.create("https://localhost:9898");
-        var publicationChannelSource = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-        this.handlerUnderTest = new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelSource,
-                                                                           cacheService,
-                                                                           super.getAppConfigWithCacheEnabled(false));
-
-        var identifier = UUID.randomUUID().toString();
-        var year = randomYear();
-
-        var input = constructRequest(year, identifier);
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var upstreamUrl = "https://localhost:9898" + CHANNEL_REGISTRY_PATH_ELEMENT + identifier + "/" + year;
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream: " + upstreamUrl));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
     }
 
     @Test
@@ -228,12 +186,6 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
-    }
-
-    private static String constructExpectedLocation(String newIdentifier, String year) {
-        return UriWrapper.fromHost(API_DOMAIN)
-                   .addChild(CUSTOM_DOMAIN_BASE_PATH, JOURNAL_PATH, newIdentifier, year)
-                   .toString();
     }
 
     private static InputStream constructRequest(String year, String identifier, MediaType mediaType)
