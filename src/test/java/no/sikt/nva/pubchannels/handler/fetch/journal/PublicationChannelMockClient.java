@@ -42,17 +42,6 @@ public class PublicationChannelMockClient {
         return identifierString;
     }
 
-    public String randomJournalWithThirdPartyYearValueNull(int year) {
-        var identifierString = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, identifierString, "Journal");
-
-        mockChannelRegistry(year, identifierString, testChannel.asChannelRegistryJournalBody());
-        journalsByIdentifier.put(identifierString,
-                                 testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year)));
-
-        return identifierString;
-    }
-
     public void redirect(String requestedIdentifier, String location, String year) {
         stubFor(
             get(CHANNEL_REGISTRY_JOURNAL_PATH + requestedIdentifier + "/" + year)
