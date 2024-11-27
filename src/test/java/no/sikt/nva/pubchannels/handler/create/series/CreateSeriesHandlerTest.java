@@ -42,6 +42,7 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
                       .addChild(CUSTOM_DOMAIN_BASE_PATH)
                       .addChild(SERIES_PATH)
                       .getUri();
+        channelRegistryPathElement = "/createseries/";
     }
 
     @Test
@@ -65,26 +66,6 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
         var expectedSeries = testChannel.asSerialPublicationDto(baseUri, currentYear());
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedSeries)));
-    }
-
-    @Test
-    void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
-
-        stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test

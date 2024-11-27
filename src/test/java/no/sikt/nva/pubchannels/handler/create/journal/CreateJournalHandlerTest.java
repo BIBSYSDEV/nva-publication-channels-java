@@ -42,6 +42,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
                       .addChild(CUSTOM_DOMAIN_BASE_PATH)
                       .addChild(JOURNAL_PATH)
                       .getUri();
+        channelRegistryPathElement = "/createjournal/";
     }
 
     @Test
@@ -49,7 +50,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         var channelRegistryRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-        stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED);
+        stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED, "/createjournal/");
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(
             VALID_NAME);
@@ -66,25 +67,6 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
         var expectedJournal = testChannel.asSerialPublicationDto(baseUri, currentYear());
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedJournal)));
-    }
-
-    @Test
-    void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-
-        stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
     @Test
@@ -107,7 +89,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
 
         var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN);
+        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN, "/createjournal/");
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -127,7 +109,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
         stubPostResponse(null,
                          new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null),
-                         HttpURLConnection.HTTP_INTERNAL_ERROR);
+                         HttpURLConnection.HTTP_INTERNAL_ERROR, "/createjournal/");
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -244,7 +226,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
 
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, issn, null, null);
-        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, "/createjournal/");
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
                               .withPrintIssn(issn);
@@ -265,7 +247,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         var expectedPid = UUID.randomUUID().toString();
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, issn, null);
 
-        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, "/createjournal/");
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
                               .withOnlineIssn(issn);
@@ -286,7 +268,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         var homepage = "https://a.valid.url.com";
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, homepage);
 
-        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, "/createjournal/");
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE)
                               .withName(VALID_NAME)
@@ -314,11 +296,11 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
     private static void stubPostResponse(String expectedPid,
                                          ChannelRegistryCreateJournalRequest request,
-                                         int clientResponseHttpCode)
+                                         int clientResponseHttpCode, String channelRegistryCustomPathElement)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode,
-                     "/createjournal/createpid",
+                     channelRegistryCustomPathElement + "createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
     }
@@ -327,7 +309,7 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
-                     "/createjournal/createpid",
+                     "/createjournal/" + "createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
     }
