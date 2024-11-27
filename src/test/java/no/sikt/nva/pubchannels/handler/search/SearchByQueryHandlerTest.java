@@ -128,7 +128,7 @@ public abstract class SearchByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenMissingQuery() throws IOException {
-        var input = constructRequest(Map.of("year", String.valueOf(randomYear())), MediaType.ANY_TYPE);
+        var input = constructRequest(Map.of("year", randomYear()), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -140,7 +140,7 @@ public abstract class SearchByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
-        var input = constructRequest(Map.of("year", String.valueOf(randomYear()), "query", TOO_LONG_INPUT_STRING),
+        var input = constructRequest(Map.of("year", randomYear(), "query", TOO_LONG_INPUT_STRING),
                                      MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
@@ -154,7 +154,7 @@ public abstract class SearchByQueryHandlerTest {
     @Test
     void shouldReturnBadRequestWhenOffsetAndSizeAreNotDivisible() throws IOException {
         var input = constructRequest(Map.of("year",
-                                            String.valueOf(randomYear()),
+                                            randomYear(),
                                             "query",
                                             randomString(),
                                             "offset",

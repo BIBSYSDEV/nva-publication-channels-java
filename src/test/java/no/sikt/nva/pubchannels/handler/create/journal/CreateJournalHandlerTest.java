@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.create.journal;
 
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestChannel.createEmptyTestChannel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
@@ -21,7 +22,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
@@ -38,9 +39,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void setUp() {
         handlerUnderTest = new CreateJournalHandler(environment, publicationChannelClient);
         baseUri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                            .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                            .addChild(JOURNAL_PATH)
-                            .getUri();
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(JOURNAL_PATH)
+                      .getUri();
     }
 
     @Test
@@ -50,20 +51,21 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var channelRegistryRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
         stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(
+            VALID_NAME);
         stubFetchOKResponse(testChannel);
 
         var requestBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
         var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
         assertThat(actualLocation, is(equalTo(createPublicationChannelUri(expectedPid, JOURNAL_PATH, currentYear()))));
 
-        var expectedJournal = testChannel.asJournalDto(baseUri, currentYear());
-        assertThat(response.getBodyObject(JournalDto.class), is(equalTo(expectedJournal)));
+        var expectedJournal = testChannel.asSerialPublicationDto(baseUri, currentYear());
+        assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedJournal)));
     }
 
     @Test
@@ -244,15 +246,15 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, issn, null, null);
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME)
-                                                                                                .withPrintIssn(issn);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
+                              .withPrintIssn(issn);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
             new CreateJournalRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -265,15 +267,15 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME)
-                                                                                                .withOnlineIssn(issn);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
+                              .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
             new CreateJournalRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
@@ -286,7 +288,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal")
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE)
                               .withName(VALID_NAME)
                               .withSameAs(
                                   URI.create(homepage));
@@ -299,7 +301,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
                 .build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, JournalDto.class);
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }

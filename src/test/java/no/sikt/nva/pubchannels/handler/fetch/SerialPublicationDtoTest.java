@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
@@ -13,18 +13,18 @@ import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import org.junit.jupiter.api.Test;
 
-class JournalDtoTest {
+class SerialPublicationDtoTest {
 
     @Test
-    void canSerializeDeserializeJournalWithoutLossOfData() throws JsonProcessingException {
+    void canSerializeDeserializeSerialPublicationWithoutLossOfData() throws JsonProcessingException {
         var journal = randomJournal();
 
         var serializedJournal = dtoObjectMapper.writeValueAsString(journal);
 
-        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, JournalDto.class);
+        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, SerialPublicationDto.class);
 
         assertEquals(deserializedJournal, journal);
     }
@@ -36,7 +36,7 @@ class JournalDtoTest {
         assertTrue(objectMapper.readTree(serializedJournal).has("@context"));
     }
 
-    private static JournalDto randomJournal() {
+    private static SerialPublicationDto randomJournal() {
         var journal = new ThirdPartySerialPublication() {
 
             @Override
@@ -89,6 +89,6 @@ class JournalDtoTest {
                 return randomString();
             }
         };
-        return JournalDto.create(randomUri(), journal, randomString());
+        return SerialPublicationDto.create(randomUri(), journal, randomString());
     }
 }

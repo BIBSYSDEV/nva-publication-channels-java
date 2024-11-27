@@ -2,12 +2,12 @@ package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICATION;
 import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.search.serialpublication.SerialPublicationDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -25,7 +25,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
     }
 
     public FetchSerialPublicationByIdentifierAndYearHandler(Environment environment,
-                                                            ChannelRegistryClient channelRegistryClient,
+                                                            PublicationChannelClient channelRegistryClient,
                                                             CacheService cacheService,
                                                             AppConfig appConfig) {
         super(Void.class, environment, channelRegistryClient, cacheService, appConfig);
@@ -40,9 +40,10 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
         var identifier = request.getIdentifier();
 
         var serialPublication = super.shouldUseCache()
-                         ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
-                         : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
-        return SerialPublicationDto.create(serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication, year);
+                                    ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
+                                    : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
+        return SerialPublicationDto.create(serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication,
+                                           year);
     }
 
     @Override

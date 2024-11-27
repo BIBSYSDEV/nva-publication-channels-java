@@ -11,7 +11,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -19,7 +19,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, JournalDto> {
+public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -40,7 +40,7 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Jo
     }
 
     @Override
-    protected JournalDto processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
+    protected SerialPublicationDto processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
 
@@ -49,7 +49,7 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Jo
         var newJournal = (ThirdPartySerialPublication) publicationChannelClient.getChannel(JOURNAL,
                                                                                            response.pid(),
                                                                                            year);
-        var journalDto = JournalDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
+        var journalDto = SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
 
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, journalDto.id().toString()));
         return journalDto;

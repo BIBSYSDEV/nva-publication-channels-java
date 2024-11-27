@@ -39,7 +39,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.sikt.nva.pubchannels.handler.model.SeriesDto;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
@@ -53,7 +53,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
 
     private static final Context context = new FakeContext();
-    private static final TypeReference<PaginatedSearchResult<SeriesDto>> TYPE_REF = new TypeReference<>() {
+    private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
     private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + SERIES_PATH);
 
@@ -78,7 +78,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
                                           : mediaType.toString();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
+        var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -96,7 +96,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), MediaType.ANY_TYPE);
+        var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -110,7 +110,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     @Test
     void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
         throws IOException, UnprocessableContentException {
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
 
@@ -128,7 +128,6 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
         var year = randomYear();
-        var yearString = String.valueOf(year);
         var name = randomString();
         int maxNr = 30;
         int offset = 0;
@@ -138,14 +137,14 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
                                           YEAR_QUERY_PARAM,
-                                          yearString,
+                                          year,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
                                           DEFAULT_SIZE,
                                           CHANNEL_REGISTRY_PAGE_NO_PARAM,
                                           DEFAULT_OFFSET,
                                           NAME_QUERY_PARAM,
                                           name);
-        var input = constructRequest(Map.of("year", yearString, "query", name), MediaType.ANY_TYPE);
+        var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -155,7 +154,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
         var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(
-            result, yearString, name, offset, size);
+            result, year, name, offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
@@ -192,7 +191,6 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsNameAndOffsetIs10() throws IOException, UnprocessableContentException {
         var year = randomYear();
-        var yearString = String.valueOf(year);
         var name = randomString();
         int offset = 10;
         int size = 10;
@@ -200,13 +198,13 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         var result = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
             getChannelRegistrySearchResponseBody(result, offset, size),
-                                          HttpURLConnection.HTTP_OK,
-            YEAR_QUERY_PARAM, yearString,
+            HttpURLConnection.HTTP_OK,
+            YEAR_QUERY_PARAM, year,
             CHANNEL_REGISTRY_PAGE_COUNT_PARAM, String.valueOf(size),
             CHANNEL_REGISTRY_PAGE_NO_PARAM, String.valueOf(offset / size),
             NAME_QUERY_PARAM, name);
         var input = constructRequest(
-            Map.of("year", yearString, "query", name,
+            Map.of("year", year, "query", name,
                    "offset", String.valueOf(offset), "size", String.valueOf(size)), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -217,7 +215,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(result, yearString, name,
+        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(result, year, name,
                                                                               offset, size);
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
@@ -225,7 +223,6 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     @Test
     void shouldReturnResultWithQueryAsId() throws IOException, UnprocessableContentException {
         var year = randomYear();
-        var yearString = String.valueOf(year);
         var name = randomString();
         int offset = 10;
         int size = 10;
@@ -233,17 +230,17 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         var result = getChannelRegistrySearchResult(year, name, maxNr);
         stubChannelRegistrySearchResponse(
             getChannelRegistrySearchResponseBody(result, offset, size),
-                                          HttpURLConnection.HTTP_OK,
-                                          YEAR_QUERY_PARAM,
-                                          yearString,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          String.valueOf(size),
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          String.valueOf(offset / size),
-                                          NAME_QUERY_PARAM,
-                                          name);
+            HttpURLConnection.HTTP_OK,
+            YEAR_QUERY_PARAM,
+            year,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
+            String.valueOf(size),
+            CHANNEL_REGISTRY_PAGE_NO_PARAM,
+            String.valueOf(offset / size),
+            NAME_QUERY_PARAM,
+            name);
         var input = constructRequest(Map.of("year",
-                                            yearString,
+                                            year,
                                             "query",
                                             name,
                                             "offset",
@@ -257,7 +254,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
 
         var expectedSearchResult =
-            getExpectedPaginatedSearchResultNameSearch(result, yearString, name, offset, size);
+            getExpectedPaginatedSearchResultNameSearch(result, year, name, offset, size);
 
         var expectedUri = expectedSearchResult.getId();
         var actualUri = pagesSearchResult.getId();
@@ -265,11 +262,12 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         assertTrue(areEqualURIs(actualUri, expectedUri));
     }
 
-    private static PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultNameSearch(List<String> results,
-                                                                                               String year,
-                                                                                               String name,
-                                                                                               int queryOffset,
-                                                                                               int querySize)
+    private static PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultNameSearch(
+        List<String> results,
+        String year,
+        String name,
+        int queryOffset,
+        int querySize)
         throws UnprocessableContentException {
         var expectedHits = mapToSeriesResults(results, year);
         var expectedParams = new HashMap<String, String>();
@@ -286,39 +284,40 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
                                             expectedParams);
     }
 
-    private static List<SeriesDto> mapToSeriesResults(List<String> results, String requestedYear) {
+    private static List<SerialPublicationDto> mapToSeriesResults(List<String> results, String requestedYear) {
         return results.stream()
-                      .map(result -> attempt(() -> objectMapper.readValue(result,
-                                                                          ChannelRegistrySerialPublication.class)).orElseThrow())
-                      .map(series -> toResult(series, requestedYear))
-                      .toList();
+                   .map(result -> attempt(() -> objectMapper.readValue(result,
+                                                                       ChannelRegistrySerialPublication.class)).orElseThrow())
+                   .map(series -> toResult(series, requestedYear))
+                   .toList();
     }
 
-    private static SeriesDto toResult(ThirdPartySerialPublication series, String requestedYear) {
-        return SeriesDto.create(constructPublicationChannelUri(SERIES_PATH, null), series, requestedYear);
+    private static SerialPublicationDto toResult(ThirdPartySerialPublication series, String requestedYear) {
+        return SerialPublicationDto.create(constructPublicationChannelUri(SERIES_PATH, null), series, requestedYear);
     }
 
-    private PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultIssnSearch(
-        int year, String printIssn)
-        throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid, SeriesDto.TYPE).withPrintIssn(printIssn);
-        return createSearchResult(testChannel, String.valueOf(year), printIssn);
-    }
-
-    private PaginatedSearchResult<SeriesDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearch(
         String year, String printIssn)
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, pid, SeriesDto.TYPE).withPrintIssn(printIssn);
+        var testChannel = new TestChannel(year, pid, "Series").withPrintIssn(printIssn);
         return createSearchResult(testChannel, String.valueOf(year), printIssn);
     }
 
-    private PaginatedSearchResult<SeriesDto> createSearchResult(TestChannel testChannel, String year, String printIssn)
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
+        String year, String printIssn)
+        throws UnprocessableContentException {
+        var pid = UUID.randomUUID().toString();
+        var testChannel = new TestChannel(null, pid, "Series").withPrintIssn(printIssn);
+        return createSearchResult(testChannel, String.valueOf(year), printIssn);
+    }
+
+    private PaginatedSearchResult<SerialPublicationDto> createSearchResult(TestChannel testChannel, String year,
+                                                                           String printIssn)
         throws UnprocessableContentException {
         mockChannelRegistryResponse(year, printIssn, List.of(testChannel.asChannelRegistrySeriesBody()));
 
-        var expectedHits = List.of(testChannel.asSeriesDto(SELF_URI_BASE, year));
+        var expectedHits = List.of(testChannel.asSerialPublicationDto(SELF_URI_BASE, year));
         return PaginatedSearchResult.create(constructPublicationChannelUri(SERIES_PATH,
                                                                            Map.of("year", year, "query", printIssn)),
                                             DEFAULT_OFFSET_INT,

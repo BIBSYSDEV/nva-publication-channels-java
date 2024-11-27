@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.sikt.nva.pubchannels.handler.model.JournalDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.MediaTypes;
@@ -58,7 +58,7 @@ public final class TestUtils {
 
     public static URI createPublicationChannelUri(String pid, String channelPathElement, String year) {
         return new UriWrapper(HTTPS, API_DOMAIN).addChild(CUSTOM_DOMAIN_BASE_PATH, channelPathElement, pid, year)
-                                                .getUri();
+                   .getUri();
     }
 
     public static void mockChannelRegistryResponse(String channelRegistryPathElement,
@@ -77,13 +77,17 @@ public final class TestUtils {
 
     public static void mockRedirectedClient(String requestedIdentifier, String location, String year, String path) {
         stubFor(get(path + requestedIdentifier + "/" + year).withHeader(ACCEPT, equalTo("application/json"))
-                                                            .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_MOVED_PERM)
-                                                                                   .withHeader("Location", location)));
+                    .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_MOVED_PERM)
+                                    .withHeader("Location", location)));
     }
 
-    public static int randomYear() {
+    public static int randomYearAsInt() {
         var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
         return YEAR_START + randomInteger(bound);
+    }
+
+    public static String randomYear() {
+        return String.valueOf(randomYearAsInt());
     }
 
     public static Stream<String> invalidYearsProvider() {
@@ -98,34 +102,34 @@ public final class TestUtils {
                    .withPathParameters(Map.of(
                        "identifier", identifier,
                        "year", year
-                                             ))
+                   ))
                    .build();
     }
 
     public static InputStream constructRequest(Map<String, String> queryParameters, MediaType mediaType)
         throws JsonProcessingException {
         return new HandlerRequestBuilder<Void>(dtoObjectMapper).withHeaders(Map.of(ACCEPT, mediaType.toString()))
-                                                               .withQueryParameters(queryParameters)
-                                                               .build();
+                   .withQueryParameters(queryParameters)
+                   .build();
     }
 
     public static String scientificValueToLevel(ScientificValue scientificValue) {
         return ScientificValueMapper.VALUES.entrySet()
-                                           .stream()
-                                           .filter(item -> item.getValue().equals(scientificValue))
-                                           .map(Map.Entry::getKey)
-                                           .collect(SingletonCollector.collectOrElse(null));
+                   .stream()
+                   .filter(item -> item.getValue().equals(scientificValue))
+                   .map(Map.Entry::getKey)
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     public static String validIsbnPrefix() {
         return VALID_ISBN_PREFIX;
     }
 
-    public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryJournalBody(year, name)).toList();
     }
 
-    public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchPublisherResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryPublisherBody(year, name)).toList();
     }
 
@@ -159,7 +163,7 @@ public final class TestUtils {
                                                   String year,
                                                   int httpStatus) {
         stubFor(get(pathParameter + identifier + "/" + year).withHeader("Accept", equalTo("application/json"))
-                                                            .willReturn(aResponse().withStatus(httpStatus)));
+                    .willReturn(aResponse().withStatus(httpStatus)));
     }
 
     public static URI constructPublicationChannelUri(String pathElement, Map<String, String> queryParams) {
@@ -172,10 +176,10 @@ public final class TestUtils {
 
     public static String getChannelRegistrySearchResponseBody(List<String> results, int offset, int size) {
         var resultsWithOffsetAndSize = results.stream()
-                                              .skip(offset)
-                                              .limit(size)
-                                              .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
-                                              .toList();
+                                           .skip(offset)
+                                           .limit(size)
+                                           .map(result -> attempt(() -> objectMapper.readTree(result)).orElseThrow())
+                                           .toList();
         var entityResult = createEntityResultObjectNode(resultsWithOffsetAndSize);
         return buildChannelRegistrySearchResponse(results, entityResult);
     }
@@ -210,22 +214,22 @@ public final class TestUtils {
                          Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
     }
 
-    private static String generateChannelRegistryPublisherBody(Integer year, String name) {
+    private static String generateChannelRegistryPublisherBody(String year, String name) {
         return new TestChannel(year, UUID.randomUUID().toString(), PublisherDto.TYPE).withName(name)
-                                                                                     .asChannelRegistryPublisherBody();
+                   .asChannelRegistryPublisherBody();
     }
 
-    private static String generateChannelRegistryJournalBody(Integer year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString(), JournalDto.TYPE).withName(name)
-                                                                                   .asChannelRegistryJournalBody();
+    private static String generateChannelRegistryJournalBody(String year, String name) {
+        return new TestChannel(year, UUID.randomUUID().toString(), JOURNAL_TYPE).withName(name)
+                   .asChannelRegistryJournalBody();
     }
 
     private static Map<String, String> getQueryParameters(URI uri) {
         return uri.getQuery() == null ? Map.of() : Arrays.stream(uri.getQuery().split("&"))
-                                                         .map(param -> param.split("="))
-                                                         .collect(Collectors.toMap(param -> param[0],
-                                                                                   param -> param.length > 1 ? param[1]
-                                                                                                : ""));
+                                                       .map(param -> param.split("="))
+                                                       .collect(Collectors.toMap(param -> param[0],
+                                                                                 param -> param.length > 1 ? param[1]
+                                                                                              : ""));
     }
 
     private static String buildChannelRegistrySearchResponse(List<String> results, ObjectNode entityResult) {

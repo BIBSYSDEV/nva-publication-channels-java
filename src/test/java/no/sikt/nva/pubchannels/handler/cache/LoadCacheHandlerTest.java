@@ -30,7 +30,7 @@ class LoadCacheHandlerTest extends CacheServiceTestSetup {
         handler.handleRequest(null, null, new FakeContext());
 
         assertDoesNotThrow(() -> cacheService.getChannel(ChannelType.JOURNAL, CHANNEL_ID_FROM_CSV,
-                                                         String.valueOf(randomYear())));
+                                                         randomYear()));
     }
 
     private static LoadCacheHandler getLoadCacheHandler(CacheService cacheService, FakeS3Client s3Client) {
