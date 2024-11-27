@@ -68,27 +68,6 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedSeries)));
     }
 
-    @Test
-    void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-
-        stubPostResponse(null,
-                         new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null),
-                         HttpURLConnection.HTTP_INTERNAL_ERROR);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
-    }
-
     @ParameterizedTest(name = "Should return BadGateway for response code \"{0}\"")
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
         HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})

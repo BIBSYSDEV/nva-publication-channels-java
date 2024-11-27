@@ -84,6 +84,26 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
+    @Test
+    void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
+        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+
+        stubPostResponse(null,
+                         new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null),
+                         HttpURLConnection.HTTP_INTERNAL_ERROR, channelRegistryPathElement);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+    }
+
     private static void stubPostResponse(String expectedPid,
                                          ChannelRegistryCreateJournalRequest request,
                                          int clientResponseHttpCode, String channelRegistryPathElement)

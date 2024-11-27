@@ -69,26 +69,6 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedJournal)));
     }
 
-    @Test
-    void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
-
-        stubPostResponse(null,
-                         new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null),
-                         HttpURLConnection.HTTP_INTERNAL_ERROR, "/createjournal/");
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
-    }
-
     @ParameterizedTest(name = "Should return BadGateway for response code \"{0}\"")
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
         HttpURLConnection.HTTP_UNAVAILABLE})
@@ -270,6 +250,4 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
                      dtoObjectMapper.writeValueAsString(request));
     }
-
-
 }
