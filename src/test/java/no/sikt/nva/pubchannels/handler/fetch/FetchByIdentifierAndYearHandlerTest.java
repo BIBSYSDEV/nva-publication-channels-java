@@ -101,7 +101,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
     void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String identifier) throws IOException {
 
-        var input = constructRequest(String.valueOf(randomYear()), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(randomYear(), identifier, MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -117,7 +117,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     @Test
     void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
 
         mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_NOT_FOUND);
 
@@ -138,7 +138,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndChannelIsNotCached()
         throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
 
         mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_INTERNAL_ERROR);
 
@@ -165,7 +165,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
         this.handlerUnderTest = createHandler(publicationChannelClient);
 
-        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
+        var input = constructRequest(randomYear(), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
         handlerUnderTest.handleRequest(input, output, context);

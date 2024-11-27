@@ -45,7 +45,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
         cacheService.save(channel);
 
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
         var persistedChannel = cacheService.getChannel(ChannelType.JOURNAL, channel.getPidAsString(), year);
 
         assertEquals(channel.toThirdPartyPublicationChannel(ChannelType.JOURNAL, year), persistedChannel);

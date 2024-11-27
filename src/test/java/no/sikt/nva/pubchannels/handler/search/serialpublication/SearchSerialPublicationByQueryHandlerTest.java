@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.SERIAL_PUBLICATION_PATH;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
@@ -60,9 +61,9 @@ class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest
         throws IOException, UnprocessableContentException {
         var year = randomYear();
         var issn = randomIssn();
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), "Journal").withPrintIssn(issn);
-        mockChannelRegistryResponse(String.valueOf(year), issn, List.of(testChannel.asChannelRegistryJournalBody()));
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), mediaType);
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), JOURNAL_TYPE).withPrintIssn(issn);
+        mockChannelRegistryResponse(year, issn, List.of(testChannel.asChannelRegistryJournalBody()));
+        var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
 
         this.handlerUnderTest.handleRequest(input, output, context);
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);

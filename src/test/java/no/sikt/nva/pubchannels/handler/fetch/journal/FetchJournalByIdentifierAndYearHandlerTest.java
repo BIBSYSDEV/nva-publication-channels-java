@@ -5,6 +5,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
+import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -146,10 +147,5 @@ class FetchJournalByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicat
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
-    }
-
-    private String randomYear() {
-        var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
-        return Integer.toString(YEAR_START + randomInteger(bound));
     }
 }

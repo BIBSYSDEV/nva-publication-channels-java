@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -80,9 +81,13 @@ public final class TestUtils {
                                     .withHeader("Location", location)));
     }
 
-    public static int randomYear() {
+    public static int randomYearAsInt() {
         var bound = (LocalDate.now().getYear() + 1) - YEAR_START;
         return YEAR_START + randomInteger(bound);
+    }
+
+    public static String randomYear() {
+        return String.valueOf(randomYearAsInt());
     }
 
     public static Stream<String> invalidYearsProvider() {
@@ -120,11 +125,11 @@ public final class TestUtils {
         return VALID_ISBN_PREFIX;
     }
 
-    public static List<String> getChannelRegistrySearchResult(int year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryJournalBody(year, name)).toList();
     }
 
-    public static List<String> getChannelRegistrySearchPublisherResult(Integer year, String name, int maxNr) {
+    public static List<String> getChannelRegistrySearchPublisherResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryPublisherBody(year, name)).toList();
     }
 
@@ -158,7 +163,7 @@ public final class TestUtils {
                                                   String year,
                                                   int httpStatus) {
         stubFor(get(pathParameter + identifier + "/" + year).withHeader("Accept", equalTo("application/json"))
-                                                            .willReturn(aResponse().withStatus(httpStatus)));
+                    .willReturn(aResponse().withStatus(httpStatus)));
     }
 
     public static URI constructPublicationChannelUri(String pathElement, Map<String, String> queryParams) {
@@ -209,13 +214,13 @@ public final class TestUtils {
                          Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
     }
 
-    private static String generateChannelRegistryPublisherBody(Integer year, String name) {
+    private static String generateChannelRegistryPublisherBody(String year, String name) {
         return new TestChannel(year, UUID.randomUUID().toString(), PublisherDto.TYPE).withName(name)
                    .asChannelRegistryPublisherBody();
     }
 
-    private static String generateChannelRegistryJournalBody(Integer year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString(), "Journal").withName(name)
+    private static String generateChannelRegistryJournalBody(String year, String name) {
+        return new TestChannel(year, UUID.randomUUID().toString(), JOURNAL_TYPE).withName(name)
                    .asChannelRegistryJournalBody();
     }
 

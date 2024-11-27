@@ -73,7 +73,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         var expectedPublisher = mockPublisherFound(year, identifier);
 
@@ -92,14 +92,14 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldIncludeYearInResponse() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
         mockPublisherFound(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
         var actualYear = response.getBodyObject(PublisherDto.class).year();
-        assertThat(actualYear, is(equalTo(String.valueOf(year))));
+        assertThat(actualYear, is(equalTo(year)));
     }
 
     @Test
@@ -120,7 +120,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
         var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -134,7 +134,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -149,7 +149,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(String.valueOf(year), identifier, mediaType);
+        var input = constructRequest(year, identifier, mediaType);
 
         final var expectedMediaType =
             mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
@@ -190,7 +190,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     @Test
     void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
         var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
 
         mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT,
                                    identifier,
@@ -216,7 +216,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     @Test
     void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
@@ -240,7 +240,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var channelRegistryClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
-        var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
+        var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
 
         super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
@@ -260,7 +260,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
 
-        var input = constructRequest(String.valueOf(randomYear()), publisherIdentifier, MediaType.ANY_TYPE);
+        var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
         super.loadAndEnableCache();
@@ -280,7 +280,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
-        var input = constructRequest(String.valueOf(randomYear()), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
+        var input = constructRequest(randomYear(), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadAndEnableCache();
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
@@ -294,7 +294,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
     }
 
-    private PublisherDto mockPublisherFound(int year, String identifier) {
+    private PublisherDto mockPublisherFound(String year, String identifier) {
         var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
@@ -304,12 +304,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 
-    private void mockPublisherFound(int year, String identifier, String channelRegistryPublisherBody) {
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    channelRegistryPublisherBody);
+    private void mockPublisherFound(String year, String identifier, String channelRegistryPublisherBody) {
+        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, channelRegistryPublisherBody);
     }
 
-    private PublisherDto mockPublisherWithScientificValueReviewNotice(int year, String identifier) {
+    private PublisherDto mockPublisherWithScientificValueReviewNotice(String year, String identifier) {
         var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "some comment",
                                                                       "no", "vedtak"));

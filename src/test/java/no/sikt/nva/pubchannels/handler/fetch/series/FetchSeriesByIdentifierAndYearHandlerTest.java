@@ -112,7 +112,7 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicati
                                                                           super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 

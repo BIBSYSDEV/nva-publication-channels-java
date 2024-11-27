@@ -84,7 +84,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
         var year = randomYear();
         var identifier = UUID.randomUUID().toString();
 
-        var input = constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE);
+        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
         var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
@@ -148,7 +148,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                           super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();
-        var year = String.valueOf(randomYear());
+        var year = randomYear();
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 

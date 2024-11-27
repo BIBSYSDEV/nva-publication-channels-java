@@ -23,9 +23,9 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
 
     private static final String CHANNEL_REGISTRY_REVIEW_NOTICE_MARK = "X";
 
-    public TestChannel(Integer year, String identifier, String type) {
+    public TestChannel(String year, String identifier, String type) {
         this(identifier,
-             year,
+             nonNull(year) ? Integer.parseInt(year) : null,
              randomString(),
              randomElement(ScientificValue.values()),
              new IsbnPrefix(randomString()),
