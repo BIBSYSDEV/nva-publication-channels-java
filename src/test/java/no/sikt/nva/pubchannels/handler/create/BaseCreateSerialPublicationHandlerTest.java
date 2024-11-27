@@ -29,6 +29,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
+/**
+ * Common behavior for CreateJournalHandlerTest, CreateSeriesHandlerTest is tested here
+ */
 public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandlerTest {
 
     protected String channelRegistryCreatePathElement;
