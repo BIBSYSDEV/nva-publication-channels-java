@@ -311,7 +311,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
     }
 
-    private static void stubPostResponse(String expectedPid,
+    protected static void stubPostResponse(String expectedPid,
                                          ChannelRegistryCreateSerialPublicationRequest request,
                                          int clientResponseHttpCode, String channelRegistryPathElement)
         throws JsonProcessingException {
@@ -322,7 +322,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                      dtoObjectMapper.writeValueAsString(request));
     }
 
-    private static void stubFetchOKResponse(TestChannel testChannel, String channelRegistryPathElement) {
+    protected static void stubFetchOKResponse(TestChannel testChannel, String channelRegistryPathElement) {
         var channelRegistryResponse = testChannel.asChannelRegistrySerialPublicationBody();
         var requestUrl = channelRegistryPathElement + testChannel.identifier() + "/" + testChannel.year();
         stubGetResponse(HttpURLConnection.HTTP_OK, requestUrl, channelRegistryResponse);
@@ -338,7 +338,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                      dtoObjectMapper.writeValueAsString(request));
     }
 
-    private CreateSerialPublicationRequestBuilder requestBuilderWithRequiredFields() {
+    protected CreateSerialPublicationRequestBuilder requestBuilderWithRequiredFields() {
         return new CreateSerialPublicationRequestBuilder()
                    .withName(VALID_NAME)
                    .withType(type); //Type is only required for CreateSerialPublicationHandler
