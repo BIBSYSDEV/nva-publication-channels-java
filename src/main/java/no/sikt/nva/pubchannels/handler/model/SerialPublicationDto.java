@@ -15,21 +15,21 @@ public record SerialPublicationDto(URI id, String identifier, String name, Strin
                                    String year, ScientificValueReviewNotice reviewNotice) implements JsonSerializable {
 
     public static SerialPublicationDto create(URI selfUriBase,
-                                              ThirdPartySerialPublication series,
+                                              ThirdPartySerialPublication channel,
                                               String requestedYear) {
-        var year = Optional.ofNullable(series.getYear()).orElse(requestedYear);
-        var id = UriWrapper.fromUri(selfUriBase).addChild(series.identifier(), year).getUri();
+        var year = Optional.ofNullable(channel.getYear()).orElse(requestedYear);
+        var id = UriWrapper.fromUri(selfUriBase).addChild(channel.identifier(), year).getUri();
         return new SerialPublicationDto(id,
-                                        series.identifier(),
-                                        series.name(),
-                                        series.onlineIssn(),
-                                        series.printIssn(),
-                                        series.getScientificValue(),
-                                        series.homepage(),
-                                        series.discontinued(),
-                                        series.type(),
+                                        channel.identifier(),
+                                        channel.name(),
+                                        channel.onlineIssn(),
+                                        channel.printIssn(),
+                                        channel.getScientificValue(),
+                                        channel.homepage(),
+                                        channel.discontinued(),
+                                        channel.type(),
                                         year,
-                                        series.reviewNotice());
+                                        channel.reviewNotice());
     }
 
     @JsonProperty("@context")

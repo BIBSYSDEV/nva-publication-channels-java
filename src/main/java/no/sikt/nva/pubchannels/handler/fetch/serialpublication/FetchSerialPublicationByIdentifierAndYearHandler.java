@@ -4,6 +4,7 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICA
 import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
@@ -25,7 +26,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
     }
 
     public FetchSerialPublicationByIdentifierAndYearHandler(Environment environment,
-                                                            ChannelRegistryClient channelRegistryClient,
+                                                            PublicationChannelClient channelRegistryClient,
                                                             CacheService cacheService,
                                                             AppConfig appConfig) {
         super(Void.class, environment, channelRegistryClient, cacheService, appConfig);
