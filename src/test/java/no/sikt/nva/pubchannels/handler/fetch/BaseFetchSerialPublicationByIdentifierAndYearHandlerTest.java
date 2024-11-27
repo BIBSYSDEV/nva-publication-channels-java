@@ -219,7 +219,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadAndEnableCache();
-        this.handlerUnderTest = createHandler(environment, null, cacheService,
+        this.handlerUnderTest = createHandler(environment, channelRegistryClient, cacheService,
                                               super.getAppConfigWithCacheEnabled(true));
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -236,7 +236,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButChannelIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
         super.loadAndEnableCache();
-        this.handlerUnderTest = createHandler(environment, null, cacheService,
+        this.handlerUnderTest = createHandler(environment, channelRegistryClient, cacheService,
                                               super.getAppConfigWithCacheEnabled(true));
 
         var identifier = UUID.randomUUID().toString();

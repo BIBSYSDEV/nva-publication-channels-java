@@ -2,7 +2,6 @@ package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICATION;
 import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
@@ -41,9 +40,10 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
         var identifier = request.getIdentifier();
 
         var serialPublication = super.shouldUseCache()
-                         ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
-                         : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
-        return SerialPublicationDto.create(serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication, year);
+                                    ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
+                                    : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
+        return SerialPublicationDto.create(serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication,
+                                           year);
     }
 
     @Override
