@@ -1,17 +1,11 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +17,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
@@ -33,7 +26,6 @@ import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,8 +41,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
 
     protected abstract URI getSelfBaseUri();
-
-    protected abstract String getPath();
 
     protected abstract String getType();
 
@@ -145,25 +135,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         var actualSeries = response.getBodyObject(SerialPublicationDto.class);
         assertThat(actualSeries, is(equalTo(expectedSeries)));
-    }
-
-    @Test
-    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-        var year = randomYear();
-        var requestedIdentifier = UUID.randomUUID().toString();
-        var newIdentifier = UUID.randomUUID().toString();
-        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(getChannelRegistryPathElement(), newIdentifier, year)
-                                             .toString();
-        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, getChannelRegistryPathElement());
-        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
-                                       output,
-                                       context);
-        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = createPublicationChannelUri(newIdentifier, getPath(), year).toString();
-        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
-        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
     @Test

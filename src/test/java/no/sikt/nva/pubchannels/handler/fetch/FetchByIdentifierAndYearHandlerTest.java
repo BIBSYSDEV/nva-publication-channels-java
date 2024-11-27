@@ -3,11 +3,16 @@ package no.sikt.nva.pubchannels.handler.fetch;
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
@@ -15,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -24,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
@@ -32,6 +39,7 @@ import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +77,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
         ChannelRegistryClient publicationChannelClient);
+
+    protected abstract String getPath();
 
     @BeforeEach
     void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
@@ -179,5 +189,24 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
         var problem = response.getBodyObject(Problem.class);
         assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+    }
+
+    @Test
+    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
+        var year = randomYear();
+        var requestedIdentifier = UUID.randomUUID().toString();
+        var newIdentifier = UUID.randomUUID().toString();
+        var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
+                                             .addChild(getChannelRegistryPathElement(), newIdentifier, year)
+                                             .toString();
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, getChannelRegistryPathElement());
+        handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
+                                       output,
+                                       context);
+        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
+        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
+        var expectedLocation = createPublicationChannelUri(newIdentifier, getPath(), year).toString();
+        assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
+        assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 }

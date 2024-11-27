@@ -60,6 +60,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
                                                             super.getAppConfigWithCacheEnabled(false));
     }
 
+    @Override
+    protected String getPath() {
+        return PUBLISHER_PATH;
+    }
+
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
