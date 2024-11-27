@@ -50,9 +50,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.zalando.problem.Problem;
 
-// Common behaviour for FetchSerialPublicationByIdentifierAndYearHandler,
-// FetchPublisherByIdentifierAndYearHandler, FetchSeriesByIdentifierAndYearHandler and
-// FetchJournalByIdentifierAndYearHandler are tested here
+/**
+ * Common behaviour for FetchSerialPublicationByIdentifierAndYearHandler, FetchPublisherByIdentifierAndYearHandler,
+ * FetchSeriesByIdentifierAndYearHandler and FetchJournalByIdentifierAndYearHandler are tested here.
+ */
 @WireMockTest(httpsEnabled = true)
 public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 

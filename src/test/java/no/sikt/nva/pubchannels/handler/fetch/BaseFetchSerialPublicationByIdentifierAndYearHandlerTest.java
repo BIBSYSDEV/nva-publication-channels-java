@@ -33,8 +33,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zalando.problem.Problem;
 
-// Common behavior for FetchSeriesByIdentifierAndYearHandler, FetchSerialPublicationByIdentifierAndYearHandler,
-// and FetchJournalByIdentifierAndYearHandler is tested here
+/**
+ * Common behavior for FetchSeriesByIdentifierAndYearHandler, FetchSerialPublicationByIdentifierAndYearHandler, and
+ * FetchJournalByIdentifierAndYearHandler is tested here
+ */
 public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     extends FetchByIdentifierAndYearHandlerTest {
 
