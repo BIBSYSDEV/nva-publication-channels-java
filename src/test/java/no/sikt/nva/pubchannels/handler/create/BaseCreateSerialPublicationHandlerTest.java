@@ -65,6 +65,25 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
     }
 
+    @Test
+    void shouldReturnBadGatewayWhenForbidden() throws IOException {
+        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
+        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN, channelRegistryPathElement);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        var statusCode = response.getStatusCode();
+        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+
+        var problem = response.getBodyObject(Problem.class);
+
+        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+    }
+
     private static void stubPostResponse(String expectedPid,
                                          ChannelRegistryCreateJournalRequest request,
                                          int clientResponseHttpCode, String channelRegistryPathElement)

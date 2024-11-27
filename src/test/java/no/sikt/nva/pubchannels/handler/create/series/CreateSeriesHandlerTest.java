@@ -69,26 +69,6 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
     }
 
     @Test
-    void shouldReturnBadGatewayWhenForbidden() throws IOException {
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-
-        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
-        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 
