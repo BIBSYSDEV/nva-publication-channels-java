@@ -6,7 +6,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,12 +16,10 @@ import static org.mockito.Mockito.when;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.BaseFetchSerialPublicationByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.fetch.FetchSerialPublicationByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.logutils.LogUtils;
@@ -30,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zalando.problem.Problem;
 
-class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationByIdentifierAndYearHandlerTest {
+class FetchSeriesByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
     private static final String SERIES_IDENTIFIER_FROM_CACHE = "50561B90-6679-4FCD-BCB0-99E521B18962";
     private static final String SERIES_YEAR_FROM_CACHE = "2024";
@@ -51,54 +48,18 @@ class FetchSeriesByIdentifierAndYearHandlerTest extends FetchSerialPublicationBy
     }
 
     @Override
-    protected SerialPublicationDto mockChannelFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, SERIES_TYPE);
-        var body = testChannel.asChannelRegistrySeriesBody();
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    body);
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
-    }
-
-    @Override
-    protected SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, SERIES_TYPE)
-                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
-                                                                      "no", "Vedtak"));
-        var body = testChannel.asChannelRegistrySeriesBody();
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
-    }
-
-    @Override
-    protected SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, SERIES_TYPE)
-                              .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
-                                                                      "no", "Vedtak"));
-        var body = testChannel.asChannelRegistrySeriesBody();
-
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
-
-        return testChannel.asSerialPublicationDto(SELF_URI_BASE, String.valueOf(year));
-    }
-
-    @Override
-    protected void mockChannelFound(int year, String identifier, String channelRegistryResponseBody) {
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
-                                    channelRegistryResponseBody);
-    }
-
-    @Override
-    protected TestChannel generateTestChannel(int year, String identifier) {
-        return new TestChannel(year, identifier, SERIES_TYPE);
+    protected URI getSelfBaseUri() {
+        return SELF_URI_BASE;
     }
 
     @Override
     protected String getPath() {
         return SERIES_PATH_ELEMENT;
+    }
+
+    @Override
+    protected String getType() {
+        return SERIES_TYPE;
     }
 
     @Test
