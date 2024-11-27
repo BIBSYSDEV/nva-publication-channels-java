@@ -18,9 +18,8 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Set;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -76,7 +75,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     }
 
     @Override
-    public CreateChannelResponse createJournal(ChannelRegistryCreateJournalRequest body)
+    public CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest body)
         throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateJournalRequest(token, body);
@@ -94,7 +93,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     }
 
     @Override
-    public CreateChannelResponse createSeries(ChannelRegistryCreateSeriesRequest body) throws ApiGatewayException {
+    public CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest body)
+        throws ApiGatewayException {
         var token = authClient.getToken();
         var request = createCreateSeriesRequest(token, body);
         return attempt(() -> executeRequest(request, CreateChannelResponse.class))
@@ -157,7 +157,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
                    .build();
     }
 
-    private HttpRequest createCreateJournalRequest(String token, ChannelRegistryCreateJournalRequest body) {
+    private HttpRequest createCreateJournalRequest(String token, ChannelRegistryCreateSerialPublicationRequest body) {
 
         var bodyAsJsonString =
             attempt(() -> dtoObjectMapper.writeValueAsString(body))
@@ -174,7 +174,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         return getHttpRequest(token, bodyAsJsonString, "createpublisher");
     }
 
-    private HttpRequest createCreateSeriesRequest(String token, ChannelRegistryCreateSeriesRequest body) {
+    private HttpRequest createCreateSeriesRequest(String token, ChannelRegistryCreateSerialPublicationRequest body) {
 
         var bodyAsJsonString =
             attempt(() -> dtoObjectMapper.writeValueAsString(body))

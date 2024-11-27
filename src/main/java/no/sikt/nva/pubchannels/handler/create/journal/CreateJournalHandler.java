@@ -7,10 +7,11 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
@@ -55,11 +56,11 @@ public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationR
         return journalDto;
     }
 
-    private static ChannelRegistryCreateJournalRequest getClientRequest(CreateSerialPublicationRequest request) {
-        return new ChannelRegistryCreateJournalRequest(request.name(),
-                                                       request.printIssn(),
-                                                       request.onlineIssn(),
-                                                       request.homepage());
+    private static ChannelRegistryCreateSerialPublicationRequest getClientRequest(CreateSerialPublicationRequest request) {
+        return new ChannelRegistryCreateSerialPublicationRequest(request.name(),
+                                                                 request.printIssn(),
+                                                                 request.onlineIssn(),
+                                                                 request.homepage());
     }
 
     private void validate(CreateSerialPublicationRequest input) throws BadRequestException {

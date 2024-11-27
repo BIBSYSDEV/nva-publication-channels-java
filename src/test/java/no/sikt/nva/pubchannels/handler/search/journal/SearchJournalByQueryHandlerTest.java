@@ -336,7 +336,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,
-                                    List.of(testChannel.asChannelRegistryJournalBody()));
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
 
         return getExpectedSearchResult(year, printIssn, testChannel);
     }
@@ -349,7 +349,7 @@ class SearchJournalByQueryHandlerTest extends SearchByQueryHandlerTest {
 
         mockChannelRegistryResponse(String.valueOf(year),
                                     printIssn,
-                                    List.of(testChannel.asChannelRegistryJournalBody()));
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
 
         return getExpectedSearchResult(year, printIssn, testChannel);
     }

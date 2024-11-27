@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.create.journal;
+package no.sikt.nva.pubchannels.handler.create;
 
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;

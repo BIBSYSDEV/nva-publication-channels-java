@@ -2,7 +2,7 @@ package no.sikt.nva.pubchannels.handler;
 
 import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
@@ -14,10 +14,10 @@ public interface PublicationChannelSearchCreateClient {
     ThirdPartySearchResponse searchChannel(ChannelType type, Map<String, String> queryParameters)
         throws ApiGatewayException;
 
-    CreateChannelResponse createJournal(ChannelRegistryCreateJournalRequest request) throws ApiGatewayException;
+    CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest request) throws ApiGatewayException;
 
     CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest request)
         throws ApiGatewayException;
 
-    CreateChannelResponse createSeries(ChannelRegistryCreateSeriesRequest request) throws ApiGatewayException;
+    CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest request) throws ApiGatewayException;
 }

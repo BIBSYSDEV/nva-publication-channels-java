@@ -221,7 +221,7 @@ public final class TestUtils {
 
     private static String generateChannelRegistryJournalBody(String year, String name) {
         return new TestChannel(year, UUID.randomUUID().toString(), JOURNAL_TYPE).withName(name)
-                   .asChannelRegistryJournalBody();
+                   .asChannelRegistrySerialPublicationBody();
     }
 
     private static Map<String, String> getQueryParameters(URI uri) {

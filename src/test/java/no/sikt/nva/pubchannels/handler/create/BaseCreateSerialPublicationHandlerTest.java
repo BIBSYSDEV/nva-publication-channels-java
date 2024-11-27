@@ -1,5 +1,9 @@
 package no.sikt.nva.pubchannels.handler.create;
 
+import static no.sikt.nva.pubchannels.handler.TestChannel.createEmptyTestChannel;
+import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
+import static no.sikt.nva.pubchannels.handler.TestUtils.currentYearAsInteger;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -8,11 +12,16 @@ import static org.hamcrest.core.StringContains.containsString;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateJournalRequest;
+import java.net.URI;
+import java.util.UUID;
+import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
-import no.sikt.nva.pubchannels.handler.create.journal.CreateJournalHandler;
-import no.sikt.nva.pubchannels.handler.create.journal.CreateSerialPublicationRequestBuilder;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +31,13 @@ import org.zalando.problem.Problem;
 
 public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandlerTest {
 
-    protected String channelRegistryPathElement;
+    protected String channelRegistryCreatePathElement;
+    protected String channelRegistryFetchPathElement;
+    protected String type;
+    protected String customChannelPath;
+
+    protected abstract CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> createHandler(
+        Environment environment, ChannelRegistryClient channelRegistryClient);
 
     @Test
     void shouldThrowUnauthorizedIfNotUser() throws IOException {
@@ -39,9 +54,9 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
 
-        stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED, channelRegistryPathElement);
+        stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED, channelRegistryCreatePathElement);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -58,9 +73,9 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
+        var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
 
-        stubBadRequestResponse(request, channelRegistryPathElement);
+        stubBadRequestResponse(request, channelRegistryCreatePathElement);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -74,8 +89,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
 
-        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN, channelRegistryPathElement);
+        var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+        stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN, channelRegistryCreatePathElement);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -94,8 +109,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
 
         stubPostResponse(null,
-                         new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null),
-                         HttpURLConnection.HTTP_INTERNAL_ERROR, channelRegistryPathElement);
+                         new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null),
+                         HttpURLConnection.HTTP_INTERNAL_ERROR, channelRegistryCreatePathElement);
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -131,7 +146,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
-        this.handlerUnderTest = new CreateJournalHandler(environment, setupInteruptedClient());
+        this.handlerUnderTest = createHandler(environment, setupInteruptedClient());
 
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
 
@@ -206,8 +221,102 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         assertThat(problem.getDetail(), is(containsString("Homepage has an invalid URL format")));
     }
 
+    @Test
+    void shouldReturnCreatedChannelWithSuccess() throws IOException {
+        var expectedPid = UUID.randomUUID().toString();
+
+        var channelRegistryRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+        stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED,
+                         channelRegistryCreatePathElement);
+
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(
+            VALID_NAME);
+        stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
+
+        var requestBody = new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+
+        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
+        assertThat(actualLocation,
+                   is(equalTo(createPublicationChannelUri(expectedPid, customChannelPath, currentYear()))));
+
+        var expectedChannel = testChannel.asSerialPublicationDto(baseUri, currentYear());
+        assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedChannel)));
+    }
+
+    @ParameterizedTest(name = "Should create series for print ISSN \"{0}\"")
+    @MethodSource("validIssn")
+    void shouldCreateChannelWithNameAndPrintIssn(String issn) throws IOException {
+        var expectedPid = UUID.randomUUID().toString();
+
+        var clientRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, issn, null, null);
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, channelRegistryCreatePathElement);
+
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(VALID_NAME)
+                              .withPrintIssn(issn);
+        stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
+
+        var requestBody =
+            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+    }
+
+    @ParameterizedTest(name = "Should create series for online ISSN \"{0}\"")
+    @MethodSource("validIssn")
+    void shouldCreateChannelWithNameAndOnlineIssn(String issn) throws IOException {
+        var expectedPid = UUID.randomUUID().toString();
+        var clientRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, issn, null);
+
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, channelRegistryCreatePathElement);
+
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(VALID_NAME)
+                              .withOnlineIssn(issn);
+        stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
+
+        var requestBody =
+            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+    }
+
+    @Test
+    void shouldCreateChannelWithNameAndHomepage() throws IOException {
+        var expectedPid = UUID.randomUUID().toString();
+        var homepage = "https://a.valid.url.com";
+        var clientRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, homepage);
+
+        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, channelRegistryCreatePathElement);
+
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type)
+                              .withName(VALID_NAME)
+                              .withSameAs(
+                                  URI.create(homepage));
+        stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
+
+        var requestBody =
+            new CreateSerialPublicationRequestBuilder()
+                .withName(VALID_NAME)
+                .withHomepage(homepage)
+                .build();
+        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+    }
+
     private static void stubPostResponse(String expectedPid,
-                                         ChannelRegistryCreateJournalRequest request,
+                                         ChannelRegistryCreateSerialPublicationRequest request,
                                          int clientResponseHttpCode, String channelRegistryPathElement)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
@@ -217,7 +326,13 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                      dtoObjectMapper.writeValueAsString(request));
     }
 
-    private static void stubBadRequestResponse(ChannelRegistryCreateJournalRequest request,
+    private static void stubFetchOKResponse(TestChannel testChannel, String channelRegistryPathElement) {
+        var channelRegistryResponse = testChannel.asChannelRegistrySerialPublicationBody();
+        var requestUrl = channelRegistryPathElement + testChannel.identifier() + "/" + testChannel.year();
+        stubGetResponse(HttpURLConnection.HTTP_OK, requestUrl, channelRegistryResponse);
+    }
+
+    private static void stubBadRequestResponse(ChannelRegistryCreateSerialPublicationRequest request,
                                                String channelRegistryPathElement)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);

@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.create.journal;
+package no.sikt.nva.pubchannels.handler.create;
 
 public class CreateSerialPublicationRequestBuilder {
 
