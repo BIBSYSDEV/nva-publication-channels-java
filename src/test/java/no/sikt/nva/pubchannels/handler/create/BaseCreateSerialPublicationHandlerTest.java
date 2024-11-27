@@ -171,7 +171,6 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ParameterizedTest(name = "Should return BadRequest for invalid name \"{0}\"")
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
-
         var requestBody = new CreateSerialPublicationRequestBuilder().withName(name).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
