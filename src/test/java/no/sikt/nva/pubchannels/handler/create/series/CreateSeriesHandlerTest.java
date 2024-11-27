@@ -11,7 +11,6 @@ import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -25,13 +24,10 @@ import no.sikt.nva.pubchannels.handler.create.BaseCreateSerialPublicationHandler
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.zalando.problem.Problem;
 
 class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
@@ -66,104 +62,6 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
         var expectedSeries = testChannel.asSerialPublicationDto(baseUri, currentYear());
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedSeries)));
-    }
-
-    @ParameterizedTest(name = "Should return BadGateway for response code \"{0}\"")
-    @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED,
-        HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_UNAVAILABLE})
-    void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-
-        stubAuth(httpStatusCode);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        var statusCode = response.getStatusCode();
-        assertThat(statusCode, is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-
-        assertThat(problem.getDetail(),
-                   is(equalTo("Unexpected response from upstream!")));
-    }
-
-    @Test
-    void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
-        this.handlerUnderTest = new CreateSeriesHandler(environment, setupInteruptedClient());
-
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
-    }
-
-    @ParameterizedTest(name = "Should return BadRequest for invalid name \"{0}\"")
-    @MethodSource("invalidNames")
-    void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
-
-        var requestBody = new CreateSeriesRequestBuilder().withName(name).build();
-        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Name is too")));
-    }
-
-    @ParameterizedTest(name = "Should return BadRequest for invalid print ISSN \"{0}\"")
-    @MethodSource("invalidIssn")
-    void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var requestBody =
-            new CreateSeriesRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("PrintIssn has an invalid ISSN format")));
-    }
-
-    @ParameterizedTest(name = "Should return BadRequest for invalid online ISSN \"{0}\"")
-    @MethodSource("invalidIssn")
-    void shouldReturnBadRequestWhenInvalidEissn(String issn) throws IOException {
-        var requestBody =
-            new CreateSeriesRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
-        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("OnlineIssn has an invalid ISSN format")));
-    }
-
-    @ParameterizedTest(name = "Should return BadRequest for invalid URL \"{0}\"")
-    @MethodSource("invalidUri")
-    void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var requestBody =
-            new CreateSeriesRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
-        handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Homepage has an invalid URL format")));
     }
 
     @ParameterizedTest(name = "Should create series for print ISSN \"{0}\"")
