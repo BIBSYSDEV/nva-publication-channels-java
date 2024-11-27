@@ -8,9 +8,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
+import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
@@ -19,28 +20,30 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, SerialPublicationDto> {
+public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
     @JacocoGenerated
     public CreateSeriesHandler() {
-        super(CreateSeriesRequest.class, new Environment());
+        super(CreateSerialPublicationRequest.class, new Environment());
     }
 
     public CreateSeriesHandler(Environment environment, ChannelRegistryClient client) {
-        super(CreateSeriesRequest.class, environment, client);
+        super(CreateSerialPublicationRequest.class, environment, client);
     }
 
     @Override
-    protected void validateRequest(CreateSeriesRequest createSeriesRequest, RequestInfo requestInfo, Context context)
+    protected void validateRequest(CreateSerialPublicationRequest createSeriesRequest, RequestInfo requestInfo,
+                                   Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         validate(createSeriesRequest);
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateSeriesRequest input, RequestInfo requestInfo, Context context)
+    protected SerialPublicationDto processInput(CreateSerialPublicationRequest input, RequestInfo requestInfo,
+                                                Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createSeries(getClientRequest(input));
 
@@ -55,14 +58,15 @@ public class CreateSeriesHandler extends CreateHandler<CreateSeriesRequest, Seri
         return seriesDto;
     }
 
-    private static ChannelRegistryCreateSeriesRequest getClientRequest(CreateSeriesRequest request) {
-        return new ChannelRegistryCreateSeriesRequest(request.name(),
-                                                      request.printIssn(),
-                                                      request.onlineIssn(),
-                                                      request.homepage());
+    private static ChannelRegistryCreateSerialPublicationRequest getClientRequest(
+        CreateSerialPublicationRequest request) {
+        return new ChannelRegistryCreateSerialPublicationRequest(request.name(),
+                                                                 request.printIssn(),
+                                                                 request.onlineIssn(),
+                                                                 request.homepage());
     }
 
-    private void validate(CreateSeriesRequest input) throws BadRequestException {
+    private void validate(CreateSerialPublicationRequest input) throws BadRequestException {
         try {
             validateString(input.name(), 5, 300, "Name");
             validateOptionalIssn(input.printIssn(), "PrintIssn");

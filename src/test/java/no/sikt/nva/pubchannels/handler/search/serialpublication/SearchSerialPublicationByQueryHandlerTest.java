@@ -62,7 +62,7 @@ class SearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest
         var year = randomYear();
         var issn = randomIssn();
         var testChannel = new TestChannel(year, UUID.randomUUID().toString(), JOURNAL_TYPE).withPrintIssn(issn);
-        mockChannelRegistryResponse(year, issn, List.of(testChannel.asChannelRegistryJournalBody()));
+        mockChannelRegistryResponse(year, issn, List.of(testChannel.asChannelRegistrySerialPublicationBody()));
         var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
 
         this.handlerUnderTest.handleRequest(input, output, context);

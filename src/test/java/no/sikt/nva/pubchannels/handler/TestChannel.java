@@ -122,7 +122,7 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                                     type).toJsonString();
     }
 
-    public String asChannelRegistryJournalBody() {
+    public String asChannelRegistrySerialPublicationBody() {
         return new ChannelRegistrySerialPublication(identifier,
                                                     name,
                                                     getOnlineIssnValue(),
