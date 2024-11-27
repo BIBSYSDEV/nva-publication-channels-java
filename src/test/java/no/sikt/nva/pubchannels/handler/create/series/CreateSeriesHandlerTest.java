@@ -69,21 +69,6 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
-        var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateSeriesRequest(VALID_NAME, null, null, null);
-
-        setupBadRequestStub(request);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSeriesRequestBuilder().withName(VALID_NAME).build());
 

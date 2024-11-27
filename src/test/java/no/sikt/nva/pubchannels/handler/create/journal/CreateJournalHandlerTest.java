@@ -70,21 +70,6 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
-        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
-
-        stubBadRequestResponse(request);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
-    }
-
-    @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
         var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
 
@@ -305,12 +290,5 @@ class CreateJournalHandlerTest extends BaseCreateSerialPublicationHandlerTest {
                      dtoObjectMapper.writeValueAsString(request));
     }
 
-    private static void stubBadRequestResponse(ChannelRegistryCreateJournalRequest request)
-        throws JsonProcessingException {
-        stubAuth(HttpURLConnection.HTTP_OK);
-        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
-                     "/createjournal/" + "createpid",
-                     dtoObjectMapper.writeValueAsString(PROBLEM),
-                     dtoObjectMapper.writeValueAsString(request));
-    }
+
 }

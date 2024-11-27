@@ -50,14 +50,39 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
         assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
     }
 
+    @Test
+    void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
+        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var request = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
+
+        stubBadRequestResponse(request, channelRegistryPathElement);
+
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
+        assertThat(response.getBodyObject(Problem.class).getDetail(), containsString(PROBLEM));
+    }
+
     private static void stubPostResponse(String expectedPid,
                                          ChannelRegistryCreateJournalRequest request,
-                                         int clientResponseHttpCode, String channelRegistryCustomPathElement)
+                                         int clientResponseHttpCode, String channelRegistryPathElement)
         throws JsonProcessingException {
         stubAuth(HttpURLConnection.HTTP_OK);
         stubResponse(clientResponseHttpCode,
-                     channelRegistryCustomPathElement + "createpid",
+                     channelRegistryPathElement + "createpid",
                      dtoObjectMapper.writeValueAsString(new CreateChannelResponse(expectedPid)),
+                     dtoObjectMapper.writeValueAsString(request));
+    }
+
+    private static void stubBadRequestResponse(ChannelRegistryCreateJournalRequest request,
+                                               String channelRegistryPathElement)
+        throws JsonProcessingException {
+        stubAuth(HttpURLConnection.HTTP_OK);
+        stubResponse(HttpURLConnection.HTTP_BAD_REQUEST,
+                     channelRegistryPathElement + "createpid",
+                     dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
     }
 }
