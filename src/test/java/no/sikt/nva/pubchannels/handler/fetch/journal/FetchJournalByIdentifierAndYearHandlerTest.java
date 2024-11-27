@@ -4,6 +4,7 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
@@ -55,7 +56,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     @Override
     protected SerialPublicationDto mockChannelFound(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Journal");
+        var testChannel = new TestChannel(year, identifier, JOURNAL_TYPE);
         var body = testChannel.asChannelRegistryJournalBody();
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
@@ -66,7 +67,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     @Override
     protected SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Journal")
+        var testChannel = new TestChannel(year, identifier, JOURNAL_TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -78,7 +79,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     @Override
     protected SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Journal")
+        var testChannel = new TestChannel(year, identifier, JOURNAL_TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -96,7 +97,7 @@ class FetchJournalByIdentifierAndYearHandlerTest extends FetchSerialPublicationB
 
     @Override
     protected TestChannel generateTestChannel(int year, String identifier) {
-        return new TestChannel(year, identifier, "Journal");
+        return new TestChannel(year, identifier, JOURNAL_TYPE);
     }
 
     @Override

@@ -1,29 +1,22 @@
 package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
 
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
-import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.SERIAL_PUBLICATION_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -32,7 +25,6 @@ import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.series.FetchSeriesByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,12 +55,12 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
     @Override
     protected SerialPublicationDto mockChannelFound(int year, String identifier) {
-        return mockSerialPublicationFound(year, identifier, "Series");
+        return mockSerialPublicationFound(year, identifier, JOURNAL_TYPE);
     }
 
     @Override
     protected SerialPublicationDto mockChannelFoundYearValueNull(int year, String identifier) {
-        var testChannel = new TestChannel(null, identifier, "Series");
+        var testChannel = new TestChannel(null, identifier, JOURNAL_TYPE);
 
         mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
                                     testChannel.asChannelRegistrySeriesBody());
@@ -78,7 +70,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
     @Override
     protected SerialPublicationDto mockChannelWithScientificValueReviewNotice(int year, String identifier) {
-        var testChannel = new TestChannel(year, identifier, "Series")
+        var testChannel = new TestChannel(year, identifier, JOURNAL_TYPE)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
         var body = testChannel.asChannelRegistrySeriesBody();
@@ -96,7 +88,7 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
     @Override
     protected TestChannel generateTestChannel(int year, String identifier) {
-        return new TestChannel(year, identifier, "Series");
+        return new TestChannel(year, identifier, JOURNAL_TYPE);
     }
 
     @Override

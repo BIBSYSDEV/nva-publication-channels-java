@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.create.journal;
 
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestChannel.createEmptyTestChannel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
@@ -38,9 +39,9 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
     void setUp() {
         handlerUnderTest = new CreateJournalHandler(environment, publicationChannelClient);
         baseUri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                            .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                            .addChild(JOURNAL_PATH)
-                            .getUri();
+                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                      .addChild(JOURNAL_PATH)
+                      .getUri();
     }
 
     @Test
@@ -50,7 +51,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var channelRegistryRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, null, null, null);
         stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "Journal").withName(VALID_NAME);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(
+            VALID_NAME);
         stubFetchOKResponse(testChannel);
 
         var requestBody = new CreateJournalRequestBuilder().withName(VALID_NAME).build();
@@ -244,8 +246,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
         var clientRequest = new ChannelRegistryCreateJournalRequest(VALID_NAME, issn, null, null);
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME)
-                                                                                                .withPrintIssn(issn);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
+                              .withPrintIssn(issn);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
@@ -265,8 +267,8 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal").withName(VALID_NAME)
-                                                                                                .withOnlineIssn(issn);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE).withName(VALID_NAME)
+                              .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
@@ -286,7 +288,7 @@ class CreateJournalHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "journal")
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, JOURNAL_TYPE)
                               .withName(VALID_NAME)
                               .withSameAs(
                                   URI.create(homepage));

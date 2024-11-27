@@ -2,6 +2,7 @@ package no.sikt.nva.pubchannels.handler.create.series;
 
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.SERIES_TYPE;
 import static no.sikt.nva.pubchannels.handler.TestChannel.createEmptyTestChannel;
 import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.currentYear;
@@ -50,7 +51,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, request, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "Series").withName(VALID_NAME);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, SERIES_TYPE).withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
         var requestBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
@@ -248,7 +249,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
         var clientRequest = new ChannelRegistryCreateSeriesRequest(VALID_NAME, issn, null, null);
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME);
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, SERIES_TYPE).withName(VALID_NAME);
         stubFetchOKResponse(testChannel);
 
         var requestBody =
@@ -268,7 +269,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series").withName(VALID_NAME)
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, SERIES_TYPE).withName(VALID_NAME)
                               .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel);
 
@@ -289,7 +290,7 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, "series")
+        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, SERIES_TYPE)
                               .withName(VALID_NAME)
                               .withSameAs(URI.create(homepage));
         stubFetchOKResponse(testChannel);

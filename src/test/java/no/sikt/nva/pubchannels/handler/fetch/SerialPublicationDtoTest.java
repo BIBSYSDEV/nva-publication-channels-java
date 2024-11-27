@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.journal;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
