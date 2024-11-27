@@ -22,6 +22,8 @@ public final class TestConstants {
     public static final String SERIAL_PUBLICATION_PATH = "serial-publication";
     public static final String JOURNAL_TYPE = "Journal";
     public static final String SERIES_TYPE = "Series";
+    public static final String HARDCODED_CACHED_TITLE = "Some Title";
+
     public static final String TOO_LONG_INPUT_STRING = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
                                                        + "Sed do eiusmod tempor incididunt ut labore et dolore magna "
                                                        + "aliqua. Ut enim ad minim veniam, "

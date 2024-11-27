@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.channelregistrycache.db.service;
 
+import static no.sikt.nva.pubchannels.TestConstants.HARDCODED_CACHED_TITLE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -103,7 +104,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
     private static ChannelRegistrySerialPublication createExpectedJournal(String channelIdentifier, String year) {
         return new ChannelRegistrySerialPublication(channelIdentifier,
-                                                    "Tidsskrift for Den norske legeforening",
+                                                    HARDCODED_CACHED_TITLE,
                                                     "0807-7096",
                                                     "0029-2001",
                                                     new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null,
@@ -127,7 +128,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
     private ChannelRegistrySerialPublication createExpectedSeries(String channelIdentifier, String year) {
         return new ChannelRegistrySerialPublication(channelIdentifier,
-                                                    "Tidsskrift for Den norske legeforening",
+                                                    HARDCODED_CACHED_TITLE,
                                                     "0807-7096",
                                                     "0029-2001",
                                                     new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null,

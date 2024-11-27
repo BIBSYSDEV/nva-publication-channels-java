@@ -4,6 +4,7 @@ import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestConstants.HARDCODED_CACHED_TITLE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
@@ -178,7 +179,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         var actualTitle = response.getBodyObject(SerialPublicationDto.class).name();
-        assertThat(actualTitle, is(equalTo("Some Title")));
+        assertThat(actualTitle, is(equalTo(HARDCODED_CACHED_TITLE)));
 
         assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
     }
@@ -197,7 +198,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         var actualTitle = response.getBodyObject(SerialPublicationDto.class).name();
-        assertThat(actualTitle, is(equalTo("Some Title")));
+        assertThat(actualTitle, is(equalTo(HARDCODED_CACHED_TITLE)));
 
         var statusCode = response.getStatusCode();
         assertThat(statusCode, is(equalTo(HTTP_OK)));
