@@ -29,37 +29,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                   BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
-    private static final URI SELF_URI_BASE = URI.create(
-        "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
-    private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournalserie/";
-    private static final String SERIAL_PUBLICATION_PATH_ELEMENT = "serial-publication";
-
-    @Override
-    protected String getChannelRegistryPathElement() {
-        return CHANNEL_REGISTRY_PATH_ELEMENT;
-    }
-
     @Override
     protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
         ChannelRegistryClient publicationChannelClient) {
         return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient,
                                                                     cacheService,
                                                                     super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Override
-    protected URI getSelfBaseUri() {
-        return SELF_URI_BASE;
-    }
-
-    @Override
-    protected String getPath() {
-        return SERIAL_PUBLICATION_PATH_ELEMENT;
-    }
-
-    @Override
-    protected String getType() {
-        return JOURNAL_TYPE;
     }
 
     @Override
@@ -78,6 +53,11 @@ public class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                                      this.cacheService,
                                                                                      super.getAppConfigWithCacheEnabled(
                                                                                          false));
+        this.type = JOURNAL_TYPE;
+        this.customChannelPath = SERIAL_PUBLICATION_PATH;
+        this.selfBaseUri = URI.create(
+            "https://localhost/publication-channels/" + SERIAL_PUBLICATION_PATH);
+        this.channelRegistryPathElement = "/findjournalserie/";
     }
 
     @ParameterizedTest(name = "should return correct data for type {0}")

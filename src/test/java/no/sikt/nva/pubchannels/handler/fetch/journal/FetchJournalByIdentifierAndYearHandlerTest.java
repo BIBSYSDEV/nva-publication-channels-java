@@ -15,35 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 
 class FetchJournalByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
-    private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findjournal/";
-    private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
-    private static final String JOURNAL_PATH_ELEMENT = "journal";
-
-    @Override
-    protected String getChannelRegistryPathElement() {
-        return CHANNEL_REGISTRY_PATH_ELEMENT;
-    }
-
     @Override
     protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
         ChannelRegistryClient publicationChannelClient) {
         return new FetchJournalByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
                                                           super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Override
-    protected URI getSelfBaseUri() {
-        return SELF_URI_BASE;
-    }
-
-    @Override
-    protected String getPath() {
-        return JOURNAL_PATH_ELEMENT;
-    }
-
-    @Override
-    protected String getType() {
-        return JOURNAL_TYPE;
     }
 
     @Override
@@ -61,5 +37,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicat
                                                                            this.channelRegistryClient,
                                                                            this.cacheService,
                                                                            super.getAppConfigWithCacheEnabled(false));
+        this.type = JOURNAL_TYPE;
+        this.customChannelPath = JOURNAL_PATH;
+        this.channelRegistryPathElement = "/findjournal/";
+        this.selfBaseUri = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
     }
 }

@@ -47,22 +47,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     private static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
-    private static final String CHANNEL_REGISTRY_PATH_ELEMENT = "/findpublisher/";
-
-    @Override
-    protected String getChannelRegistryPathElement() {
-        return CHANNEL_REGISTRY_PATH_ELEMENT;
-    }
 
     @Override
     protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(ChannelRegistryClient publicationChannelClient) {
         return new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
                                                             super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Override
-    protected String getPath() {
-        return PUBLISHER_PATH;
     }
 
     @BeforeEach
@@ -71,6 +60,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
                                                                              this.channelRegistryClient,
                                                                              cacheService,
                                                                              super.getAppConfigWithCacheEnabled(false));
+        this.customChannelPath = PUBLISHER_PATH;
+        this.channelRegistryPathElement = "/findpublisher/";
     }
 
     @Test
@@ -197,7 +188,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        mockResponseWithHttpStatus(CHANNEL_REGISTRY_PATH_ELEMENT,
+        mockResponseWithHttpStatus("/findpublisher/",
                                    identifier,
                                    year,
                                    HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -225,9 +216,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(CHANNEL_REGISTRY_PATH_ELEMENT, newIdentifier, year)
+                                             .addChild("/findpublisher/", newIdentifier, year)
                                              .toString();
-        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, CHANNEL_REGISTRY_PATH_ELEMENT);
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, "/findpublisher/");
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
                                        context);
@@ -303,14 +294,14 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier,
+        mockChannelRegistryResponse("/findpublisher/", String.valueOf(year), identifier,
                                     body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
 
     private void mockPublisherFound(String year, String identifier, String channelRegistryPublisherBody) {
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, year, identifier, channelRegistryPublisherBody);
+        mockChannelRegistryResponse("/findpublisher/", year, identifier, channelRegistryPublisherBody);
     }
 
     private PublisherDto mockPublisherWithScientificValueReviewNotice(String year, String identifier) {
@@ -319,7 +310,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
                                                                       "no", "vedtak"));
         var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+        mockChannelRegistryResponse("/findpublisher/", String.valueOf(year), identifier, body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }
@@ -328,7 +319,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var testChannel = new TestChannel(null, identifier, PublisherDto.TYPE);
         var body = testChannel.asChannelRegistryPublisherBody();
 
-        mockChannelRegistryResponse(CHANNEL_REGISTRY_PATH_ELEMENT, String.valueOf(year), identifier, body);
+        mockChannelRegistryResponse("/findpublisher/", String.valueOf(year), identifier, body);
 
         return testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year));
     }

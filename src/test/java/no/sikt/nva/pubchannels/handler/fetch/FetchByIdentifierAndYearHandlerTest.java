@@ -63,6 +63,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     protected CacheService cacheService;
     protected ByteArrayOutputStream output;
     protected String channelRegistryBaseUri;
+    protected String customChannelPath;
+    protected String channelRegistryPathElement;
     protected ChannelRegistryClient channelRegistryClient;
     protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
 
@@ -74,12 +76,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
     }
 
-    protected abstract String getChannelRegistryPathElement();
-
     protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
         ChannelRegistryClient publicationChannelClient);
-
-    protected abstract String getPath();
 
     @BeforeEach
     void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
@@ -130,7 +128,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_NOT_FOUND);
+        mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_NOT_FOUND);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -151,7 +149,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var identifier = UUID.randomUUID().toString();
         var year = randomYear();
 
-        mockResponseWithHttpStatus(getChannelRegistryPathElement(), identifier, year, HTTP_INTERNAL_ERROR);
+        mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_INTERNAL_ERROR);
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
@@ -198,15 +196,15 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         var requestedIdentifier = UUID.randomUUID().toString();
         var newIdentifier = UUID.randomUUID().toString();
         var newChannelRegistryLocation = UriWrapper.fromHost(channelRegistryBaseUri)
-                                             .addChild(getChannelRegistryPathElement(), newIdentifier, year)
+                                             .addChild(channelRegistryPathElement, newIdentifier, year)
                                              .toString();
-        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, getChannelRegistryPathElement());
+        mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, channelRegistryPathElement);
         handlerUnderTest.handleRequest(constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE),
                                        output,
                                        context);
         var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
         assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation = createPublicationChannelUri(newIdentifier, getPath(), year).toString();
+        var expectedLocation = createPublicationChannelUri(newIdentifier, customChannelPath, year).toString();
         assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
         assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
     }
