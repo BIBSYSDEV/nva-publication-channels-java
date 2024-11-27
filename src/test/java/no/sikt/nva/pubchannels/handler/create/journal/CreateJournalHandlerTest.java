@@ -8,7 +8,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.currentYearAsInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.UUID;
