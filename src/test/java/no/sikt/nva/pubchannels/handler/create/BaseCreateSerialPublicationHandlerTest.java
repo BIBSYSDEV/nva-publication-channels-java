@@ -30,7 +30,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
 /**
- * Common behavior for CreateJournalHandlerTest, CreateSeriesHandlerTest is tested here
+ * Common behavior for CreateJournalHandler, CreateSeriesHandler and CreateSerialPublicationHandler is tested here
  */
 public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandlerTest {
 
@@ -56,8 +56,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
-        var input =
-            constructRequest(requestBuilderWithRequiredFields().build());
+        var input = constructRequest(requestBuilderWithRequiredFields().build());
         var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
 
         stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED, channelRegistryCreatePathElement);
@@ -340,6 +339,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     }
 
     private CreateSerialPublicationRequestBuilder requestBuilderWithRequiredFields() {
-        return new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withType(type);
+        return new CreateSerialPublicationRequestBuilder()
+                   .withName(VALID_NAME)
+                   .withType(type); //Type is only required for CreateSerialPublicationHandler
     }
 }
