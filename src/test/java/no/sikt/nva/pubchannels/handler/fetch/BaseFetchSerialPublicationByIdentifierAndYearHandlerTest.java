@@ -81,7 +81,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         var actualYear = response.getBodyObject(SerialPublicationDto.class).year();
-        assertThat(actualYear, is(equalTo(String.valueOf(year))));
+        assertThat(actualYear, is(equalTo(year)));
     }
 
     @ParameterizedTest(name = "Should return requested media type \"{0}\"")
@@ -168,8 +168,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         var testChannel = generateTestChannel(year, identifier);
         mockChannelFoundWithBody(year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
-        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
-                                       context);
+        handlerUnderTest.handleRequest(constructRequest(year, identifier, MediaType.ANY_TYPE), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertEquals(HTTP_OK, response.getStatusCode());

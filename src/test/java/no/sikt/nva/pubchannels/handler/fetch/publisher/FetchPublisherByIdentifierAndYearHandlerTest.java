@@ -109,7 +109,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
         mockPublisherFound(year, identifier, testChannel.asChannelRegistryPublisherBodyWithoutLevel());
 
-        handlerUnderTest.handleRequest(constructRequest(String.valueOf(year), identifier, MediaType.ANY_TYPE), output,
+        handlerUnderTest.handleRequest(constructRequest(year, identifier, MediaType.ANY_TYPE), output,
                                        context);
 
         var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
