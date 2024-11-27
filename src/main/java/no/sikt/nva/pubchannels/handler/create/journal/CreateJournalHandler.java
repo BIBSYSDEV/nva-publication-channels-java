@@ -19,28 +19,28 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, SerialPublicationDto> {
+public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
     @JacocoGenerated
     public CreateJournalHandler() {
-        super(CreateJournalRequest.class, new Environment());
+        super(CreateSerialPublicationRequest.class, new Environment());
     }
 
     public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
-        super(CreateJournalRequest.class, environment, publicationChannelClient);
+        super(CreateSerialPublicationRequest.class, environment, publicationChannelClient);
     }
 
     @Override
-    protected void validateRequest(CreateJournalRequest createJournalRequest, RequestInfo requestInfo, Context context)
+    protected void validateRequest(CreateSerialPublicationRequest createSerialPublicationRequest, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        validate(createJournalRequest);
+        validate(createSerialPublicationRequest);
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateJournalRequest input, RequestInfo requestInfo, Context context)
+    protected SerialPublicationDto processInput(CreateSerialPublicationRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createJournal(getClientRequest(input));
 
@@ -55,14 +55,14 @@ public class CreateJournalHandler extends CreateHandler<CreateJournalRequest, Se
         return journalDto;
     }
 
-    private static ChannelRegistryCreateJournalRequest getClientRequest(CreateJournalRequest request) {
+    private static ChannelRegistryCreateJournalRequest getClientRequest(CreateSerialPublicationRequest request) {
         return new ChannelRegistryCreateJournalRequest(request.name(),
                                                        request.printIssn(),
                                                        request.onlineIssn(),
                                                        request.homepage());
     }
 
-    private void validate(CreateJournalRequest input) throws BadRequestException {
+    private void validate(CreateSerialPublicationRequest input) throws BadRequestException {
         try {
             validateString(input.name(), 5, 300, "Name");
             validateOptionalIssn(input.printIssn(), "PrintIssn");

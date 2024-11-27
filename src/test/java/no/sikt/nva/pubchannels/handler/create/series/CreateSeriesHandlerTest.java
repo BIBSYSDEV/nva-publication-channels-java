@@ -21,7 +21,7 @@ import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSeriesRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
+import no.sikt.nva.pubchannels.handler.create.BaseCreateSerialPublicationHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
@@ -33,7 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zalando.problem.Problem;
 
-class CreateSeriesHandlerTest extends CreateHandlerTest {
+class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
     @BeforeEach
     void setUp() {
@@ -304,18 +304,6 @@ class CreateSeriesHandlerTest extends CreateHandlerTest {
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
-    }
-
-    @Test
-    void shouldThrowUnauthorizedIfNotUser() throws IOException {
-        var requestBody = new CreateSeriesRequestBuilder().withName(VALID_NAME).build();
-        handlerUnderTest.handleRequest(constructUnauthorizedRequest(requestBody), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_UNAUTHORIZED)));
-
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Unauthorized")));
     }
 
     private static void stubFetchOKResponse(TestChannel testChannel) {
