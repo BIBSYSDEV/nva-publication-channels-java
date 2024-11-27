@@ -2,7 +2,6 @@ package no.sikt.nva.pubchannels.handler.create.serialpublication;
 
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.SERIAL_PUBLICATION_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -15,7 +14,6 @@ import no.sikt.nva.pubchannels.handler.create.BaseCreateSerialPublicationHandler
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequestBuilder;
-import no.sikt.nva.pubchannels.handler.create.series.CreateSeriesHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
@@ -40,9 +38,9 @@ class CreateSerialPublicationHandlerTest extends BaseCreateSerialPublicationHand
                       .addChild(SERIAL_PUBLICATION_PATH)
                       .getUri();
         channelRegistryCreatePathElement = "/createseries/";
-        channelRegistryFetchPathElement = "/findseries/";
+        channelRegistryFetchPathElement = "/findjournalserie/";
         type = SERIES_TYPE;
-        customChannelPath = SERIES_PATH;
+        customChannelPath = SERIAL_PUBLICATION_PATH;
     }
 
     @Test

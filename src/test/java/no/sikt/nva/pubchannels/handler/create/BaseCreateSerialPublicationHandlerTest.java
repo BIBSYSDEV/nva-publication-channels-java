@@ -56,7 +56,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input =
+            constructRequest(requestBuilderWithRequiredFields().build());
         var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
 
         stubPostResponse(null, request, HttpURLConnection.HTTP_UNAUTHORIZED, channelRegistryCreatePathElement);
@@ -75,7 +76,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadRequestWithOriginalErrorMessageWhenBadRequestFromChannelRegisterApi() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input =
+            constructRequest(requestBuilderWithRequiredFields().build());
         var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
 
         stubBadRequestResponse(request, channelRegistryCreatePathElement);
@@ -90,7 +92,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadGatewayWhenForbidden() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input =
+            constructRequest(requestBuilderWithRequiredFields().build());
 
         var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
         stubPostResponse(null, request, HttpURLConnection.HTTP_FORBIDDEN, channelRegistryCreatePathElement);
@@ -109,7 +112,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
     @Test
     void shouldReturnBadGatewayWhenInternalServerError() throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input = constructRequest(requestBuilderWithRequiredFields().build());
 
         stubPostResponse(null,
                          new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null),
@@ -131,7 +134,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ValueSource(ints = {HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_INTERNAL_ERROR,
         HttpURLConnection.HTTP_UNAVAILABLE})
     void shouldReturnBadGatewayWhenAuthResponseNotSuccessful(int httpStatusCode) throws IOException {
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input =
+            constructRequest(requestBuilderWithRequiredFields().build());
 
         stubAuth(httpStatusCode);
 
@@ -151,7 +155,8 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     void shouldReturnBadGatewayWhenAuthClientInterruptionOccurs() throws IOException, InterruptedException {
         this.handlerUnderTest = createHandler(environment, setupInteruptedClient());
 
-        var input = constructRequest(new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build());
+        var input =
+            constructRequest(requestBuilderWithRequiredFields().build());
 
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -171,7 +176,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ParameterizedTest(name = "Should return BadRequest for invalid name \"{0}\"")
     @MethodSource("invalidNames")
     void shouldReturnBadRequestWhenNameInvalid(String name) throws IOException {
-        var requestBody = new CreateSerialPublicationRequestBuilder().withName(name).build();
+        var requestBody = new CreateSerialPublicationRequestBuilder().withName(name).withType(type).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -184,8 +189,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ParameterizedTest(name = "Should return BadRequest for invalid print ISSN \"{0}\"")
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidPissn(String issn) throws IOException {
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        var requestBody = requestBuilderWithRequiredFields().withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -198,8 +202,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ParameterizedTest(name = "Should return BadRequest for invalid online ISSN \"{0}\"")
     @MethodSource("invalidIssn")
     void shouldReturnBadRequestWhenInvalidElectronicIssn(String issn) throws IOException {
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        var requestBody = requestBuilderWithRequiredFields().withOnlineIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -212,8 +215,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
     @ParameterizedTest(name = "Should return BadRequest for invalid URL \"{0}\"")
     @MethodSource("invalidUri")
     void shouldReturnBadRequestWhenInvalidUrl(String url) throws IOException {
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withHomepage(url).build();
+        var requestBody = requestBuilderWithRequiredFields().withHomepage(url).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -235,7 +237,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
             VALID_NAME);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody = new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build();
+        var requestBody = requestBuilderWithRequiredFields().build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
@@ -261,8 +263,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                               .withPrintIssn(issn);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withPrintIssn(issn).build();
+        var requestBody = requestBuilderWithRequiredFields().withPrintIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
@@ -282,8 +283,7 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                               .withOnlineIssn(issn);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withOnlineIssn(issn).build();
+        var requestBody = requestBuilderWithRequiredFields().withOnlineIssn(issn).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
@@ -301,15 +301,10 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
 
         var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type)
                               .withName(VALID_NAME)
-                              .withSameAs(
-                                  URI.create(homepage));
+                              .withSameAs(URI.create(homepage));
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody =
-            new CreateSerialPublicationRequestBuilder()
-                .withName(VALID_NAME)
-                .withHomepage(homepage)
-                .build();
+        var requestBody = requestBuilderWithRequiredFields().withHomepage(homepage).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
@@ -342,5 +337,9 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
                      channelRegistryPathElement + "createpid",
                      dtoObjectMapper.writeValueAsString(PROBLEM),
                      dtoObjectMapper.writeValueAsString(request));
+    }
+
+    private CreateSerialPublicationRequestBuilder requestBuilderWithRequiredFields() {
+        return new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).withType(type);
     }
 }
