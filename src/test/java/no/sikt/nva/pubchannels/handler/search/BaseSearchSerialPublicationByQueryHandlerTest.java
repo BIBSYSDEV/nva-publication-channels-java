@@ -118,8 +118,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
     }
 
-    // Test case 1: The returned ID should contain the same offset as we use as input
-    // Test case 2: The request to KR should contain the same offset as we use as input
     @ParameterizedTest(name = "Should accept offset \"{0}\"")
     @ValueSource(ints = {0, 10, 20})
     void shouldReturnIdWithOffsetMatchingRequest(int offset) throws IOException {
@@ -138,6 +136,26 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
         var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
         assertThat(actualId.toString(), containsStringIgnoringCase("offset=" + offset));
+    }
+
+    @ParameterizedTest(name = "Should accept size \"{0}\"")
+    @ValueSource(ints = {1, 10, 20})
+    void shouldReturnIdWithSizeMatchingRequest(int size) throws IOException {
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    testChannel.getPrintIssnValue(),
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()),
+                                    size,
+                                    DEFAULT_OFFSET_INT);
+
+        var input = constructRequest(Map.of("year", year, "query", issn, "size", String.valueOf(size)),
+                                     MediaType.ANY_TYPE);
+        handlerUnderTest.handleRequest(input, output, context);
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+
+        var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+        assertThat(actualId.toString(), containsStringIgnoringCase("size=" + size));
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultNameSearch(String year,
