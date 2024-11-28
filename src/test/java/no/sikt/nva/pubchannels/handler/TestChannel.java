@@ -111,17 +111,6 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                type);
     }
 
-    public String asChannelRegistryJournalBodyWithoutLevel() {
-        return new ChannelRegistrySerialPublication(identifier,
-                                                    name,
-                                                    getOnlineIssnValue(),
-                                                    getPrintIssnValue(),
-                                                    null,
-                                                    sameAs,
-                                                    discontinued,
-                                                    type).toJsonString();
-    }
-
     public String asChannelRegistrySerialPublicationBody() {
         return new ChannelRegistrySerialPublication(identifier,
                                                     name,
@@ -192,10 +181,6 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                 reviewNotice);
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
     public String asChannelRegistrySeriesBodyWithoutLevel() {
         return new ChannelRegistrySerialPublication(identifier,
                                                     name,
@@ -220,15 +205,15 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                         isNull(reviewNotice) ? null : reviewNotice.comments().get("en"));
     }
 
-    private String getOnlineIssnValue() {
+    public String getOnlineIssnValue() {
         return nonNull(onlineIssn) ? onlineIssn.value() : null;
     }
 
-    private String getPrintIssnValue() {
+    public String getPrintIssnValue() {
         return nonNull(printIssn) ? printIssn.value() : null;
     }
 
-    private String getIsbnPrefix() {
+    public String getIsbnPrefix() {
         return nonNull(isbnPrefix) ? isbnPrefix.value() : null;
     }
 

@@ -3,19 +3,18 @@ package no.sikt.nva.pubchannels.handler.search;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
-import static no.sikt.nva.pubchannels.TestConstants.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.TOO_LONG_INPUT_STRING;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.TestConstants.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistryRequestUrl;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResponseBody;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.getStringStringValuePatternHashMap;
@@ -66,25 +65,27 @@ public abstract class SearchByQueryHandlerTest {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getChannelRegistryRequestUrl(customChannelPath, queryValue);
 
-        stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
-                                   .withQueryParams(queryParams)
-                                   .willReturn(aResponse().withStatus(status)
+        var testUrl = "/" + customChannelPath + "/channels";
+        stubFor(get(urlPathEqualTo(testUrl)).withHeader("Accept", WireMock.equalTo("application/json"))
+                                            .withQueryParams(queryParams)
+                                            .willReturn(aResponse().withStatus(status)
                                                           .withHeader("Content-Type", "application/json;charset=UTF-8")
                                                           .withBody(body)));
     }
 
     protected void mockChannelRegistryResponse(String year,
-                                               String printIssn,
-                                               List<String> channelRegistryEntityResult) {
+                                               String queryParamValue,
+                                               String queryParamKey,
+                                               List<String> channelRegistryEntityResult
+                                              ) {
         var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, 0, 10);
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
-                                          ISSN_QUERY_PARAM,
-                                          printIssn,
                                           YEAR_QUERY_PARAM,
                                           year,
+                                          queryParamKey,
+                                          queryParamValue,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
                                           DEFAULT_SIZE,
                                           CHANNEL_REGISTRY_PAGE_NO_PARAM,

@@ -9,6 +9,7 @@ import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
+import static no.sikt.nva.pubchannels.TestConstants.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.YEAR_QUERY_PARAM;
@@ -308,7 +309,7 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         var testChannel = new TestChannel(year, pid, PublisherDto.TYPE).withPrintIssn(printIssn);
 
         var result = List.of(testChannel.asChannelRegistryPublisherBody());
-        mockChannelRegistryResponse(String.valueOf(year), printIssn, result);
+        mockChannelRegistryResponse(String.valueOf(year), ISSN_QUERY_PARAM, printIssn, result);
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", printIssn);
         expectedParams.put("year", String.valueOf(year));
@@ -324,7 +325,7 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         var testChannel = new TestChannel(null, pid, PublisherDto.TYPE).withPrintIssn(printIssn);
 
         var result = List.of(testChannel.asChannelRegistryPublisherBody());
-        mockChannelRegistryResponse(String.valueOf(year), printIssn, result);
+        mockChannelRegistryResponse(String.valueOf(year), ISSN_QUERY_PARAM, printIssn, result);
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", printIssn);
         expectedParams.put("year", String.valueOf(year));

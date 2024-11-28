@@ -62,40 +62,6 @@ class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryH
                                      .getUri();
     }
 
-
-    @Test
-    void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var name = randomString();
-        int maxNr = 30;
-        int offset = 0;
-        int size = 10;
-        var result = getChannelRegistrySearchResult(year, name, maxNr);
-        var responseBody = getChannelRegistrySearchResponseBody(result, offset, size);
-        stubChannelRegistrySearchResponse(responseBody,
-                                          HttpURLConnection.HTTP_OK,
-                                          YEAR_QUERY_PARAM,
-                                          year,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          DEFAULT_SIZE,
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          DEFAULT_OFFSET,
-                                          NAME_QUERY_PARAM,
-                                          name);
-        var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
-
-        handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getTotalHits(), is(equalTo(result.size())));
-        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(
-            result, year, name, offset, size);
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-    }
-
     @Test
     void shouldReturnResultWithSuccessWhenQueryOmitsYear() throws IOException, UnprocessableContentException {
         var year = randomYear();
