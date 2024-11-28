@@ -144,15 +144,6 @@ public final class TestUtils {
         return queryParams;
     }
 
-    public static StringBuilder getChannelRegistryRequestUrl(String channelRegistryPath, String... queryValue) {
-        var url = new StringBuilder("/" + channelRegistryPath + "/channels");
-        for (int i = 0; i < queryValue.length; i = i + 2) {
-            url.append(i == 0 ? "?" : "&");
-            url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
-        }
-        return url;
-    }
-
     public static ChannelRegistryClient setupInterruptedClient() throws IOException, InterruptedException {
         var httpClient = mock(HttpClient.class);
         when(httpClient.send(any(), any())).thenThrow(new InterruptedException());
