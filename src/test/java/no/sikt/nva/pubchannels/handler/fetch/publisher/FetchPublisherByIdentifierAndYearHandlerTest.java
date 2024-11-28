@@ -4,6 +4,8 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
@@ -46,7 +48,11 @@ import org.zalando.problem.Problem;
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
     private static final String PUBLISHER_IDENTIFIER_FROM_CACHE = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
+    private static final String SELF_URI_BASE = UriWrapper.fromHost(API_DOMAIN)
+                                                          .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                                                          .addChild(PUBLISHER_PATH)
+                                                          .getUri()
+                                                          .toString();
 
     @Override
     protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(ChannelRegistryClient publicationChannelClient) {

@@ -1,14 +1,16 @@
 package no.sikt.nva.pubchannels.handler.search.series;
 
-import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
+import static no.sikt.nva.pubchannels.TestConstants.SERIES_TYPE;
 import static no.sikt.nva.pubchannels.TestConstants.YEAR_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
@@ -30,7 +32,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,22 +41,20 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublic
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
-import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
+import no.sikt.nva.pubchannels.handler.search.BaseSearchSerialPublicationByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
-class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
+class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryHandlerTest {
 
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
-    private static final URI SELF_URI_BASE = URI.create("https://localhost/publication-channels/" + SERIES_PATH);
 
     @Override
     protected String getPath() {
@@ -65,29 +64,11 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new SearchSeriesByQueryHandler(environment, publicationChannelClient);
-    }
-
-    @ParameterizedTest(name = "Should return requested media type \"{0}\"")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
-    void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
-        throws UnprocessableContentException, IOException {
-        var year = randomYear();
-        var issn = randomIssn();
-        final var expectedMediaType = mediaType.equals(MediaType.ANY_TYPE)
-                                          ? MediaType.JSON_UTF_8.toString()
-                                          : mediaType.toString();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
-
-        var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-        var contentType = response.getHeaders().get(CONTENT_TYPE);
-        assertThat(contentType, is(equalTo(expectedMediaType)));
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        this.type = SERIES_TYPE;
+        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
+                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                                     .addChild(SERIES_PATH)
+                                     .getUri();
     }
 
     @Test
@@ -317,7 +298,7 @@ class SearchSeriesByQueryHandlerTest extends SearchByQueryHandlerTest {
         throws UnprocessableContentException {
         mockChannelRegistryResponse(year, printIssn, List.of(testChannel.asChannelRegistrySeriesBody()));
 
-        var expectedHits = List.of(testChannel.asSerialPublicationDto(SELF_URI_BASE, year));
+        var expectedHits = List.of(testChannel.asSerialPublicationDto(selfBaseUri, year));
         return PaginatedSearchResult.create(constructPublicationChannelUri(SERIES_PATH,
                                                                            Map.of("year", year, "query", printIssn)),
                                             DEFAULT_OFFSET_INT,

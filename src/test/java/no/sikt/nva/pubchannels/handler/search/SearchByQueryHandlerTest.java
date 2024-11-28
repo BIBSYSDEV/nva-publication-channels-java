@@ -60,6 +60,7 @@ public abstract class SearchByQueryHandlerTest {
     protected static Environment environment;
     protected ChannelRegistryClient publicationChannelClient;
 
+    // TODO: Make field
     protected abstract String getPath();
 
     protected void stubChannelRegistrySearchResponse(String body, int status, String... queryValue) {

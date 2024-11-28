@@ -1,8 +1,10 @@
 package no.sikt.nva.pubchannels.handler.search.publisher;
 
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
@@ -44,6 +46,7 @@ import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,7 +54,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
 
-    private static final String SELF_URI_BASE = "https://localhost/publication-channels/" + PUBLISHER_PATH;
+    private static final String SELF_URI_BASE = UriWrapper.fromHost(API_DOMAIN)
+                                                          .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                                                          .addChild(PUBLISHER_PATH)
+                                                          .getUri()
+                                                          .toString();
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
     };
