@@ -55,7 +55,7 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 public abstract class SearchByQueryHandlerTest {
 
-    private static final Context context = new FakeContext();
+    protected static final Context context = new FakeContext();
     protected SearchByQueryHandler<?> handlerUnderTest;
     protected final ByteArrayOutputStream output = new ByteArrayOutputStream();
     protected static Environment environment;
