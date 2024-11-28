@@ -16,8 +16,7 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto>
-    implements SerialPublicationRequestValidator {
+public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -35,7 +34,7 @@ public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRe
                                    Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        validateCreateRequest(request);
+        SerialPublicationRequestValidator.validateRequest(request);
     }
 
     @Override

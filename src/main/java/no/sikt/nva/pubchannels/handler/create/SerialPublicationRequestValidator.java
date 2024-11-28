@@ -6,9 +6,13 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 
-public interface SerialPublicationRequestValidator {
+public final class SerialPublicationRequestValidator {
 
-    default void validateCreateRequest(CreateSerialPublicationRequest request) throws BadRequestException {
+    private SerialPublicationRequestValidator() {
+        // NO-OP
+    }
+
+    public static void validateRequest(CreateSerialPublicationRequest request) throws BadRequestException {
         try {
             validateString(request.name(), 5, 300, "Name");
             validateOptionalIssn(request.printIssn(), "PrintIssn");

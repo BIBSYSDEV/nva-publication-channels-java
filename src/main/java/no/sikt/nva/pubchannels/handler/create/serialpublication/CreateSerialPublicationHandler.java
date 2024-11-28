@@ -20,8 +20,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 
 public class CreateSerialPublicationHandler
-    extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto>
-    implements SerialPublicationRequestValidator {
+    extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String JOURNAL = "journal";
     private static final String SERIES = "series";
@@ -35,7 +34,7 @@ public class CreateSerialPublicationHandler
     protected void validateRequest(CreateSerialPublicationRequest request,
                                    RequestInfo requestInfo, Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        validateCreateRequest(request);
+        SerialPublicationRequestValidator.validateRequest(request);
         validateType(request);
     }
 

@@ -16,8 +16,7 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto>
-    implements SerialPublicationRequestValidator {
+public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -35,7 +34,7 @@ public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationR
                                    RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        validateCreateRequest(createSerialPublicationRequest);
+        SerialPublicationRequestValidator.validateRequest(createSerialPublicationRequest);
     }
 
     @Override
