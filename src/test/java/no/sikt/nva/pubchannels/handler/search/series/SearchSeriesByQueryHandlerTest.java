@@ -56,15 +56,11 @@ class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryH
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
 
-    @Override
-    protected String getPath() {
-        return ChannelType.SERIES.pathElement;
-    }
-
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new SearchSeriesByQueryHandler(environment, publicationChannelClient);
         this.type = SERIES_TYPE;
+        this.customChannelPath = ChannelType.SERIES.pathElement;
         this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
                                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
                                      .addChild(SERIES_PATH)

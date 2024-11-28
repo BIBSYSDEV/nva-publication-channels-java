@@ -33,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest {
+
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
@@ -63,8 +64,8 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(String year,
-                                                                                       String printIssn,
-                                                                                       TestChannel testChannel)
+                                                                                String printIssn,
+                                                                                TestChannel testChannel)
         throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", printIssn);
@@ -80,6 +81,5 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
                                             expectedHits.size(),
                                             expectedHits);
     }
-
 }
 

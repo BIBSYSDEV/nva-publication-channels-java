@@ -63,14 +63,10 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
     private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
     };
 
-    @Override
-    protected String getPath() {
-        return ChannelType.PUBLISHER.pathElement;
-    }
-
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new SearchPublisherByQueryHandler(environment, publicationChannelClient);
+        this.customChannelPath = ChannelType.PUBLISHER.pathElement;
     }
 
     @ParameterizedTest(name = "Should return requested media type \"{0}\"")

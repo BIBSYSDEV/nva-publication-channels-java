@@ -58,17 +58,15 @@ public abstract class SearchByQueryHandlerTest {
     protected SearchByQueryHandler<?> handlerUnderTest;
     protected final ByteArrayOutputStream output = new ByteArrayOutputStream();
     protected static Environment environment;
+    protected String customChannelPath;
     protected ChannelRegistryClient publicationChannelClient;
-
-    // TODO: Make field
-    protected abstract String getPath();
 
     protected void stubChannelRegistrySearchResponse(String body, int status, String... queryValue) {
         if (queryValue.length % 2 != 0) {
             throw new RuntimeException();
         }
         var queryParams = getStringStringValuePatternHashMap(queryValue);
-        var url = getChannelRegistryRequestUrl(getPath(), queryValue);
+        var url = getChannelRegistryRequestUrl(customChannelPath, queryValue);
 
         stubFor(get(url.toString()).withHeader("Accept", WireMock.equalTo("application/json"))
                                    .withQueryParams(queryParams)

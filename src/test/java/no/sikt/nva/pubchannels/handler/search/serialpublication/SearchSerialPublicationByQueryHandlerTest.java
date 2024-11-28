@@ -11,15 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 
 class SearchSerialPublicationByQueryHandlerTest extends BaseSearchSerialPublicationByQueryHandlerTest {
 
-    @Override
-    protected String getPath() {
-        return ChannelType.SERIAL_PUBLICATION.pathElement;
-    }
-
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
         this.type = JOURNAL_TYPE;
+        this.customChannelPath = ChannelType.SERIAL_PUBLICATION.pathElement;
         this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
                                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
                                      .addChild(SERIAL_PUBLICATION_PATH)

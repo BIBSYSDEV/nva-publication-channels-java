@@ -57,15 +57,11 @@ class SearchJournalByQueryHandlerTest extends BaseSearchSerialPublicationByQuery
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
 
-    @Override
-    protected String getPath() {
-        return ChannelType.JOURNAL.pathElement;
-    }
-
     @BeforeEach
     void setup() {
         this.handlerUnderTest = new SearchJournalByQueryHandler(environment, publicationChannelClient);
         this.type = JOURNAL_TYPE;
+        this.customChannelPath = ChannelType.JOURNAL.pathElement;
         this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
                                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
                                      .addChild(JOURNAL_PATH)
