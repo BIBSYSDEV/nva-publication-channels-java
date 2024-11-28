@@ -46,19 +46,19 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
     };
-    protected String type;
-    protected URI selfBaseUri;
-
     // Test data
     protected static String year = randomYear();
     protected static String issn = randomIssn();
     protected static String name = randomString();
+    protected static String pid = UUID.randomUUID().toString();
+    protected String type;
+    protected URI selfBaseUri;
 
     @ParameterizedTest(name = "Should return requested media type \"{0}\"")
     @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
         throws IOException, UnprocessableContentException {
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
         mockChannelRegistryResponse(year,
                                     ISSN_QUERY_PARAM,
                                     issn,
@@ -82,7 +82,13 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    issn,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
         this.handlerUnderTest.handleRequest(input, output, context);
@@ -97,7 +103,12 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @Test
     void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
         throws IOException, UnprocessableContentException {
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
+        var testChannel = new TestChannel(null, pid, type).withPrintIssn(issn);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    issn,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+        var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
 
@@ -112,7 +123,13 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
-        var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(year, name);
+        var testChannel = new TestChannel(year, pid, type).withName(name);
+        mockChannelRegistryResponse(year,
+                                    NAME_QUERY_PARAM,
+                                    name,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        var expectedSearchResult = getExpectedSearchResult(year, name, testChannel);
 
         var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
@@ -127,7 +144,7 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     @Test
     void shouldReturnResultWithYearWhenQueryOmitsYear() throws IOException {
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withName(name);
+        var testChannel = new TestChannel(year, pid, type).withName(name);
         mockChannelRegistryResponse(null,
                                     NAME_QUERY_PARAM,
                                     name,
@@ -146,7 +163,7 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     void shouldReturnResultWithIdMatchingRequest() throws IOException {
         var size = 20;
         var offset = 40;
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
         var expectedId = UriWrapper.fromUri(selfBaseUri)
                                    .addQueryParameter("year", year)
                                    .addQueryParameter("query", issn)
@@ -179,7 +196,7 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @ParameterizedTest(name = "Should accept offset \"{0}\"")
     @ValueSource(ints = {0, 10, 20})
     void shouldReturnIdWithOffsetMatchingRequest(int offset) throws IOException {
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
         mockChannelRegistryResponse(year,
                                     ISSN_QUERY_PARAM,
                                     testChannel.getPrintIssnValue(),
@@ -200,7 +217,7 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @ParameterizedTest(name = "Should accept size \"{0}\"")
     @ValueSource(ints = {1, 10, 20})
     void shouldReturnIdWithSizeMatchingRequest(int size) throws IOException {
-        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
         mockChannelRegistryResponse(year,
                                     ISSN_QUERY_PARAM,
                                     testChannel.getPrintIssnValue(),
@@ -218,49 +235,10 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         assertThat(actualId.toString(), containsStringIgnoringCase("size=" + size));
     }
 
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultNameSearch(String year,
-                                                                                                   String name)
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(String year,
+                                                                                String queryParamValue,
+                                                                                TestChannel testChannel)
         throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid, type).withName(name);
-        mockChannelRegistryResponse(year,
-                                    NAME_QUERY_PARAM,
-                                    name,
-                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
-
-        return getExpectedSearchResult(year, name, testChannel);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearch(
-        String year, String printIssn)
-        throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid, type).withPrintIssn(printIssn);
-        mockChannelRegistryResponse(year,
-                                    ISSN_QUERY_PARAM,
-                                    printIssn,
-                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
-
-        return getExpectedSearchResult(year, printIssn, testChannel);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
-        String year, String printIssn)
-        throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, pid, type).withPrintIssn(printIssn);
-        mockChannelRegistryResponse(year,
-                                    ISSN_QUERY_PARAM,
-                                    printIssn,
-                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
-
-        return getExpectedSearchResult(year, printIssn, testChannel);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(
-        String year,
-        String queryParamValue,
-        TestChannel testChannel) throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", queryParamValue);
         if (nonNull(year)) {
