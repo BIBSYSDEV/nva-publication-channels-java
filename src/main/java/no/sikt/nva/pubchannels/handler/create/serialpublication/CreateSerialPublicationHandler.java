@@ -17,6 +17,7 @@ import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 
 public class CreateSerialPublicationHandler
     extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
@@ -24,6 +25,11 @@ public class CreateSerialPublicationHandler
     private static final String JOURNAL = "journal";
     private static final String SERIES = "series";
     private static final String CUSTOM_PATH_ELEMENT = "serial-publication";
+
+    @JacocoGenerated
+    public CreateSerialPublicationHandler() {
+        super(CreateSerialPublicationRequest.class, new Environment());
+    }
 
     public CreateSerialPublicationHandler(Environment environment, ChannelRegistryClient channelRegistryClient) {
         super(CreateSerialPublicationRequest.class, environment, channelRegistryClient);
