@@ -134,8 +134,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         if (e instanceof InterruptedException) {
             LOGGER.error("Thread interrupted when fetching: {}", uri, e);
             Thread.currentThread().interrupt();
-        } else if (e instanceof ApiGatewayException) {
-            return (ApiGatewayException) e;
+        } else if (e instanceof ApiGatewayException apiGatewayException) {
+            return apiGatewayException;
         }
         LOGGER.error("Unable to reach upstream: {}", uri, e);
         return new BadGatewayException("Unable to reach upstream!");
