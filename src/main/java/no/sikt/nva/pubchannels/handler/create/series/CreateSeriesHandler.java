@@ -9,7 +9,6 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
-import no.sikt.nva.pubchannels.handler.create.SerialPublicationRequestValidator;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -34,15 +33,15 @@ public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRe
                                    Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        SerialPublicationRequestValidator.validateRequest(request);
+        request.validate();
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateSerialPublicationRequest input, RequestInfo requestInfo,
+    protected SerialPublicationDto processInput(CreateSerialPublicationRequest request, RequestInfo requestInfo,
                                                 Context context)
         throws ApiGatewayException {
         var response = publicationChannelClient.createSeries(
-            ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(input));
+            ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request));
 
         // Fetch the new series from the channel registry to build the full response
         var year = getYear();

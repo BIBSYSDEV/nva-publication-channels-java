@@ -11,7 +11,6 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
-import no.sikt.nva.pubchannels.handler.create.SerialPublicationRequestValidator;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
@@ -34,7 +33,7 @@ public class CreateSerialPublicationHandler
     protected void validateRequest(CreateSerialPublicationRequest request,
                                    RequestInfo requestInfo, Context context) throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
-        SerialPublicationRequestValidator.validateRequest(request);
+        request.validate();
         validateType(request);
     }
 
