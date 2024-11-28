@@ -59,12 +59,18 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
         throws IOException, UnprocessableContentException {
         var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
-        var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
-        var expectedSearchResult = mockChannelFoundAndReturnExpectedResponse(year, ISSN_QUERY_PARAM, issn, testChannel);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    issn,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
         var expectedMediaType =
             mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
 
+        var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
         this.handlerUnderTest.handleRequest(input, output, context);
+
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
         var contentType = response.getHeaders().get(CONTENT_TYPE);
@@ -79,7 +85,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
-
         this.handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
@@ -108,8 +113,8 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
         var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(year, name);
-        var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
 
+        var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
@@ -117,8 +122,24 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(expectedSearchResult.getHits().size())));
-
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithYearWhenQueryOmitsYear() throws IOException {
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withName(name);
+        mockChannelRegistryResponse(null,
+                                    NAME_QUERY_PARAM,
+                                    name,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        var input = constructRequest(Map.of("query", name), MediaType.ANY_TYPE);
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+        var result = objectMapper.readValue(response.getBody(), TYPE_REF).getHits().getFirst();
+
+        assertThat(result.year(), is(equalTo(year)));
     }
 
     @Test
@@ -148,9 +169,10 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
                                             "offset",
                                             String.valueOf(offset)), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
 
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+
         assertTrue(areEqualURIs(actualId, expectedId));
     }
 
@@ -168,9 +190,10 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         var input = constructRequest(Map.of("year", year, "query", issn, "offset", String.valueOf(offset)),
                                      MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
 
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+
         assertThat(actualId.toString(), containsStringIgnoringCase("offset=" + offset));
     }
 
@@ -188,9 +211,10 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         var input = constructRequest(Map.of("year", year, "query", issn, "size", String.valueOf(size)),
                                      MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
 
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+
         assertThat(actualId.toString(), containsStringIgnoringCase("size=" + size));
     }
 
@@ -199,7 +223,12 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
         var testChannel = new TestChannel(year, pid, type).withName(name);
-        return mockChannelFoundAndReturnExpectedResponse(year, NAME_QUERY_PARAM, name, testChannel);
+        mockChannelRegistryResponse(year,
+                                    NAME_QUERY_PARAM,
+                                    name,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        return getExpectedSearchResult(year, name, testChannel);
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearch(
@@ -207,7 +236,12 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(printIssn);
-        return mockChannelFoundAndReturnExpectedResponse(year, ISSN_QUERY_PARAM, printIssn, testChannel);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    printIssn,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
@@ -215,12 +249,16 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         throws UnprocessableContentException {
         var pid = UUID.randomUUID().toString();
         var testChannel = new TestChannel(null, pid, type).withPrintIssn(printIssn);
-        return mockChannelFoundAndReturnExpectedResponse(year, ISSN_QUERY_PARAM, printIssn, testChannel);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    printIssn,
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
+
+        return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
-    private PaginatedSearchResult<SerialPublicationDto> mockChannelFoundAndReturnExpectedResponse(
+    private PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(
         String year,
-        String queryParamKey,
         String queryParamValue,
         TestChannel testChannel) throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
@@ -230,11 +268,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         }
 
         var expectedHits = List.of(testChannel.asSerialPublicationDto(selfBaseUri, year));
-        mockChannelRegistryResponse(year,
-                                    queryParamKey,
-                                    queryParamValue,
-                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
-
         return PaginatedSearchResult.create(constructPublicationChannelUri(testChannel.type(), expectedParams),
                                             DEFAULT_OFFSET_INT,
                                             DEFAULT_SIZE_INT,
