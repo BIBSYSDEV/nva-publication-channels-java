@@ -5,9 +5,7 @@ import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
-import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
-import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.SERIES_TYPE;
@@ -19,7 +17,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearch
 import static no.sikt.nva.pubchannels.handler.TestUtils.getChannelRegistrySearchResult;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
-import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,10 +32,8 @@ import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
-import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.handler.search.BaseSearchSerialPublicationByQueryHandlerTest;
@@ -67,23 +62,6 @@ class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryH
                                      .getUri();
     }
 
-    @Test
-    void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
-        throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
-
-        var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-    }
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
@@ -254,27 +232,5 @@ class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryH
 
     private static SerialPublicationDto toResult(ThirdPartySerialPublication series, String requestedYear) {
         return SerialPublicationDto.create(constructPublicationChannelUri(SERIES_PATH, null), series, requestedYear);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
-        String year, String printIssn)
-        throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(null, pid, "Series").withPrintIssn(printIssn);
-        return createSearchResult(testChannel, String.valueOf(year), printIssn);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> createSearchResult(TestChannel testChannel, String year,
-                                                                           String printIssn)
-        throws UnprocessableContentException {
-        mockChannelRegistryResponse(year, printIssn, List.of(testChannel.asChannelRegistrySeriesBody()));
-
-        var expectedHits = List.of(testChannel.asSerialPublicationDto(selfBaseUri, year));
-        return PaginatedSearchResult.create(constructPublicationChannelUri(SERIES_PATH,
-                                                                           Map.of("year", year, "query", printIssn)),
-                                            DEFAULT_OFFSET_INT,
-                                            DEFAULT_SIZE_INT,
-                                            expectedHits.size(),
-                                            expectedHits);
     }
 }

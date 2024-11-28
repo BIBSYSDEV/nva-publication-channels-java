@@ -181,14 +181,14 @@ public abstract class SearchByQueryHandlerTest {
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_INTERNAL_ERROR,
                                           YEAR_QUERY_PARAM,
-                                          String.valueOf(year),
+                                          year,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
                                           DEFAULT_SIZE,
                                           CHANNEL_REGISTRY_PAGE_NO_PARAM,
                                           DEFAULT_OFFSET,
                                           NAME_QUERY_PARAM,
                                           name);
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", name), MediaType.ANY_TYPE);
+        var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);

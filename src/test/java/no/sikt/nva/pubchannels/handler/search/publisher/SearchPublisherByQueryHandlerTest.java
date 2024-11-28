@@ -97,7 +97,7 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
-        var input = constructRequest(Map.of("year", String.valueOf(year), "query", issn), MediaType.ANY_TYPE);
+        var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
