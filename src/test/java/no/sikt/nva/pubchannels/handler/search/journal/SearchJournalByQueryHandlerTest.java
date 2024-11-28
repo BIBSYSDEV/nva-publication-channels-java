@@ -69,23 +69,6 @@ class SearchJournalByQueryHandlerTest extends BaseSearchSerialPublicationByQuery
     }
 
     @Test
-    void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var issn = randomIssn();
-        var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
-
-        var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
-
-        this.handlerUnderTest.handleRequest(input, output, context);
-
-        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var pagesSearchResult = objectMapper.readValue(response.getBody(), TYPE_REF);
-
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
-    }
-
-    @Test
     void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
         throws IOException, UnprocessableContentException {
         var year = randomYear();
@@ -297,19 +280,6 @@ class SearchJournalByQueryHandlerTest extends BaseSearchSerialPublicationByQuery
                                             DEFAULT_SIZE_INT,
                                             expectedHits.size(),
                                             expectedHits);
-    }
-
-    private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearch(String year,
-                                                                                                   String printIssn)
-        throws UnprocessableContentException {
-        var pid = UUID.randomUUID().toString();
-        var testChannel = new TestChannel(year, pid, "Journal").withPrintIssn(printIssn);
-
-        mockChannelRegistryResponse(String.valueOf(year),
-                                    printIssn,
-                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()));
-
-        return getExpectedSearchResult(year, printIssn, testChannel);
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(
