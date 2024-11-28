@@ -6,6 +6,7 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOption
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateOptionalUrl;
 import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
 import com.amazonaws.services.lambda.runtime.Context;
+import java.util.Locale;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -81,7 +82,7 @@ public class CreateSerialPublicationHandler
         if (isNull(type)) {
             throw new ValidationException("Type cannot be null! Type must be either 'Journal' or 'Series'");
         }
-        var typeLowerCase = type.toLowerCase();
+        var typeLowerCase = type.toLowerCase(Locale.ROOT);
         if (!JOURNAL.equals(typeLowerCase) && !SERIES.equals(typeLowerCase)) {
             throw new ValidationException("Type must be either 'Journal' or 'Series'");
         }
