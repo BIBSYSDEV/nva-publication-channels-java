@@ -14,6 +14,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -35,6 +36,7 @@ import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest {
 
@@ -44,12 +46,15 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     protected String type;
     protected URI selfBaseUri;
 
+    // Test data
+    protected static String year = randomYear();
+    protected static String issn = randomIssn();
+    protected static String name = randomString();
+
     @ParameterizedTest(name = "Should return requested media type \"{0}\"")
     @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
         throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var issn = randomIssn();
         var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
         var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
         var expectedSearchResult = mockChannelFoundAndReturnExpectedResponse(year, ISSN_QUERY_PARAM, issn, testChannel);
@@ -68,8 +73,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearch(year, issn);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
@@ -86,8 +89,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @Test
     void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
         throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var issn = randomIssn();
         var expectedSearchResult = getExpectedPaginatedSearchResultIssnSearchThirdPartyDoesNotProvideYear(year, issn);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
@@ -103,8 +104,6 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     @Test
     void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
-        var year = randomYear();
-        var name = randomString();
         var expectedSearchResult = getExpectedPaginatedSearchResultNameSearch(year, name);
         var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
 
@@ -117,6 +116,28 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(expectedSearchResult.getHits().size())));
 
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    // Test case 1: The returned ID should contain the same offset as we use as input
+    // Test case 2: The request to KR should contain the same offset as we use as input
+    @ParameterizedTest(name = "Should accept offset \"{0}\"")
+    @ValueSource(ints = {0, 10, 20})
+    void shouldReturnIdWithOffsetMatchingRequest(int offset) throws IOException {
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    testChannel.getPrintIssnValue(),
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()),
+                                    DEFAULT_SIZE_INT,
+                                    offset);
+
+        var input = constructRequest(Map.of("year", year, "query", issn, "offset", String.valueOf(offset)),
+                                     MediaType.ANY_TYPE);
+        handlerUnderTest.handleRequest(input, output, context);
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+
+        var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+        assertThat(actualId.toString(), containsStringIgnoringCase("offset=" + offset));
     }
 
     private PaginatedSearchResult<SerialPublicationDto> getExpectedPaginatedSearchResultNameSearch(String year,
@@ -145,8 +166,8 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
 
     private PaginatedSearchResult<SerialPublicationDto> mockChannelFoundAndReturnExpectedResponse(
         String year,
-        String queryParamValue,
         String queryParamKey,
+        String queryParamValue,
         TestChannel testChannel) throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", queryParamValue);

@@ -325,12 +325,12 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         var testChannel = new TestChannel(null, pid, PublisherDto.TYPE).withPrintIssn(printIssn);
 
         var result = List.of(testChannel.asChannelRegistryPublisherBody());
-        mockChannelRegistryResponse(String.valueOf(year), ISSN_QUERY_PARAM, printIssn, result);
+        mockChannelRegistryResponse(year, ISSN_QUERY_PARAM, printIssn, result);
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", printIssn);
-        expectedParams.put("year", String.valueOf(year));
+        expectedParams.put("year", year);
 
-        return getSingleHit(testChannel.asPublisherDto(SELF_URI_BASE, String.valueOf(year)), expectedParams);
+        return getSingleHit(testChannel.asPublisherDto(SELF_URI_BASE, year), expectedParams);
     }
 
     private PaginatedSearchResult<PublisherDto> getSingleHit(PublisherDto publisherDto,

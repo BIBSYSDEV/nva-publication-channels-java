@@ -9,7 +9,9 @@ import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE;
+import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.TOO_LONG_INPUT_STRING;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
@@ -75,11 +77,25 @@ public abstract class SearchByQueryHandlerTest {
     }
 
     protected void mockChannelRegistryResponse(String year,
-                                               String queryParamValue,
                                                String queryParamKey,
+                                               String queryParamValue,
                                                List<String> channelRegistryEntityResult
                                               ) {
-        var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, 0, 10);
+        mockChannelRegistryResponse(year, queryParamKey, queryParamValue, channelRegistryEntityResult, DEFAULT_SIZE_INT,
+                                    DEFAULT_OFFSET_INT);
+    }
+
+    protected void mockChannelRegistryResponse(String year,
+                                               String queryParamKey,
+                                               String queryParamValue,
+                                               List<String> channelRegistryEntityResult,
+                                               int size,
+                                               int offset
+                                              ) {
+
+        var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, offset,
+                                                                size);
+        var pageNumber = size == 0 ? "0" : String.valueOf(offset / size);
         stubChannelRegistrySearchResponse(responseBody,
                                           HttpURLConnection.HTTP_OK,
                                           YEAR_QUERY_PARAM,
@@ -87,9 +103,9 @@ public abstract class SearchByQueryHandlerTest {
                                           queryParamKey,
                                           queryParamValue,
                                           CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          DEFAULT_SIZE,
+                                          String.valueOf(size),
                                           CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          DEFAULT_OFFSET);
+                                          pageNumber);
     }
 
     @BeforeAll
