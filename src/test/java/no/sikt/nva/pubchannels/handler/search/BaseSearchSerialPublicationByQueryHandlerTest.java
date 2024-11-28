@@ -6,6 +6,7 @@ import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_SIZE_INT;
 import static no.sikt.nva.pubchannels.TestConstants.ISSN_QUERY_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.NAME_QUERY_PARAM;
+import static no.sikt.nva.pubchannels.handler.TestUtils.areEqualURIs;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.net.MediaType;
@@ -33,6 +35,7 @@ import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -116,6 +119,39 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         assertThat(pagesSearchResult.getTotalHits(), is(equalTo(expectedSearchResult.getHits().size())));
 
         assertThat(pagesSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+    }
+
+    @Test
+    void shouldReturnResultWithIdMatchingRequest() throws IOException {
+        var size = 20;
+        var offset = 40;
+        var testChannel = new TestChannel(year, UUID.randomUUID().toString(), type).withPrintIssn(issn);
+        var expectedId = UriWrapper.fromUri(selfBaseUri)
+                                   .addQueryParameter("year", year)
+                                   .addQueryParameter("query", issn)
+                                   .addQueryParameter("size", String.valueOf(size))
+                                   .addQueryParameter("offset", String.valueOf(offset))
+                                   .getUri();
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    testChannel.getPrintIssnValue(),
+                                    List.of(testChannel.asChannelRegistrySerialPublicationBody()),
+                                    size,
+                                    offset);
+
+        var input = constructRequest(Map.of("year",
+                                            year,
+                                            "query",
+                                            issn,
+                                            "size",
+                                            String.valueOf(size),
+                                            "offset",
+                                            String.valueOf(offset)), MediaType.ANY_TYPE);
+        handlerUnderTest.handleRequest(input, output, context);
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+
+        var actualId = objectMapper.readValue(response.getBody(), TYPE_REF).getId();
+        assertTrue(areEqualURIs(actualId, expectedId));
     }
 
     @ParameterizedTest(name = "Should accept offset \"{0}\"")
