@@ -334,7 +334,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
-      #AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
           Type: Api
@@ -365,7 +364,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      #AutoPublishAlias: live
       Events:
         CreateJournalEvent:
           Type: Api
@@ -385,7 +383,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
-      #AutoPublishAlias: live
       Events:
         SearchPublisherByQueryEvent:
           Type: Api
@@ -408,9 +405,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      #AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
       Events:
         CreatePublisherEvent:
           Type: Api
@@ -430,7 +424,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
-      #AutoPublishAlias: live
       Events:
         SearchSeriesByQueryEvent:
           Type: Api
@@ -453,9 +446,6 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      #AutoPublishAlias: live
-      #      SnapStart:
-      #        ApplyOn: PublishedVersions
       Events:
         CreateSeriesEvent:
           Type: Api
