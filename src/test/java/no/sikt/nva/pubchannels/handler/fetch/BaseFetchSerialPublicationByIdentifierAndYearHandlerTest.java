@@ -53,7 +53,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     protected SerialPublicationDto mockChannelFoundAndReturnExpectedResponse(String year, String identifier,
                                                                              String type) {
         var testChannel = new TestChannel(year, identifier, type);
-        var body = testChannel.asChannelRegistrySeriesBody();
+        var body = testChannel.asChannelRegistrySerialPublicationBody();
 
         mockChannelFoundWithBody(year, identifier, body);
 
@@ -235,7 +235,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         var testChannel = new TestChannel(year, identifier, type)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
-        var body = testChannel.asChannelRegistrySeriesBody();
+        var body = testChannel.asChannelRegistrySerialPublicationBody();
 
         mockChannelRegistryResponse(channelRegistryPathElement, year, identifier, body);
 
@@ -246,7 +246,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         var testChannel = new TestChannel(year, identifier, type)
                               .withScientificValueReviewNotice(Map.of("en", "This is a review notice",
                                                                       "no", "Vedtak"));
-        var body = testChannel.asChannelRegistrySeriesBody();
+        var body = testChannel.asChannelRegistrySerialPublicationBody();
 
         mockChannelRegistryResponse(channelRegistryPathElement, String.valueOf(year), identifier, body);
 

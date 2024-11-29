@@ -111,18 +111,15 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                type);
     }
 
-    public String asChannelRegistrySerialPublicationBody() {
-        return new ChannelRegistrySerialPublication(identifier,
-                                                    name,
-                                                    getOnlineIssnValue(),
-                                                    getPrintIssnValue(),
-                                                    mapValuesToChannelRegistryLevel(),
-                                                    sameAs,
-                                                    discontinued,
-                                                    type).toJsonString();
+    public String asChannelRegistryResponseBody() {
+        return switch (type) {
+            case "Publisher" -> asChannelRegistryPublisherBody();
+            case "Series", "Journal" -> asChannelRegistrySerialPublicationBody();
+            default -> throw new IllegalArgumentException("Unknown type. Expected one of [Publisher, Series, Journal]");
+        };
     }
 
-    public String asChannelRegistrySeriesBody() {
+    public String asChannelRegistrySerialPublicationBody() {
         return new ChannelRegistrySerialPublication(identifier,
                                                     name,
                                                     getOnlineIssnValue(),
@@ -168,8 +165,8 @@ public record TestChannel(String identifier, Integer year, String name, Scientif
                                         reviewNotice);
     }
 
-    public PublisherDto asPublisherDto(String selfUriBase, String requestedYear) {
-        var id = generateIdWithYear(URI.create(selfUriBase), requestedYear);
+    public PublisherDto asPublisherDto(URI selfUriBase, String requestedYear) {
+        var id = generateIdWithYear(selfUriBase, requestedYear);
         return new PublisherDto(id,
                                 identifier,
                                 name,
