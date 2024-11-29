@@ -6,6 +6,7 @@ public class CreateSerialPublicationRequestBuilder {
     private String printIssn = null;
     private String onlineIssn = null;
     private String homepage = null;
+    private String type = null;
 
     public CreateSerialPublicationRequestBuilder withName(String name) {
         this.name = name;
@@ -27,7 +28,12 @@ public class CreateSerialPublicationRequestBuilder {
         return this;
     }
 
+    public CreateSerialPublicationRequestBuilder withType(String type) {
+        this.type = type;
+        return this;
+    }
+
     public CreateSerialPublicationRequest build() {
-        return new CreateSerialPublicationRequest(name, printIssn, onlineIssn, homepage);
+        return new CreateSerialPublicationRequest(name, printIssn, onlineIssn, homepage, type);
     }
 }
