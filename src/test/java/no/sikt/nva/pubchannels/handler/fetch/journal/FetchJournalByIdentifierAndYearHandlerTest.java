@@ -1,8 +1,9 @@
 package no.sikt.nva.pubchannels.handler.fetch.journal;
 
+import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
-import java.net.URI;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -11,6 +12,7 @@ import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.core.Environment;
+import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 
 class FetchJournalByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
@@ -40,6 +42,9 @@ class FetchJournalByIdentifierAndYearHandlerTest extends BaseFetchSerialPublicat
         this.type = JOURNAL_TYPE;
         this.customChannelPath = JOURNAL_PATH;
         this.channelRegistryPathElement = "/findjournal/";
-        this.selfBaseUri = URI.create("https://localhost/publication-channels/" + JOURNAL_PATH);
+        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
+                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                                     .addChild(JOURNAL_PATH)
+                                     .getUri();
     }
 }

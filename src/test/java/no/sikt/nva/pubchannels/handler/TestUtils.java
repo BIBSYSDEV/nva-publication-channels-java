@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
@@ -136,18 +137,11 @@ public final class TestUtils {
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
         var queryParams = new HashMap<String, StringValuePattern>();
         for (int i = 0; i < queryValue.length; i = i + 2) {
-            queryParams.put(queryValue[i], equalTo(queryValue[i + 1]));
+            if (nonNull(queryValue[i + 1])) {
+                queryParams.put(queryValue[i], equalTo(queryValue[i + 1]));
+            }
         }
         return queryParams;
-    }
-
-    public static StringBuilder getChannelRegistryRequestUrl(String channelRegistryPath, String... queryValue) {
-        var url = new StringBuilder("/" + channelRegistryPath + "/channels");
-        for (int i = 0; i < queryValue.length; i = i + 2) {
-            url.append(i == 0 ? "?" : "&");
-            url.append(queryValue[i]).append("=").append(queryValue[i + 1]);
-        }
-        return url;
     }
 
     public static ChannelRegistryClient setupInterruptedClient() throws IOException, InterruptedException {
@@ -168,7 +162,7 @@ public final class TestUtils {
 
     public static URI constructPublicationChannelUri(String pathElement, Map<String, String> queryParams) {
         var uri = new UriWrapper(HTTPS, API_DOMAIN).addChild(CUSTOM_DOMAIN_BASE_PATH, pathElement).getUri();
-        if (Objects.nonNull(queryParams)) {
+        if (nonNull(queryParams)) {
             return UriWrapper.fromUri(uri).addQueryParameters(queryParams).getUri();
         }
         return uri;

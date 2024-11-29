@@ -134,8 +134,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         if (e instanceof InterruptedException) {
             LOGGER.error("Thread interrupted when fetching: {}", uri, e);
             Thread.currentThread().interrupt();
-        } else if (e instanceof ApiGatewayException) {
-            return (ApiGatewayException) e;
+        } else if (e instanceof ApiGatewayException apiGatewayException) {
+            return apiGatewayException;
         }
         LOGGER.error("Unable to reach upstream: {}", uri, e);
         return new BadGatewayException("Unable to reach upstream!");
@@ -152,7 +152,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     private HttpRequest createFindPublicationChannelRequest(String pathElement, Map<String, String> queryParams) {
         return HttpRequest.newBuilder()
                    .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                   .uri(addQueryParamameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
+                          .uri(addQueryParameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
                    .GET()
                    .build();
     }
@@ -199,7 +199,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
                    .getUri();
     }
 
-    private URI addQueryParamameters(URI uri, Map<String, String> queryParameters) {
+    private URI addQueryParameters(URI uri, Map<String, String> queryParameters) {
         return UriWrapper.fromUri(uri)
                    .addQueryParameters(queryParameters)
                    .getUri();
