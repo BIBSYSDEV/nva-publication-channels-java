@@ -97,7 +97,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Journal
-      summary: Search for journal by pid, name, issn, or year
+      summary: Search for journal by name, issn, or year
       description: Returns a list of Journals
       operationId: SearchJournalByQuery
       parameters:
@@ -258,7 +258,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Publisher
-      summary: Search for publisher by pid, name, issn, or year
+      summary: Search for publisher by name, issn, or year
       description: Returns a list of Publishers
       operationId: SearchPublisherByQuery
       parameters:
@@ -419,7 +419,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Series
-      summary: Search for series by pid, name, issn, or year
+      summary: Search for series by name, issn, or year
       description: Returns a list of Series
       operationId: SearchSeriesByQuery
       parameters:
@@ -584,7 +584,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - SerialPublication
-      summary: Search for series/journal by pid, name, issn, or year
+      summary: Search for series/journal by name, issn, or year
       description: Returns a list of Series and/or Journals
       operationId: SearchSerialPublicationByQuery
       parameters:
