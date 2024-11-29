@@ -575,6 +575,42 @@ paths:
           $ref: '#/components/responses/404'
         502:
           $ref: '#/components/responses/502'
+  /serial-publication:
+    post:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSerialPublicationFunction.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - SerialPublication
+      summary: Create series/journal
+      description: Returns a Location with uri for the created Series/Journal
+      operationId: CreateSerialPublication
+      requestBody:
+        content:
+          'application/ld+json':
+            schema:
+              $ref: '#/components/schemas/CreateSerialPublication'
+            examples:
+              objectExample:
+                $ref: '#/components/examples/CreateSerialPublicationExample'
+      responses:
+        201:
+          description: successful operation
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+        400:
+          $ref: '#/components/responses/400'
+        502:
+          $ref: '#/components/responses/502'
 
 components:
   responses:
@@ -652,6 +688,7 @@ components:
           type: string
           format: uri
           nullable: true
+      required: [ 'name' ]
     PaginatedPublishers:
       type: object
       properties:
@@ -764,6 +801,32 @@ components:
         sameAs:
           type: string
           nullable: true
+    CreateSerialPublication:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the series
+        type:
+          type: string
+          enum: [ 'Series', 'Journal' ]
+          description: The type of serial publication, either Series or Journal
+        printIssn:
+          type: string
+          nullable: true
+          description: The print publication ISSN
+          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
+        onlineIssn:
+          type: string
+          nullable: true
+          description: The electronic publication ISSN
+          pattern: ^[0-9]{4}-[0-9]{3}[0-9X]$
+        homepage:
+          type: string
+          format: uri
+          nullable: true
+          description: The url to the series
+      required: [ 'name', 'type' ]
     CreateSeries:
       type: object
       properties:
@@ -785,6 +848,7 @@ components:
           format: uri
           nullable: true
           description: The url to the series
+      required: [ 'name' ]
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -921,6 +985,14 @@ components:
     CreateSeriesExample:
       value:
         name: 'The series of eternal fury'
+        onlineIssn: '1234-1234'
+        printIssn: '4321-4321'
+        homepage: 'https://series-of-eternal.fury.no'
+      summary: A sample create series
+    CreateSerialPublicationExample:
+      value:
+        name: 'The series of eternal fury'
+        type: 'Series'
         onlineIssn: '1234-1234'
         printIssn: '4321-4321'
         homepage: 'https://series-of-eternal.fury.no'
