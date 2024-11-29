@@ -13,7 +13,6 @@ import static no.unit.nva.testutils.RandomDataGenerator.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.net.MediaType;
@@ -26,7 +25,6 @@ import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.sikt.nva.pubchannels.handler.search.SearchByQueryHandlerTest;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
-import no.unit.nva.stubs.FakeContext;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import nva.commons.core.paths.UriWrapper;
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.Test;
 
 class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
 
-    private static final Context context = new FakeContext();
     private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
     };
 

@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.MediaTypes;
 import nva.commons.core.SingletonCollector;
@@ -130,10 +129,6 @@ public final class TestUtils {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryJournalBody(year, name)).toList();
     }
 
-    public static List<String> getChannelRegistrySearchPublisherResult(String year, String name, int maxNr) {
-        return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryPublisherBody(year, name)).toList();
-    }
-
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
         var queryParams = new HashMap<String, StringValuePattern>();
         for (int i = 0; i < queryValue.length; i = i + 2) {
@@ -206,11 +201,6 @@ public final class TestUtils {
         return Stream.of(Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
                          Named.of("ANY", MediaType.ANY_TYPE),
                          Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
-    }
-
-    private static String generateChannelRegistryPublisherBody(String year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString(), PublisherDto.TYPE).withName(name)
-                   .asChannelRegistryPublisherBody();
     }
 
     private static String generateChannelRegistryJournalBody(String year, String name) {
