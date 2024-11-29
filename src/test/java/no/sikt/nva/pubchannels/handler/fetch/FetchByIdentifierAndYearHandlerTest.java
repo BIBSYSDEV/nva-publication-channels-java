@@ -58,7 +58,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
-    protected static final int YEAR_START = 2004;
     protected static final Context context = new FakeContext();
     protected static Environment environment;
     protected CacheService cacheService;
