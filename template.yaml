@@ -401,6 +401,25 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  SearchSerialPublicationByQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.search.serialpublication.SearchSerialPublicationByQueryHandler::handleRequest
+      Events:
+        SearchJournalByQueryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /serial-publication
+            Method: get
+
+  SearchSerialPublicationByQueryFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SearchSerialPublicationByQueryFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   SearchPublisherByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
