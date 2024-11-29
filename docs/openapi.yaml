@@ -92,7 +92,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -152,7 +152,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -253,7 +253,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -313,7 +313,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -414,7 +414,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
@@ -474,7 +474,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
