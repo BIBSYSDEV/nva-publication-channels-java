@@ -291,6 +291,27 @@ public abstract class SearchByQueryHandlerTest {
         assertThat(actualSearchResult.getId().toString(), containsStringIgnoringCase("offset=" + offset));
     }
 
+    @ParameterizedTest(name = "Should accept size \"{0}\"")
+    @ValueSource(ints = {1, 10, 20})
+    void shouldReturnIdWithSizeMatchingRequest(int size) throws IOException {
+        var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
+        mockChannelRegistryResponse(year,
+                                    ISSN_QUERY_PARAM,
+                                    testChannel.getPrintIssnValue(),
+                                    List.of(testChannel.asChannelRegistryResponseBody()),
+                                    size,
+                                    DEFAULT_OFFSET_INT);
+
+        var input = constructRequest(Map.of("year", year, "query", issn, "size", String.valueOf(size)),
+                                     MediaType.ANY_TYPE);
+        handlerUnderTest.handleRequest(input, output, context);
+
+        var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
+        var actualSearchResult = getActualSearchResult(response);
+
+        assertThat(actualSearchResult.getId().toString(), containsStringIgnoringCase("size=" + size));
+    }
+
     @ParameterizedTest(name = "year {0} is invalid")
     @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
     void shouldReturnBadRequestWhenYearIsInvalid(String year) throws IOException {
