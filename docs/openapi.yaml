@@ -575,6 +575,7 @@ paths:
           $ref: '#/components/responses/404'
         502:
           $ref: '#/components/responses/502'
+  /serial-publication:
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -582,7 +583,7 @@ paths:
         httpMethod: POST
         type: "AWS_PROXY"
       tags:
-        - Series
+        - SerialPublication
       summary: Create series/journal
       description: Returns a Location with uri for the created Series/Journal
       operationId: CreateSerialPublication
