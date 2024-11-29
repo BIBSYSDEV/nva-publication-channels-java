@@ -6,6 +6,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8;
+import static no.sikt.nva.pubchannels.HttpHeaders.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.JOURNAL_TYPE;
@@ -40,7 +44,6 @@ import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.mapper.ScientificValueMapper;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistryEntityPageInformation;
-import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.MediaTypes;
 import nva.commons.core.SingletonCollector;
@@ -68,18 +71,18 @@ public final class TestUtils {
                                                    String responseBody) {
         stubFor(
             get(channelRegistryPathElement + identifier + "/" + year)
-                .withHeader("Accept", equalTo("application/json"))
+                .withHeader(ACCEPT, equalTo(CONTENT_TYPE_APPLICATION_JSON))
                 .willReturn(
                     aResponse()
                         .withStatus(HttpURLConnection.HTTP_OK)
-                        .withHeader("Content-Type", "application/json;charset=UTF-8")
+                        .withHeader(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON_UTF8)
                         .withBody(responseBody)));
     }
 
     public static void mockRedirectedClient(String requestedIdentifier, String location, String year, String path) {
-        stubFor(get(path + requestedIdentifier + "/" + year).withHeader(ACCEPT, equalTo("application/json"))
+        stubFor(get(path + requestedIdentifier + "/" + year).withHeader(ACCEPT, equalTo(CONTENT_TYPE_APPLICATION_JSON))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_MOVED_PERM)
-                                    .withHeader("Location", location)));
+                                           .withHeader(LOCATION, location)));
     }
 
     public static int randomYearAsInt() {
@@ -128,10 +131,6 @@ public final class TestUtils {
 
     public static List<String> getChannelRegistrySearchResult(String year, String name, int maxNr) {
         return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryJournalBody(year, name)).toList();
-    }
-
-    public static List<String> getChannelRegistrySearchPublisherResult(String year, String name, int maxNr) {
-        return IntStream.range(0, maxNr).mapToObj(i -> generateChannelRegistryPublisherBody(year, name)).toList();
     }
 
     public static Map<String, StringValuePattern> getStringStringValuePatternHashMap(String... queryValue) {
@@ -206,11 +205,6 @@ public final class TestUtils {
         return Stream.of(Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
                          Named.of("ANY", MediaType.ANY_TYPE),
                          Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
-    }
-
-    private static String generateChannelRegistryPublisherBody(String year, String name) {
-        return new TestChannel(year, UUID.randomUUID().toString(), PublisherDto.TYPE).withName(name)
-                   .asChannelRegistryPublisherBody();
     }
 
     private static String generateChannelRegistryJournalBody(String year, String name) {
