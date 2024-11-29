@@ -4,7 +4,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
@@ -99,11 +102,11 @@ public abstract class SearchByQueryHandlerTest {
         var queryParams = getStringStringValuePatternHashMap(queryValue);
 
         var testUrl = "/" + customChannelPath + "/channels";
-        stubFor(get(urlPathEqualTo(testUrl)).withHeader("Accept", WireMock.equalTo("application/json"))
+        stubFor(get(urlPathEqualTo(testUrl)).withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
                                             .withQueryParams(queryParams)
                                             .willReturn(aResponse().withStatus(status)
-                                                                   .withHeader("Content-Type",
-                                                                               "application/json;charset=UTF-8")
+                                                                   .withHeader(CONTENT_TYPE,
+                                                                               CONTENT_TYPE_APPLICATION_JSON_UTF8)
                                                                    .withBody(body)));
     }
 
