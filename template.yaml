@@ -334,7 +334,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.journal.SearchJournalByQueryHandler::handleRequest
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       Events:
         SearchJournalByQueryEvent:
           Type: Api
@@ -365,7 +365,7 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       Events:
         CreateJournalEvent:
           Type: Api
@@ -385,7 +385,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.publisher.SearchPublisherByQueryHandler::handleRequest
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       Events:
         SearchPublisherByQueryEvent:
           Type: Api
@@ -408,7 +408,7 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Events:
@@ -430,7 +430,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.search.series.SearchSeriesByQueryHandler::handleRequest
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       Events:
         SearchSeriesByQueryEvent:
           Type: Api
@@ -453,7 +453,7 @@ Resources:
       Policies:
         - !GetAtt GetItemDynamoDbPolicy.PolicyArn
         - !GetAtt ReadSecretsPolicy.PolicyArn
-      AutoPublishAlias: live
+      #AutoPublishAlias: live
       #      SnapStart:
       #        ApplyOn: PublishedVersions
       Events:
@@ -478,7 +478,7 @@ Resources:
         Port: 443
         Type: HTTPS
         ResourcePath: /health
-        FullyQualifiedDomainName: !Select [2, !Split ["/", !Ref DataportenChannelRegistryBaseUrl]] # Extracts the domain name from the URL
+        FullyQualifiedDomainName: !Select [ 2, !Split [ "/", !Ref DataportenChannelRegistryBaseUrl ] ] # Extracts the domain name from the URL
         RequestInterval: 30
         FailureThreshold: 2
         EnableSNI: true
