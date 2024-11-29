@@ -379,6 +379,28 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  CreateSerialPublicationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.create.serialpublication.CreateSerialPublicationHandler::handleRequest
+      Policies:
+        - !GetAtt GetItemDynamoDbPolicy.PolicyArn
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+      Events:
+        CreateJournalEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /serial-publication
+            Method: post
+
+  CreateSerialPublicationFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CreateSerialPublicationFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   SearchPublisherByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
