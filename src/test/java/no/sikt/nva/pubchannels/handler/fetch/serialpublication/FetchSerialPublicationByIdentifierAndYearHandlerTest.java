@@ -64,7 +64,7 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
         this.channelRegistryPathElement = "/findjournalserie/";
     }
 
-    @ParameterizedTest(name = "should return correct data for type {0}")
+    @ParameterizedTest(name = "Should return correct data for type \"{0}\"")
     @ValueSource(strings = {JOURNAL_TYPE, SERIES_TYPE})
     void shouldReturnCorrectDataWithSuccessWhenExists(String type) throws IOException {
         var year = randomYear();
