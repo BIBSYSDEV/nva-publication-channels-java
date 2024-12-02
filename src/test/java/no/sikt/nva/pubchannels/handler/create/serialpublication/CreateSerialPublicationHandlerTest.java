@@ -73,6 +73,7 @@ class CreateSerialPublicationHandlerTest extends BaseCreateSerialPublicationHand
         var expectedPid = UUID.randomUUID().toString();
 
         var channelRegistryRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+        var channelRegistryCreatePathElement = ChannelType.JOURNAL.equals(type) ? "/createjournal/" : "/createseries/";
         stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED,
                          channelRegistryCreatePathElement);
 
@@ -81,7 +82,7 @@ class CreateSerialPublicationHandlerTest extends BaseCreateSerialPublicationHand
             VALID_NAME);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody = requestBuilderWithRequiredFields().build();
+        var requestBody = requestBuilderWithRequiredFields().withType(typeName).build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);

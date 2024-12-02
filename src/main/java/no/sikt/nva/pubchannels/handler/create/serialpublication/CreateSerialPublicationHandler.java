@@ -47,7 +47,7 @@ public class CreateSerialPublicationHandler
     protected SerialPublicationDto processInput(CreateSerialPublicationRequest request,
                                                 RequestInfo requestInfo, Context context) throws ApiGatewayException {
         var channelRegistryCreateRequest = ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request);
-        var response = JOURNAL.equals(request.type())
+        var response = JOURNAL.equalsIgnoreCase(request.type())
                            ? publicationChannelClient.createJournal(channelRegistryCreateRequest)
                            : publicationChannelClient.createSeries(channelRegistryCreateRequest);
 
