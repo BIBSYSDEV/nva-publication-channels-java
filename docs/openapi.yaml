@@ -111,7 +111,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -272,7 +272,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -433,7 +433,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -598,7 +598,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
