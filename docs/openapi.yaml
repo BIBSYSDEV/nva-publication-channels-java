@@ -97,7 +97,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Journal
-      summary: Search for journal by pid, name, issn, or year
+      summary: Search for journal by name, issn, or year
       description: Returns a list of Journals
       operationId: SearchJournalByQuery
       parameters:
@@ -111,7 +111,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -131,13 +131,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedJournals'
+                $ref: '#/components/schemas/PaginatedSerialPublications'
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedJournalsExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedJournals'
+                $ref: '#/components/schemas/PaginatedSerialPublications'
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedJournalsExample'
@@ -258,7 +258,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Publisher
-      summary: Search for publisher by pid, name, issn, or year
+      summary: Search for publisher by name, issn, or year
       description: Returns a list of Publishers
       operationId: SearchPublisherByQuery
       parameters:
@@ -272,7 +272,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -419,7 +419,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - Series
-      summary: Search for series by pid, name, issn, or year
+      summary: Search for series by name, issn, or year
       description: Returns a list of Series
       operationId: SearchSeriesByQuery
       parameters:
@@ -433,7 +433,7 @@ paths:
           name: query
           schema:
             type: string
-          description: The query string, either a free-text, pid or issn
+          description: The query string, either a free-text or issn
           required: true
         - in: query
           name: offset
@@ -453,13 +453,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSeries'
+                $ref: '#/components/schemas/PaginatedSerialPublications'
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedSeriesExample'
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedSeries'
+                $ref: '#/components/schemas/PaginatedSerialPublications'
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedSeriesExample'
@@ -576,6 +576,70 @@ paths:
         502:
           $ref: '#/components/responses/502'
   /serial-publication:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSerialPublicationByQueryFunction.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      tags:
+        - SerialPublication
+      summary: Search for series/journal by name, issn, or year
+      description: Returns a list of Series and/or Journals
+      operationId: SearchSerialPublicationByQuery
+      parameters:
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: The year you want the NVI for
+          required: false
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: The query string, either a free-text or issn
+          required: true
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: The offset of the search for use in pagination. Must be divisible by the size.
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+          description: The size of each page of the search for use in pagination. Default is 10.
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSerialPublications'
+              examples:
+                journal:
+                  $ref: '#/components/examples/PaginatedJournalsExample'
+                series:
+                  $ref: '#/components/examples/PaginatedSeriesExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSerialPublications'
+              examples:
+                journal:
+                  $ref: '#/components/examples/PaginatedJournalsExample'
+                series:
+                  $ref: '#/components/examples/PaginatedSeriesExample'
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
+        422:
+          $ref: '#/components/responses/422'
+        502:
+          $ref: '#/components/responses/502'
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -646,14 +710,14 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
-    PaginatedJournals:
+    PaginatedSerialPublications:
       type: object
       properties:
         '@context':
           $ref: '#/components/schemas/Context'
         id:
           type: string
-          description: The url to the journal search result
+          description: The url to the journal/series search result
         totalHits:
           type: integer
         nextResults:
@@ -751,28 +815,6 @@ components:
           format: uri
           nullable: true
           description: The url to the publisher
-    PaginatedSeries:
-      type: object
-      properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
-        id:
-          type: string
-          description: The url to the series search result
-        totalHits:
-          type: integer
-        nextResults:
-          type: string
-          nullable: true
-          description: The uri to the next page of results, if there is one
-        previousResults:
-          type: string
-          nullable: true
-          description: The uri to the previous page of results, if there is one
-        hits:
-          type: array
-          items:
-            $ref: '#/components/schemas/SerialPublication'
     SerialPublication:
       type: object
       properties:
