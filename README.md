@@ -21,4 +21,4 @@ the following profile:
 }
 ```
 
-!Important: Caching is only supported for fetching publication channels by `id` and `year`, not search. 
+_!Important_: Caching is only supported for fetching publication channels by `id` and `year`, not search. 
