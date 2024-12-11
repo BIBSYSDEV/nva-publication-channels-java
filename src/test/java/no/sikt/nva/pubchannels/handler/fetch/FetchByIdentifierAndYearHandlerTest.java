@@ -30,12 +30,14 @@ import com.google.common.net.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.utils.AppConfig;
+import no.sikt.nva.pubchannels.utils.FakeAppConfig;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
@@ -56,16 +58,15 @@ import org.zalando.problem.Problem;
  * FetchSeriesByIdentifierAndYearHandler and FetchJournalByIdentifierAndYearHandler are tested here.
  */
 @WireMockTest(httpsEnabled = true)
-public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
+public abstract class FetchByIdentifierAndYearHandlerTest {
 
     protected static final Context context = new FakeContext();
     protected static Environment environment;
-    protected CacheService cacheService;
     protected ByteArrayOutputStream output;
     protected String channelRegistryBaseUri;
     protected String customChannelPath;
     protected String channelRegistryPathElement;
-    protected ChannelRegistryClient channelRegistryClient;
+    protected PublicationChannelClient channelRegistryClient;
     protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
     protected static String year = randomYear();
     protected static String name = randomString();
@@ -79,17 +80,32 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
         when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
     }
 
-    protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
-        ChannelRegistryClient publicationChannelClient);
+    protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(Environment environment,
+                                                                              PublicationChannelClient publicationChannelClient,
+                                                                              CacheService cacheService,
+                                                                              AppConfig appConfig);
+
+    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(PublicationChannelClient publicationChannelClient) {
+        return createHandler(environment, publicationChannelClient, null, new FakeAppConfig(false));
+    }
+
+    protected FetchByIdentifierAndYearHandler<Void, ?> createHandlerWithCache() {
+        var cacheServiceSetup = new CacheServiceTestSetup();
+        cacheServiceSetup.setupDynamoDbTable();
+        cacheServiceSetup.loadAndEnableCache();
+        var dynamoDbClient = cacheServiceSetup.getClient();
+        var cacheService = new CacheService(dynamoDbClient);
+        var appConfig = new FakeAppConfig(true);
+        return createHandler(environment, channelRegistryClient, cacheService, appConfig);
+    }
 
     @BeforeEach
     void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
-        super.setupDynamoDbTable();
         channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
-        HttpClient httpClient = WiremockHttpClient.create();
+        var httpClient = WiremockHttpClient.create();
         channelRegistryClient = new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        cacheService = new CacheService(super.getClient());
         output = new ByteArrayOutputStream();
+        handlerUnderTest = createHandler(channelRegistryClient);
     }
 
     @ParameterizedTest(name = "year {0} is invalid")

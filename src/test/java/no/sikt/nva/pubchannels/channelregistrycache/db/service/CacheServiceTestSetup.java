@@ -6,8 +6,6 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
-import no.sikt.nva.pubchannels.utils.AppConfig;
-import no.sikt.nva.pubchannels.utils.FakeAppConfig;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;
@@ -26,11 +24,7 @@ public class CacheServiceTestSetup {
 
     private DynamoDbClient client;
 
-    protected AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
-        return new FakeAppConfig(cacheEnabled);
-    }
-
-    protected void loadAndEnableCache() {
+    public void loadAndEnableCache() {
         var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
         var s3Client = new FakeS3Client();
         var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
@@ -39,11 +33,11 @@ public class CacheServiceTestSetup {
         new CacheService(getClient()).loadCache(s3Client);
     }
 
-    protected DynamoDbEnhancedClient getClient() {
+    public DynamoDbEnhancedClient getClient() {
         return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
     }
 
-    protected void setupDynamoDbTable() {
+    public void setupDynamoDbTable() {
         this.client = DynamoDBEmbedded.create().dynamoDbClient();
         createTable(new Environment().readEnv("TABLE_NAME"));
     }

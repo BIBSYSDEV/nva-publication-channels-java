@@ -18,13 +18,9 @@ import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
-import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.Environment;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,11 +38,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
     protected String type;
     protected URI selfBaseUri;
-
-    protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(Environment environment,
-                                                                              PublicationChannelClient publicationChannelClient,
-                                                                              CacheService cacheService,
-                                                                              AppConfig appConfigWithCacheEnabled);
 
     protected SerialPublicationDto mockChannelFoundAndReturnExpectedResponse(String year, String identifier,
                                                                              String type) {
@@ -157,7 +148,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
         var input = constructRequest(JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
 
-        super.loadAndEnableCache();
+        handlerUnderTest = createHandlerWithCache();
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
@@ -173,9 +164,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         var input = constructRequest(JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
 
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadAndEnableCache();
-        this.handlerUnderTest = createHandler(environment, channelRegistryClient, cacheService,
-                                              super.getAppConfigWithCacheEnabled(true));
+        handlerUnderTest = createHandlerWithCache();
 
         handlerUnderTest.handleRequest(input, output, context);
 
@@ -190,9 +179,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     @Test
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButChannelIsNotCached() throws IOException {
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadAndEnableCache();
-        this.handlerUnderTest = createHandler(environment, channelRegistryClient, cacheService,
-                                              super.getAppConfigWithCacheEnabled(true));
+        handlerUnderTest = createHandlerWithCache();
 
         var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 

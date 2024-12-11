@@ -12,7 +12,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import com.google.common.net.MediaType;
 import java.io.IOException;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.BaseFetchSerialPublicationByIdentifierAndYearHandlerTest;
@@ -30,14 +29,6 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
                                                                   BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
     @Override
-    protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
-        ChannelRegistryClient publicationChannelClient) {
-        return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                    cacheService,
-                                                                    super.getAppConfigWithCacheEnabled(false));
-    }
-
-    @Override
     protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(Environment environment,
                                                                      PublicationChannelClient publicationChannelClient,
                                                                      CacheService cacheService,
@@ -48,11 +39,6 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
 
     @BeforeEach
     void setup() {
-        this.handlerUnderTest = new FetchSerialPublicationByIdentifierAndYearHandler(environment,
-                                                                                     this.channelRegistryClient,
-                                                                                     this.cacheService,
-                                                                                     super.getAppConfigWithCacheEnabled(
-                                                                                         false));
         this.type = JOURNAL_TYPE;
         this.customChannelPath = SERIAL_PUBLICATION_PATH;
         this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)

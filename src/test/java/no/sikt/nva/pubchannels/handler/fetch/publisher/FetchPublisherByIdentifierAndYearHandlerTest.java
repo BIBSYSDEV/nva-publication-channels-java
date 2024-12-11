@@ -30,13 +30,15 @@ import java.net.URI;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
+import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.unit.nva.stubs.WiremockHttpClient;
+import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,17 +56,16 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
                                                        .getUri();
 
     @Override
-    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(ChannelRegistryClient publicationChannelClient) {
+    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(Environment environment,
+                                                                     PublicationChannelClient publicationChannelClient,
+                                                                     CacheService cacheService,
+                                                                     AppConfig appConfig) {
         return new FetchPublisherByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
-                                                            super.getAppConfigWithCacheEnabled(false));
+                                                            appConfig);
     }
 
     @BeforeEach
     void setup() {
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment,
-                                                                             this.channelRegistryClient,
-                                                                             cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(false));
         this.customChannelPath = PUBLISHER_PATH;
         this.channelRegistryPathElement = "/findpublisher/";
     }
@@ -216,17 +217,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     @Test
     void shouldReturnPublisherWhenInterruptionOccursAndPublisherIsCached() throws IOException {
-        var httpClient = WiremockHttpClient.create();
-        var channelRegistryBaseUri = URI.create("https://localhost:9898");
-        var channelRegistryClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
-
+        // FIXME: This test does not seem to test what the name indicates. Is it testing the correct thing?
+        // FIXME: Was it working as intended before these changes?
         var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
         var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
-
-        super.loadAndEnableCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, channelRegistryClient,
-                                                                             cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(true));
+        handlerUnderTest = createHandlerWithCache();
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -244,10 +239,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
-        super.loadAndEnableCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(true));
+        handlerUnderTest = createHandlerWithCache();
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         handlerUnderTest.handleRequest(input, output, context);
@@ -263,10 +255,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached() throws IOException {
         var input = constructRequest(randomYear(), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
         when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
-        super.loadAndEnableCache();
-        this.handlerUnderTest = new FetchPublisherByIdentifierAndYearHandler(environment, null,
-                                                                             cacheService,
-                                                                             super.getAppConfigWithCacheEnabled(true));
+        handlerUnderTest = createHandlerWithCache();
 
         handlerUnderTest.handleRequest(input, output, context);
 
