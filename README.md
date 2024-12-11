@@ -7,9 +7,12 @@ A client to wrap HKDir DBH's publication channel databases.
 ## Cached data
 
 Sometimes, you may wish to resolve many resources (semi-) simultaneously, which DBH will not like.
-In these cases, upload the data set (format: csv, see
-_.../channelregistrycache/db/model/ChannelRegistryCacheDao.java_) to the s3
-bucket _channel-register-cache-{accountIt}_ and configure the `ApplicationConfigurationProfile` with
+In these cases, follow these steps:
+1. Upload the data set (csv format, see model
+`.../channelregistrycache/db/model/ChannelRegistryCacheDao.java`) to the s3
+bucket _channel-register-cache-{accountIt}_
+2. Trigger `LoadCacheHandler`
+3. Configure the `ApplicationConfigurationProfile` with
 the following profile:
 
 ```json
@@ -17,3 +20,5 @@ the following profile:
   "publicationChannelCacheEnabled": true
 }
 ```
+
+!Important: Caching is only supported for fetching publication channels by `id` and `year`, not search. 
