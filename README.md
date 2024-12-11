@@ -2,6 +2,8 @@
 
 A client to wrap HKDir DBH's publication channel databases.
 
+[SWAGGER UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/BIBSYSDEV/nva-publication-channels-java/refs/heads/main/docs/openapi.yaml)
+
 ![Alt text](resources/publication-channels-v2.png)
 
 ## Cached data
