@@ -14,7 +14,7 @@ In these cases, follow these steps:
 
 1. Upload the data set (csv format, see model
    `.../channelregistrycache/db/model/ChannelRegistryCacheDao.java`) to the s3
-   bucket _channel-register-cache-{accountIt}_
+   bucket _channel-register-cache-{accountId}_
 2. Trigger `LoadCacheHandler`
 3. Configure the `ApplicationConfigurationProfile` with
    the following profile:
