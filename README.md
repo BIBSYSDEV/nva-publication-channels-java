@@ -22,9 +22,11 @@ In these cases, follow these steps:
     - Navigate to _AWS Systems Manager_ → _AppConfig_.
     - Choose _ApplicationConfig_ → _ApplicationConfigurationProfile_.
     - If there is no existing version with the value you want to deploy → navigate to Systems
-      Manager, Parameter Store and update the SSM parameter named `ApplicationConfigurationParameter`.
+      Manager, Parameter Store and update the SSM parameter
+      named `ApplicationConfigurationParameter`.
       Update `publicationChannelCacheEnabled` value to `true` or `false`.
-    - Return to _ApplicationConfig_ → _ApplicationConfigurationProfile_ and choose version of Config you
+    - Return to _ApplicationConfig_ → _ApplicationConfigurationProfile_ and choose version of Config
+      you
       want to deploy.
     - During deployment, select the environment you want to use. Currently, there is a single
       environment named _Live_. Choose the deployment strategy _AllAtOnce_.
