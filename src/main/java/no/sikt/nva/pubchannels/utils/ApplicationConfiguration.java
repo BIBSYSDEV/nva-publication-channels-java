@@ -11,8 +11,6 @@ import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ApplicationConfiguration implements AppConfig {
