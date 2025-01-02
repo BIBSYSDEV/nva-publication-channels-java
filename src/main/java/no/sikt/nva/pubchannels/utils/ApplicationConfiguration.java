@@ -20,7 +20,7 @@ public class ApplicationConfiguration implements AppConfig {
     public static final String PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM = "publicationChannelCacheEnabled";
     private static final Environment ENVIRONMENT = new Environment();
     private final AppConfigDataClient client;
-    private static final long CACHE_DURATION_MILLIS = 60000; // 1 minute
+    private static final long CACHE_DURATION_MILLIS = 60_000; // 1 minute
 
     private final AtomicReference<CacheEntry> cache = new AtomicReference<>();
     private final String configurationToken;
