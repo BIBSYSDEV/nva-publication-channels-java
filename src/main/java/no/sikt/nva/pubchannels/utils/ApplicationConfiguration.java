@@ -37,7 +37,7 @@ public class ApplicationConfiguration implements AppConfig {
 
     @Override
     public boolean shouldUseCache() {
-        CacheEntry entry = cache.get();
+        var entry = cache.get();
         long currentTime = System.currentTimeMillis();
         if (entry == null || currentTime - entry.timestamp > CACHE_DURATION_MILLIS) {
             boolean shouldUseCache = fetchShouldUseCache();
@@ -58,12 +58,12 @@ public class ApplicationConfiguration implements AppConfig {
     }
 
     private String startConfigurationSession() {
-        StartConfigurationSessionRequest request = StartConfigurationSessionRequest.builder()
+        var request = StartConfigurationSessionRequest.builder()
                                                        .applicationIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_NAME"))
                                                        .environmentIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_ENVIRONMENT_NAME"))
                                                        .configurationProfileIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_PROFILE_NAME"))
                                                        .build();
-        StartConfigurationSessionResponse response = client.startConfigurationSession(request);
+        var response = client.startConfigurationSession(request);
         return response.initialConfigurationToken();
     }
 
