@@ -197,7 +197,11 @@ Resources:
           - Effect: Allow
             Action:
               - appconfig:GetConfiguration
-            Resource: '*'
+              - appconfig:StartConfigurationSession
+              - appconfig:GetLatestConfiguration
+            Resource:
+              - !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/${ApplicationIdName}
+              - !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/${ApplicationIdName}/*
 
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
