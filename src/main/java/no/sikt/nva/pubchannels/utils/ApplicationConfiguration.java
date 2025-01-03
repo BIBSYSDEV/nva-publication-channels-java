@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.utils;
 
+import static java.util.Objects.isNull;
 import static nva.commons.core.attempt.Try.attempt;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,12 +38,11 @@ public class ApplicationConfiguration implements AppConfig {
     public boolean shouldUseCache() {
         var entry = cache.get();
         long currentTime = System.currentTimeMillis();
-        if (entry == null || currentTime - entry.timestamp > CACHE_DURATION_MILLIS) {
+        if (isNull(entry) || currentTime - entry.timestamp > CACHE_DURATION_MILLIS) {
             boolean shouldUseCache = fetchShouldUseCache();
             cache.set(new CacheEntry(shouldUseCache, currentTime));
-            return shouldUseCache;
         }
-        return entry.shouldUseCache;
+        return cache.get().shouldUseCache;
     }
 
     private boolean fetchShouldUseCache() {
