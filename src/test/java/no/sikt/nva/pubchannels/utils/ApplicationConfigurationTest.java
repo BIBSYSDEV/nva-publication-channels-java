@@ -8,17 +8,22 @@ import static org.mockito.Mockito.when;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.appconfig.AppConfigClient;
-import software.amazon.awssdk.services.appconfig.model.GetConfigurationRequest;
-import software.amazon.awssdk.services.appconfig.model.GetConfigurationResponse;
 import software.amazon.awssdk.services.appconfig.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
 
 class ApplicationConfigurationTest {
 
     @Test
     void shouldReturnTrueWhenAppConfigHasCachingEnabled() {
-        var client = mock(AppConfigClient.class);
-        when(client.getConfiguration(any(GetConfigurationRequest.class))).thenReturn(mockedResponse());
+        var client = mock(AppConfigDataClient.class);
+        when(client.getLatestConfiguration(any(GetLatestConfigurationRequest.class))).thenReturn(
+            mockedLatestResponse());
+        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(
+            mockedStartResponse());
         var appConfig = new ApplicationConfiguration(client);
 
         assertTrue(appConfig.shouldUseCache());
@@ -26,16 +31,19 @@ class ApplicationConfigurationTest {
 
     @Test
     void shouldReturnFalseWhenFetchingConfigurationFails() {
-        var client = mock(AppConfigClient.class);
-        when(client.getConfiguration(any(GetConfigurationRequest.class))).thenThrow(ResourceNotFoundException.class);
+        var client = mock(AppConfigDataClient.class);
+        when(client.getLatestConfiguration(any(
+            GetLatestConfigurationRequest.class))).thenThrow(ResourceNotFoundException.class);
+        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(
+            mockedStartResponse());
         var appConfig = new ApplicationConfiguration(client);
 
         assertFalse(appConfig.shouldUseCache());
     }
 
-    private static GetConfigurationResponse mockedResponse() {
-        return GetConfigurationResponse.builder()
-                   .content(SdkBytes.fromString(configContent(), StandardCharsets.UTF_8))
+    private static GetLatestConfigurationResponse mockedLatestResponse() {
+        return GetLatestConfigurationResponse.builder()
+                   .configuration(SdkBytes.fromString(configContent(), StandardCharsets.UTF_8))
                    .build();
     }
 
@@ -45,5 +53,9 @@ class ApplicationConfigurationTest {
                 "publicationChannelCacheEnabled": true
             }
             """;
+    }
+
+    private static StartConfigurationSessionResponse mockedStartResponse() {
+        return StartConfigurationSessionResponse.builder().initialConfigurationToken("mockToken").build();
     }
 }
