@@ -99,4 +99,5 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+    enforceCheck false // Temporarily disable checking until the project is reformatted
 }
