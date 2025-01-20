@@ -9,16 +9,20 @@ import no.sikt.nva.pubchannels.handler.search.BaseSearchSerialPublicationByQuery
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 
-class SearchSerialPublicationByQueryHandlerTest extends BaseSearchSerialPublicationByQueryHandlerTest {
+class SearchSerialPublicationByQueryHandlerTest
+    extends BaseSearchSerialPublicationByQueryHandlerTest {
 
     @BeforeEach
     void setup() {
-        this.handlerUnderTest = new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
+        this.handlerUnderTest =
+            new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
         this.type = JOURNAL_TYPE;
         this.customChannelPath = ChannelType.SERIAL_PUBLICATION.pathElement;
-        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
-                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                                     .addChild(SERIAL_PUBLICATION_PATH)
-                                     .getUri();
+        this.selfBaseUri =
+            UriWrapper
+                .fromHost(API_DOMAIN)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(SERIAL_PUBLICATION_PATH)
+                .getUri();
     }
 }

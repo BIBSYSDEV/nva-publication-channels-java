@@ -34,41 +34,62 @@ public class CacheServiceTestSetup {
         var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
         var s3Client = new FakeS3Client();
         var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-        attempt(() -> s3Driver.insertFile(UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
-                                          csv)).orElseThrow();
+        attempt(
+            () ->
+                s3Driver.insertFile(
+                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
+            .orElseThrow();
         new CacheService(getClient()).loadCache(s3Client);
     }
 
     protected DynamoDbEnhancedClient getClient() {
-        return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+        return DynamoDbEnhancedClient
+                   .builder()
+                   .dynamoDbClient(client)
+                   .build();
     }
 
     protected void setupDynamoDbTable() {
-        this.client = DynamoDBEmbedded.create().dynamoDbClient();
+        this.client = DynamoDBEmbedded
+                          .create()
+                          .dynamoDbClient();
         createTable(new Environment().readEnv("TABLE_NAME"));
     }
 
     private void createTable(String tableName) {
-        var request = CreateTableRequest.builder()
-                          .attributeDefinitions(AttributeDefinition.builder()
-                                                    .attributeName(PRIMARY_KEY)
-                                                    .attributeType(ScalarAttributeType.S) // UUID as String
-                                                    .build(), AttributeDefinition.builder()
-                                                                  .attributeName(SORT_KEY)
-                                                                  .attributeType(
-                                                                      ScalarAttributeType.S) // type as String
-                                                                  .build())
-                          .keySchema(KeySchemaElement.builder()
-                                         .attributeName(PRIMARY_KEY)
-                                         .keyType(KeyType.HASH) // Partition key
-                                         .build(), KeySchemaElement.builder()
-                                                       .attributeName(SORT_KEY)
-                                                       .keyType(KeyType.RANGE) // Sort key
-                                                       .build())
-                          .provisionedThroughput(
-                              ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(10L).build())
-                          .tableName(tableName)
-                          .build();
+        var request =
+            CreateTableRequest
+                .builder()
+                .attributeDefinitions(
+                    AttributeDefinition
+                        .builder()
+                        .attributeName(PRIMARY_KEY)
+                        .attributeType(ScalarAttributeType.S) // UUID as String
+                        .build(),
+                    AttributeDefinition
+                        .builder()
+                        .attributeName(SORT_KEY)
+                        .attributeType(ScalarAttributeType.S) // type as String
+                        .build())
+                .keySchema(
+                    KeySchemaElement
+                        .builder()
+                        .attributeName(PRIMARY_KEY)
+                        .keyType(KeyType.HASH) // Partition key
+                        .build(),
+                    KeySchemaElement
+                        .builder()
+                        .attributeName(SORT_KEY)
+                        .keyType(KeyType.RANGE) // Sort key
+                        .build())
+                .provisionedThroughput(
+                    ProvisionedThroughput
+                        .builder()
+                        .readCapacityUnits(10L)
+                        .writeCapacityUnits(10L)
+                        .build())
+                .tableName(tableName)
+                .build();
 
         client.createTable(request);
     }

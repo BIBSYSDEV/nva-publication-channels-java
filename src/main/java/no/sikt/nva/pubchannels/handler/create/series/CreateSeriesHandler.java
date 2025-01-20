@@ -15,7 +15,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
+public class CreateSeriesHandler
+    extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String SERIES_PATH_ELEMENT = "series";
 
@@ -29,28 +30,33 @@ public class CreateSeriesHandler extends CreateHandler<CreateSerialPublicationRe
     }
 
     @Override
-    protected void validateRequest(CreateSerialPublicationRequest request, RequestInfo requestInfo,
-                                   Context context)
+    protected void validateRequest(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         request.validate();
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateSerialPublicationRequest request, RequestInfo requestInfo,
-                                                Context context)
+    protected SerialPublicationDto processInput(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
-        var response = publicationChannelClient.createSeries(
+        var response =
+            publicationChannelClient.createSeries(
             ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request));
 
         // Fetch the new series from the channel registry to build the full response
         var year = getYear();
-        var newSeries = (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIES,
-                                                                                          response.pid(),
-                                                                                          year);
-        var seriesDto = SerialPublicationDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
+        var newSeries =
+            (ThirdPartySerialPublication)
+                publicationChannelClient.getChannel(SERIES, response.pid(), year);
+        var seriesDto =
+            SerialPublicationDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
 
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, seriesDto.id().toString()));
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION,
+                                          seriesDto
+                                              .id()
+                                              .toString()));
         return seriesDto;
     }
 }

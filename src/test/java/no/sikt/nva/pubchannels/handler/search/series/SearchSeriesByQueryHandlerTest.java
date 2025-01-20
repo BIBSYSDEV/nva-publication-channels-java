@@ -16,9 +16,11 @@ class SearchSeriesByQueryHandlerTest extends BaseSearchSerialPublicationByQueryH
         this.handlerUnderTest = new SearchSeriesByQueryHandler(environment, publicationChannelClient);
         this.type = SERIES_TYPE;
         this.customChannelPath = ChannelType.SERIES.pathElement;
-        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
-                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                                     .addChild(SERIES_PATH)
-                                     .getUri();
+        this.selfBaseUri =
+            UriWrapper
+                .fromHost(API_DOMAIN)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(SERIES_PATH)
+                .getUri();
     }
 }

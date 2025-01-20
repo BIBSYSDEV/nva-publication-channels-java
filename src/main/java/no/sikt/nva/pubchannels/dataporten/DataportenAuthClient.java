@@ -22,13 +22,15 @@ import org.slf4j.LoggerFactory;
 public class DataportenAuthClient implements AuthClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataportenAuthClient.class);
-    private static final Map<String, String> GRANT_TYPE_CLIENT_CREDENTIALS = Map.of("grant_type", "client_credentials");
+    private static final Map<String, String> GRANT_TYPE_CLIENT_CREDENTIALS =
+        Map.of("grant_type", "client_credentials");
     private final HttpClient httpClient;
     private final URI baseUri;
     private final String clientId;
     private final String clientSecret;
 
-    public DataportenAuthClient(HttpClient httpClient, URI baseUri, String clientId, String clientSecret) {
+    public DataportenAuthClient(
+        HttpClient httpClient, URI baseUri, String clientId, String clientSecret) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.httpClient = httpClient;
@@ -43,19 +45,25 @@ public class DataportenAuthClient implements AuthClient {
     }
 
     private static HttpRequest.BodyPublisher clientCredentialsAuthType() {
-        var queryParameters = UriWrapper.fromHost("notimportant")
-                                  .addQueryParameters(GRANT_TYPE_CLIENT_CREDENTIALS).getUri().getRawQuery();
+        var queryParameters =
+            UriWrapper
+                .fromHost("notimportant")
+                .addQueryParameters(GRANT_TYPE_CLIENT_CREDENTIALS)
+                .getUri()
+                .getRawQuery();
         return HttpRequest.BodyPublishers.ofString(queryParameters);
     }
 
     private static void reportFailingRequest(HttpRequest request, HttpResponse<String> response)
         throws BadGatewayException {
-        LOGGER.error("Error executing request: {} {} {}", request.uri(), response.statusCode(), response.body());
+        LOGGER.error(
+            "Error executing request: {} {} {}", request.uri(), response.statusCode(), response.body());
         throw new BadGatewayException("Unexpected response from upstream!");
     }
 
     private HttpRequest createTokenRequest(String clientId, String clientSecret) {
-        return HttpRequest.newBuilder()
+        return HttpRequest
+                   .newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED)
                    .header(HttpHeaders.AUTHORIZATION, getCredentialsString(clientId, clientSecret))
                    .uri(getTokenRequestUri())
@@ -65,19 +73,23 @@ public class DataportenAuthClient implements AuthClient {
 
     private String getCredentialsString(String clientId, String clientSecret) {
         var credentials = clientId + ":" + clientSecret;
-        var encodedCredentials = Base64.getEncoder().encode(credentials.getBytes());
+        var encodedCredentials = Base64
+                                     .getEncoder()
+                                     .encode(credentials.getBytes());
         return String.format("Basic %s", new String(encodedCredentials));
     }
 
     private URI getTokenRequestUri() {
-        return UriWrapper.fromUri(baseUri)
+        return UriWrapper
+                   .fromUri(baseUri)
                    .addChild("oauth", "token")
                    .getUri();
     }
 
     private TokenBodyResponse fetchToken(HttpRequest request) throws ApiGatewayException {
         return attempt(() -> executeRequest(request))
-                   .orElseThrow(failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+                   .orElseThrow(
+                       failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
     }
 
     private TokenBodyResponse executeRequest(HttpRequest request)
@@ -87,14 +99,17 @@ public class DataportenAuthClient implements AuthClient {
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             reportFailingRequest(request, response);
         }
-        return attempt(() -> dtoObjectMapper.readValue(response.body(), TokenBodyResponse.class)).orElseThrow();
+        return attempt(() -> dtoObjectMapper.readValue(response.body(), TokenBodyResponse.class))
+                   .orElseThrow();
     }
 
     private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
 
         LOGGER.error("Unable to reach upstream: {}", uri, e);
         if (e instanceof InterruptedException) {
-            Thread.currentThread().interrupt();
+            Thread
+                .currentThread()
+                .interrupt();
         } else if (e instanceof BadGatewayException) {
             return new BadGatewayException(e.getMessage());
         }

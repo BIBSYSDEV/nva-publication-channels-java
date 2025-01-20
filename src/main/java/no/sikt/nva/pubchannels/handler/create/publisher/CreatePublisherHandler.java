@@ -18,7 +18,8 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest, CreatePublisherResponse> {
+public class CreatePublisherHandler
+    extends CreateHandler<CreatePublisherRequest, CreatePublisherResponse> {
 
     private static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
@@ -32,25 +33,30 @@ public class CreatePublisherHandler extends CreateHandler<CreatePublisherRequest
     }
 
     @Override
-    protected void validateRequest(CreatePublisherRequest createPublisherRequest, RequestInfo requestInfo,
-                                   Context context) throws ApiGatewayException {
+    protected void validateRequest(
+        CreatePublisherRequest createPublisherRequest, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         validate(createPublisherRequest);
     }
 
     @Override
-    protected CreatePublisherResponse processInput(CreatePublisherRequest input, RequestInfo requestInfo,
-                                                   Context context) throws ApiGatewayException {
+    protected CreatePublisherResponse processInput(
+        CreatePublisherRequest input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var response = publicationChannelClient.createPublisher(getClientRequest(input));
         var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, response.pid());
         addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
         return CreatePublisherResponse.create(
             createdUri,
-            (ThirdPartyPublisher) publicationChannelClient.getChannel(PUBLISHER, response.pid(), getYear()));
+            (ThirdPartyPublisher)
+                publicationChannelClient.getChannel(PUBLISHER, response.pid(), getYear()));
     }
 
-    private static ChannelRegistryCreatePublisherRequest getClientRequest(CreatePublisherRequest request) {
-        return new ChannelRegistryCreatePublisherRequest(request.name(), request.isbnPrefix(), request.homepage());
+    private static ChannelRegistryCreatePublisherRequest getClientRequest(
+        CreatePublisherRequest request) {
+        return new ChannelRegistryCreatePublisherRequest(
+            request.name(), request.isbnPrefix(), request.homepage());
     }
 
     private void validate(CreatePublisherRequest input) throws BadRequestException {

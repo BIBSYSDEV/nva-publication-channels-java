@@ -16,9 +16,11 @@ class SearchJournalByQueryHandlerTest extends BaseSearchSerialPublicationByQuery
         this.handlerUnderTest = new SearchJournalByQueryHandler(environment, publicationChannelClient);
         this.type = JOURNAL_TYPE;
         this.customChannelPath = ChannelType.JOURNAL.pathElement;
-        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
-                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                                     .addChild(JOURNAL_PATH)
-                                     .getUri();
+        this.selfBaseUri =
+            UriWrapper
+                .fromHost(API_DOMAIN)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(JOURNAL_PATH)
+                .getUri();
     }
 }

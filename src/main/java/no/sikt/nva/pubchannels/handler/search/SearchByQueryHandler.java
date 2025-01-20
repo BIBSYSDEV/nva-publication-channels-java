@@ -29,7 +29,8 @@ import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.apache.commons.validator.routines.ISSNValidator;
 
-public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, PaginatedSearchResult<T>> {
+public abstract class SearchByQueryHandler<T>
+    extends ApiGatewayHandler<Void, PaginatedSearchResult<T>> {
 
     private static final String ENV_API_DOMAIN = "API_DOMAIN";
     private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
@@ -51,10 +52,11 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         this.channelType = channelType;
     }
 
-    protected SearchByQueryHandler(Environment environment,
-                                   PublicationChannelClient publicationChannelClient,
-                                   String pathElement,
-                                   ChannelType channelType) {
+    protected SearchByQueryHandler(
+        Environment environment,
+        PublicationChannelClient publicationChannelClient,
+        String pathElement,
+        ChannelType channelType) {
         super(Void.class, environment);
         this.publicationChannelClient = publicationChannelClient;
         this.pathElement = pathElement;
@@ -67,13 +69,14 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     @Override
-    protected void validateRequest(Void unused, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected void validateRequest(Void unused, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         validate(requestInfo);
     }
 
     @Override
-    protected PaginatedSearchResult<T> processInput(Void input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
+    protected PaginatedSearchResult<T> processInput(
+        Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
         var searchParameters = SearchParameters.fromRequestInfo(requestInfo);
         var searchResult = searchChannel(searchParameters);
 
@@ -84,12 +87,15 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
             baseQueryParameters.put(YEAR_QUERY_PARAM, searchParameters.year());
         }
 
-        return PaginatedSearchResult.create(constructBaseUri(),
-                                            searchParameters.offset(),
-                                            searchParameters.size(),
-                                            searchResult.pageInformation().totalResults(),
-                                            getHits(constructBaseUri(), searchResult, searchParameters.year()),
-                                            baseQueryParameters);
+        return PaginatedSearchResult.create(
+            constructBaseUri(),
+            searchParameters.offset(),
+            searchParameters.size(),
+            searchResult
+                .pageInformation()
+                .totalResults(),
+            getHits(constructBaseUri(), searchResult, searchParameters.year()),
+            baseQueryParameters);
     }
 
     @Override
@@ -97,35 +103,45 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
         return HttpURLConnection.HTTP_OK;
     }
 
-    protected abstract T createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear);
+    protected abstract T createResult(
+        URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear);
 
     protected URI constructBaseUri() {
         var apiDomain = environment.readEnv(ENV_API_DOMAIN);
         var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
-        return new UriWrapper(HTTPS, apiDomain).addChild(customDomainBasePath, pathElement).getUri();
+        return new UriWrapper(HTTPS, apiDomain)
+                   .addChild(customDomainBasePath, pathElement)
+                   .getUri();
     }
 
     private void validate(RequestInfo requestInfo) throws BadRequestException {
-        attempt(() -> {
-            var parameters = SearchParameters.fromRequestInfo(requestInfo);
-            validateYear(parameters.year(), Year.of(1900), "Year");
-            validateString(parameters.query(), 4, 300, "Query");
-            validatePagination(parameters.offset(), parameters.size());
-            return null;
-        }).orElseThrow(fail -> new BadRequestException(fail.getException().getMessage()));
+        attempt(
+            () -> {
+                var parameters = SearchParameters.fromRequestInfo(requestInfo);
+                validateYear(parameters.year(), Year.of(1900), "Year");
+                validateString(parameters.query(), 4, 300, "Query");
+                validatePagination(parameters.offset(), parameters.size());
+                return null;
+            })
+            .orElseThrow(fail -> new BadRequestException(fail
+                                                             .getException()
+                                                             .getMessage()));
     }
 
-    private ThirdPartySearchResponse searchChannel(SearchParameters searchParameters) throws ApiGatewayException {
+    private ThirdPartySearchResponse searchChannel(SearchParameters searchParameters)
+        throws ApiGatewayException {
         var queryParams = getQueryParams(searchParameters);
         return publicationChannelClient.searchChannel(channelType, queryParams);
     }
 
-    private List<T> getHits(URI baseUri, ThirdPartySearchResponse searchResult, String requestedYear) {
-        return searchResult.resultSet()
-                           .pageResult()
-                           .stream()
-                           .map(result -> createResult(baseUri, result, requestedYear))
-                           .toList();
+    private List<T> getHits(
+        URI baseUri, ThirdPartySearchResponse searchResult, String requestedYear) {
+        return searchResult
+                   .resultSet()
+                   .pageResult()
+                   .stream()
+                   .map(result -> createResult(baseUri, result, requestedYear))
+                   .toList();
     }
 
     private Map<String, String> getQueryParams(SearchParameters parameters) {
@@ -148,6 +164,8 @@ public abstract class SearchByQueryHandler<T> extends ApiGatewayHandler<Void, Pa
     }
 
     private boolean isQueryParameterIssn(String query) {
-        return ISSNValidator.getInstance().isValid(query.trim());
+        return ISSNValidator
+                   .getInstance()
+                   .isValid(query.trim());
     }
 }

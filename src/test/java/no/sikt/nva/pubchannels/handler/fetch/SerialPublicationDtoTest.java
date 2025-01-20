@@ -24,7 +24,8 @@ class SerialPublicationDtoTest {
 
         var serializedJournal = dtoObjectMapper.writeValueAsString(journal);
 
-        var deserializedJournal = dtoObjectMapper.readValue(serializedJournal, SerialPublicationDto.class);
+        var deserializedJournal =
+            dtoObjectMapper.readValue(serializedJournal, SerialPublicationDto.class);
 
         assertEquals(deserializedJournal, journal);
     }
@@ -33,61 +34,64 @@ class SerialPublicationDtoTest {
     void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
         var serializedJournal = dtoObjectMapper.writeValueAsString(randomJournal());
 
-        assertTrue(objectMapper.readTree(serializedJournal).has("@context"));
+        assertTrue(objectMapper
+                       .readTree(serializedJournal)
+                       .has("@context"));
     }
 
     private static SerialPublicationDto randomJournal() {
-        var journal = new ThirdPartySerialPublication() {
+        var journal =
+            new ThirdPartySerialPublication() {
 
-            @Override
-            public String identifier() {
-                return randomString();
-            }
+                @Override
+                public String identifier() {
+                    return randomString();
+                }
 
-            @Override
-            public String getYear() {
-                return randomString();
-            }
+                @Override
+                public String getYear() {
+                    return randomString();
+                }
 
-            @Override
-            public String name() {
-                return randomString();
-            }
+                @Override
+                public String name() {
+                    return randomString();
+                }
 
-            @Override
-            public ScientificValue getScientificValue() {
-                return randomElement(ScientificValue.values());
-            }
+                @Override
+                public ScientificValue getScientificValue() {
+                    return randomElement(ScientificValue.values());
+                }
 
-            @Override
-            public URI homepage() {
-                return randomUri();
-            }
+                @Override
+                public URI homepage() {
+                    return randomUri();
+                }
 
-            @Override
-            public String discontinued() {
-                return randomString();
-            }
+                @Override
+                public String discontinued() {
+                    return randomString();
+                }
 
-            @Override
-            public ScientificValueReviewNotice reviewNotice() {
-                return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
-            }
+                @Override
+                public ScientificValueReviewNotice reviewNotice() {
+                    return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
+                }
 
-            @Override
-            public String type() {
-                return "journal";
-            }
+                @Override
+                public String type() {
+                    return "journal";
+                }
 
-            @Override
-            public String onlineIssn() {
-                return randomString();
-            }
+                @Override
+                public String onlineIssn() {
+                    return randomString();
+                }
 
-            @Override
-            public String printIssn() {
-                return randomString();
-            }
+                @Override
+                public String printIssn() {
+                    return randomString();
+                }
         };
         return SerialPublicationDto.create(randomUri(), journal, randomString());
     }

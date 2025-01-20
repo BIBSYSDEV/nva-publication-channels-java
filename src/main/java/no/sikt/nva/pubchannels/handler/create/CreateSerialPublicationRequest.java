@@ -6,11 +6,8 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 
-public record CreateSerialPublicationRequest(String name,
-                                             String printIssn,
-                                             String onlineIssn,
-                                             String homepage,
-                                             String type) {
+public record CreateSerialPublicationRequest(
+    String name, String printIssn, String onlineIssn, String homepage, String type) {
 
     public void validate() throws BadRequestException {
         try {

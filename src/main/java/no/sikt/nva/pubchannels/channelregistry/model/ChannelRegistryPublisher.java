@@ -13,14 +13,14 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.unit.nva.commons.json.JsonSerializable;
 
 @JsonSerialize
-public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                       @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
-                                       @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-                                       @JsonProperty(NAME_FIELD) String name,
-                                       @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-                                       @JsonProperty(DISCONTINUED_FIELD) String discontinued,
-                                       @JsonProperty(TYPE_FIELD) String type
-)
+public record ChannelRegistryPublisher(
+    @JsonProperty(IDENTIFIER_FIELD) String identifier,
+    @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
+    @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
+    @JsonProperty(NAME_FIELD) String name,
+    @JsonProperty(HOMEPAGE_FIELD) URI homepage,
+    @JsonProperty(DISCONTINUED_FIELD) String discontinued,
+    @JsonProperty(TYPE_FIELD) String type)
     implements Immutable, ThirdPartyPublisher, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
@@ -34,7 +34,8 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(channelRegistryLevel)
+        return Optional
+                   .ofNullable(channelRegistryLevel)
                    .map(ChannelRegistryLevel::year)
                    .map(String::valueOf)
                    .orElse(null);
@@ -60,7 +61,8 @@ public record ChannelRegistryPublisher(@JsonProperty(IDENTIFIER_FIELD) String id
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
-        return Optional.ofNullable(channelRegistryLevel())
+        return Optional
+                   .ofNullable(channelRegistryLevel())
                    .map(level -> mapper.map(level.level()))
                    .orElse(ScientificValue.UNASSIGNED);
     }

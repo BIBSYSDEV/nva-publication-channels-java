@@ -24,14 +24,15 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import org.junit.jupiter.api.Test;
 
-public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends SearchByQueryHandlerTest {
+public abstract class BaseSearchSerialPublicationByQueryHandlerTest
+    extends SearchByQueryHandlerTest {
 
-    private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF = new TypeReference<>() {
-    };
+    private static final TypeReference<PaginatedSearchResult<SerialPublicationDto>> TYPE_REF =
+        new TypeReference<>() {
+        };
 
-    protected PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(String year,
-                                                                                  String queryParamValue,
-                                                                                  TestChannel testChannel)
+    protected PaginatedSearchResult<SerialPublicationDto> getExpectedSearchResult(
+        String year, String queryParamValue, TestChannel testChannel)
         throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", queryParamValue);
@@ -40,11 +41,12 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
         }
 
         var expectedHits = List.of(testChannel.asSerialPublicationDto(selfBaseUri, year));
-        return PaginatedSearchResult.create(constructPublicationChannelUri(testChannel.type(), expectedParams),
-                                            DEFAULT_OFFSET_INT,
-                                            DEFAULT_SIZE_INT,
-                                            expectedHits.size(),
-                                            expectedHits);
+        return PaginatedSearchResult.create(
+            constructPublicationChannelUri(testChannel.type(), expectedParams),
+            DEFAULT_OFFSET_INT,
+            DEFAULT_SIZE_INT,
+            expectedHits.size(),
+            expectedHits);
     }
 
     @Override
@@ -56,15 +58,18 @@ public abstract class BaseSearchSerialPublicationByQueryHandlerTest extends Sear
     @Test
     protected void shouldReturnResultWithYearWhenQueryOmitsYear() throws IOException {
         var testChannel = new TestChannel(year, pid, type).withName(name);
-        mockChannelRegistryResponse(null, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            null, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
 
         var input = constructRequest(Map.of("query", name), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var result = objectMapper.readValue(response.getBody(), TYPE_REF).getHits().getFirst();
+        var result = objectMapper
+                         .readValue(response.getBody(), TYPE_REF)
+                         .getHits()
+                         .getFirst();
 
         assertThat(result.year(), is(equalTo(year)));
     }
 }
-

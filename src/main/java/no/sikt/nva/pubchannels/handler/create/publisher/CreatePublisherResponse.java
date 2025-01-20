@@ -21,25 +21,32 @@ public class CreatePublisherResponse {
 
     @JsonProperty(TYPE_FIELD)
     private static final String TYPE = "Publisher";
+
     @JsonProperty(CONTEXT_FIELD)
     private final URI context = URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
+
     @JsonProperty(ID_FIELD)
     private final URI id;
+
     @JsonProperty(NAME_FIELD)
     private final String name;
+
     @JsonProperty(ISBN_PREFIX_FIELD)
     private final String isbnPrefix;
+
     @JsonProperty(SCIENTIFIC_VALUE_FIELD)
     private final ScientificValue scientificValue;
+
     @JsonProperty(SAME_AS_FIELD)
     private final URI sameAs;
 
     @JsonCreator
-    public CreatePublisherResponse(@JsonProperty(ID_FIELD) URI id,
-                                   @JsonProperty(NAME_FIELD) String name,
-                                   @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
-                                   @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
-                                   @JsonProperty(SAME_AS_FIELD) URI sameAs) {
+    public CreatePublisherResponse(
+        @JsonProperty(ID_FIELD) URI id,
+        @JsonProperty(NAME_FIELD) String name,
+        @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
+        @JsonProperty(SCIENTIFIC_VALUE_FIELD) ScientificValue scientificValue,
+        @JsonProperty(SAME_AS_FIELD) URI sameAs) {
         this.id = id;
         this.name = name;
         this.isbnPrefix = isbnPrefix;
@@ -48,11 +55,12 @@ public class CreatePublisherResponse {
     }
 
     public static CreatePublisherResponse create(URI id, ThirdPartyPublisher publisher) {
-        return new CreatePublisherResponse(id,
-                                           publisher.name(),
-                                           publisher.isbnPrefix(),
-                                           publisher.getScientificValue(),
-                                           publisher.homepage());
+        return new CreatePublisherResponse(
+            id,
+            publisher.name(),
+            publisher.isbnPrefix(),
+            publisher.getScientificValue(),
+            publisher.homepage());
     }
 
     public String getType() {
@@ -86,13 +94,14 @@ public class CreatePublisherResponse {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(getType(),
-                            getContext(),
-                            getId(),
-                            getName(),
-                            getIsbnPrefix(),
-                            getScientificValue(),
-                            getSameAs());
+        return Objects.hash(
+            getType(),
+            getContext(),
+            getId(),
+            getName(),
+            getIsbnPrefix(),
+            getScientificValue(),
+            getSameAs());
     }
 
     @JacocoGenerated
@@ -118,14 +127,24 @@ public class CreatePublisherResponse {
     @Override
     public String toString() {
         return "FetchByIdAndYearResponse{"
-               + "type='" + TYPE + '\''
-               + ", context=" + context
-               + ", id=" + id
-               + ", name='" + name + '\''
-               + ", isbnPrefix='" + isbnPrefix + '\''
-               + ", scientificValue='" + scientificValue + '\''
-               + ", sameAs=" + sameAs
+               + "type='"
+               + TYPE
+               + '\''
+               + ", context="
+               + context
+               + ", id="
+               + id
+               + ", name='"
+               + name
+               + '\''
+               + ", isbnPrefix='"
+               + isbnPrefix
+               + '\''
+               + ", scientificValue='"
+               + scientificValue
+               + '\''
+               + ", sameAs="
+               + sameAs
                + '}';
     }
 }
-

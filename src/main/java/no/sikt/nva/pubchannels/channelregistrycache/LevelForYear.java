@@ -5,7 +5,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbImmutable;
 
 @DynamoDbImmutable(builder = LevelForYear.Builder.class)
-public record LevelForYear(@DynamoDbAttribute("year") String year, @DynamoDbAttribute("level") String level) {
+public record LevelForYear(
+    @DynamoDbAttribute("year") String year, @DynamoDbAttribute("level") String level) {
 
     @JacocoGenerated
     public static Builder builder() {

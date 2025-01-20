@@ -8,7 +8,8 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 @JsonSerialize
 public record ChannelRegistrySearchPublisherResponse(
     @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
-    @JsonProperty(ENTITY_RESULT_SET) ChannelRegistryEntityResultSet<ChannelRegistryPublisher> resultSet)
+    @JsonProperty(ENTITY_RESULT_SET)
+    ChannelRegistryEntityResultSet<ChannelRegistryPublisher> resultSet)
     implements ThirdPartySearchResponse {
 
     private static final String ENTITY_RESULT_SET = "entityResultSetDto";

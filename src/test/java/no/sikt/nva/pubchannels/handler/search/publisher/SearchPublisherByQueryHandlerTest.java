@@ -33,13 +33,13 @@ import org.junit.jupiter.api.Test;
 
 class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
 
-    private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF = new TypeReference<>() {
-    };
+    private static final TypeReference<PaginatedSearchResult<PublisherDto>> TYPE_REF =
+        new TypeReference<>() {
+        };
 
     @Override
-    protected PaginatedSearchResult<PublisherDto> getExpectedSearchResult(String year,
-                                                                          String queryParamValue,
-                                                                          TestChannel testChannel)
+    protected PaginatedSearchResult<PublisherDto> getExpectedSearchResult(
+        String year, String queryParamValue, TestChannel testChannel)
         throws UnprocessableContentException {
         var expectedParams = new HashMap<String, String>();
         expectedParams.put("query", queryParamValue);
@@ -48,11 +48,12 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
         }
 
         var expectedHits = List.of(testChannel.asPublisherDto(selfBaseUri, year));
-        return PaginatedSearchResult.create(constructPublicationChannelUri(testChannel.type(), expectedParams),
-                                            DEFAULT_OFFSET_INT,
-                                            DEFAULT_SIZE_INT,
-                                            expectedHits.size(),
-                                            expectedHits);
+        return PaginatedSearchResult.create(
+            constructPublicationChannelUri(testChannel.type(), expectedParams),
+            DEFAULT_OFFSET_INT,
+            DEFAULT_SIZE_INT,
+            expectedHits.size(),
+            expectedHits);
     }
 
     @Override
@@ -63,13 +64,16 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
 
     @BeforeEach
     void setup() {
-        this.handlerUnderTest = new SearchPublisherByQueryHandler(environment, publicationChannelClient);
+        this.handlerUnderTest =
+            new SearchPublisherByQueryHandler(environment, publicationChannelClient);
         this.type = PublisherDto.TYPE;
         this.customChannelPath = ChannelType.PUBLISHER.pathElement;
-        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
-                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                                     .addChild(PUBLISHER_PATH)
-                                     .getUri();
+        this.selfBaseUri =
+            UriWrapper
+                .fromHost(API_DOMAIN)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(PUBLISHER_PATH)
+                .getUri();
         this.typeRef = new TypeReference<>() {
         };
     }
@@ -77,13 +81,17 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
     @Test
     void shouldReturnResultWithYearWhenQueryOmitsYear() throws IOException {
         var testChannel = new TestChannel(year, pid, type).withName(name);
-        mockChannelRegistryResponse(null, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            null, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
 
         var input = constructRequest(Map.of("query", name), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
-        var result = objectMapper.readValue(response.getBody(), TYPE_REF).getHits().getFirst();
+        var result = objectMapper
+                         .readValue(response.getBody(), TYPE_REF)
+                         .getHits()
+                         .getFirst();
 
         assertThat(result.year(), is(equalTo(year)));
     }

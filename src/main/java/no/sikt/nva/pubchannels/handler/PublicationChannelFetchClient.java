@@ -7,5 +7,4 @@ public interface PublicationChannelFetchClient {
 
     ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
         throws ApiGatewayException;
-
 }

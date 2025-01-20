@@ -14,7 +14,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, PublisherDto> {
+public class FetchPublisherByIdentifierAndYearHandler
+    extends FetchByIdentifierAndYearHandler<Void, PublisherDto> {
 
     private static final String PUBLISHER_PATH_ELEMENT = "publisher";
 
@@ -23,9 +24,11 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
         super(Void.class, new Environment());
     }
 
-    public FetchPublisherByIdentifierAndYearHandler(Environment environment,
-                                                    PublicationChannelClient publicationChannelClient,
-                                                    CacheService cacheService, AppConfig appConfig) {
+    public FetchPublisherByIdentifierAndYearHandler(
+        Environment environment,
+        PublicationChannelClient publicationChannelClient,
+        CacheService cacheService,
+        AppConfig appConfig) {
         super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 
@@ -37,9 +40,10 @@ public class FetchPublisherByIdentifierAndYearHandler extends FetchByIdentifierA
         var year = request.getYear();
         var identifier = request.getIdentifier();
 
-        var publisher = super.shouldUseCache()
-                            ? super.fetchChannelFromCache(PUBLISHER, identifier, year)
-                            : super.fetchChannelOrFetchFromCache(PUBLISHER, identifier, year);
+        var publisher =
+            super.shouldUseCache()
+                ? super.fetchChannelFromCache(PUBLISHER, identifier, year)
+                : super.fetchChannelOrFetchFromCache(PUBLISHER, identifier, year);
         return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
     }
 

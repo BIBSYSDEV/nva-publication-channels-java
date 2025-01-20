@@ -12,7 +12,7 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 public enum ChannelType {
     JOURNAL(
         "findjournal",
-            ChannelRegistrySerialPublication.class,
+        ChannelRegistrySerialPublication.class,
         ChannelRegistrySearchJournalResponse.class),
     PUBLISHER(
         "findpublisher",

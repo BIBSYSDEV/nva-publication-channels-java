@@ -24,10 +24,11 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
         super(Void.class, new Environment());
     }
 
-    public FetchSerialPublicationByIdentifierAndYearHandler(Environment environment,
-                                                            PublicationChannelClient channelRegistryClient,
-                                                            CacheService cacheService,
-                                                            AppConfig appConfig) {
+    public FetchSerialPublicationByIdentifierAndYearHandler(
+        Environment environment,
+        PublicationChannelClient channelRegistryClient,
+        CacheService cacheService,
+        AppConfig appConfig) {
         super(Void.class, environment, channelRegistryClient, cacheService, appConfig);
     }
 
@@ -35,15 +36,17 @@ public class FetchSerialPublicationByIdentifierAndYearHandler
     protected SerialPublicationDto processInput(Void unused, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
-        var serialPublicationBaseUri = constructPublicationChannelIdBaseUri(SERIAL_PUBLICATION_PATH_ELEMENT);
+        var serialPublicationBaseUri =
+            constructPublicationChannelIdBaseUri(SERIAL_PUBLICATION_PATH_ELEMENT);
         var year = request.getYear();
         var identifier = request.getIdentifier();
 
-        var serialPublication = super.shouldUseCache()
-                                    ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
-                                    : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
-        return SerialPublicationDto.create(serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication,
-                                           year);
+        var serialPublication =
+            super.shouldUseCache()
+                ? super.fetchChannelFromCache(SERIAL_PUBLICATION, identifier, year)
+                : super.fetchChannelOrFetchFromCache(SERIAL_PUBLICATION, identifier, year);
+        return SerialPublicationDto.create(
+            serialPublicationBaseUri, (ThirdPartySerialPublication) serialPublication, year);
     }
 
     @Override

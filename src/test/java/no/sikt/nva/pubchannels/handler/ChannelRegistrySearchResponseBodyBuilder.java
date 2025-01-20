@@ -26,6 +26,8 @@ public class ChannelRegistrySearchResponseBodyBuilder {
     }
 
     public String build() {
-        return Try.attempt(() -> JsonUtils.dtoObjectMapper.writeValueAsString(bodyMap)).orElseThrow();
+        return Try
+                   .attempt(() -> JsonUtils.dtoObjectMapper.writeValueAsString(bodyMap))
+                   .orElseThrow();
     }
 }
