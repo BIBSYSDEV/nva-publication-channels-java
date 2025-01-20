@@ -10,10 +10,10 @@ import no.sikt.nva.pubchannels.handler.ScientificValue;
 
 public class ScientificValueMapper {
 
-    public static final Map<String, ScientificValue> VALUES =
-        Map.of("0", LEVEL_ZERO, "1", LEVEL_ONE, "2", LEVEL_TWO);
+  public static final Map<String, ScientificValue> VALUES =
+      Map.of("0", LEVEL_ZERO, "1", LEVEL_ONE, "2", LEVEL_TWO);
 
-    public ScientificValue map(String value) {
-        return nonNull(value) ? VALUES.get(value) : UNASSIGNED;
-    }
+  public ScientificValue map(String value) {
+    return nonNull(value) ? VALUES.get(value) : UNASSIGNED;
+  }
 }
