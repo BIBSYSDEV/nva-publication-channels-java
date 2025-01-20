@@ -5,6 +5,7 @@ import static no.sikt.nva.pubchannels.handler.ScientificValue.LEVEL_ONE;
 import static no.sikt.nva.pubchannels.handler.ScientificValue.LEVEL_TWO;
 import static no.sikt.nva.pubchannels.handler.ScientificValue.LEVEL_ZERO;
 import static no.sikt.nva.pubchannels.handler.ScientificValue.UNASSIGNED;
+
 import java.util.Map;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 

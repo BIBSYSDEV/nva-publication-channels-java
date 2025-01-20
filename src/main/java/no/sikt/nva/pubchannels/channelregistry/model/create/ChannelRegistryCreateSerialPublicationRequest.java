@@ -9,14 +9,14 @@ public record ChannelRegistryCreateSerialPublicationRequest(
     @JsonProperty(EISSN_FIELD) String onlineIssn,
     @JsonProperty(URL_FIELD) String url) {
 
-    private static final String PISSN_FIELD = "pissn";
-    private static final String NAME_FIELD = "name";
-    private static final String EISSN_FIELD = "eissn";
-    private static final String URL_FIELD = "url";
+  private static final String PISSN_FIELD = "pissn";
+  private static final String NAME_FIELD = "name";
+  private static final String EISSN_FIELD = "eissn";
+  private static final String URL_FIELD = "url";
 
-    public static ChannelRegistryCreateSerialPublicationRequest fromClientRequest(
-        CreateSerialPublicationRequest request) {
-        return new ChannelRegistryCreateSerialPublicationRequest(
-            request.name(), request.printIssn(), request.onlineIssn(), request.homepage());
-    }
+  public static ChannelRegistryCreateSerialPublicationRequest fromClientRequest(
+      CreateSerialPublicationRequest request) {
+    return new ChannelRegistryCreateSerialPublicationRequest(
+        request.name(), request.printIssn(), request.onlineIssn(), request.homepage());
+  }
 }

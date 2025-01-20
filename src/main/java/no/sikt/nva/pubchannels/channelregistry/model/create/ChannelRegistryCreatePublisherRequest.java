@@ -9,7 +9,7 @@ public record ChannelRegistryCreatePublisherRequest(
     @JsonProperty(ISBN_PREFIX_FIELD) String isbnPrefix,
     @JsonProperty(URL_FIELD) String homepage) {
 
-    private static final String NAME_FIELD = "name";
-    private static final String ISBN_PREFIX_FIELD = "isbnprefix";
-    private static final String URL_FIELD = "url";
+  private static final String NAME_FIELD = "name";
+  private static final String ISBN_PREFIX_FIELD = "isbnprefix";
+  private static final String URL_FIELD = "url";
 }

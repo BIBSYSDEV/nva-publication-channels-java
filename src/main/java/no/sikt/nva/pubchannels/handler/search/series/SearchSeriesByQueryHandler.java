@@ -12,23 +12,23 @@ import nva.commons.core.JacocoGenerated;
 
 public class SearchSeriesByQueryHandler extends SearchByQueryHandler<SerialPublicationDto> {
 
-    private static final String PATH_ELEMENT = "series";
-    private static final ChannelType CHANNEL_TYPE = ChannelType.SERIES;
+  private static final String PATH_ELEMENT = "series";
+  private static final ChannelType CHANNEL_TYPE = ChannelType.SERIES;
 
-    @JacocoGenerated
-    public SearchSeriesByQueryHandler() {
-        super(PATH_ELEMENT, CHANNEL_TYPE);
-    }
+  @JacocoGenerated
+  public SearchSeriesByQueryHandler() {
+    super(PATH_ELEMENT, CHANNEL_TYPE);
+  }
 
-    public SearchSeriesByQueryHandler(
-        Environment environment, PublicationChannelClient publicationChannelClient) {
-        super(environment, publicationChannelClient, PATH_ELEMENT, CHANNEL_TYPE);
-    }
+  public SearchSeriesByQueryHandler(
+      Environment environment, PublicationChannelClient publicationChannelClient) {
+    super(environment, publicationChannelClient, PATH_ELEMENT, CHANNEL_TYPE);
+  }
 
-    @Override
-    protected SerialPublicationDto createResult(
-        URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
-        return SerialPublicationDto.create(
-            baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
-    }
+  @Override
+  protected SerialPublicationDto createResult(
+      URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
+    return SerialPublicationDto.create(
+        baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
+  }
 }

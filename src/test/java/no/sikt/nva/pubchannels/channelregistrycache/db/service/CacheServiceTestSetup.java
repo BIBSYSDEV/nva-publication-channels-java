@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels.channelregistrycache.db.service;
 import static no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao.PRIMARY_KEY;
 import static no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao.SORT_KEY;
 import static nva.commons.core.attempt.Try.attempt;
+
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
@@ -24,73 +25,62 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 public class CacheServiceTestSetup {
 
-    private DynamoDbClient client;
+  private DynamoDbClient client;
 
-    protected AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
-        return new FakeAppConfig(cacheEnabled);
-    }
+  protected AppConfig getAppConfigWithCacheEnabled(boolean cacheEnabled) {
+    return new FakeAppConfig(cacheEnabled);
+  }
 
-    protected void loadAndEnableCache() {
-        var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
-        var s3Client = new FakeS3Client();
-        var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-        attempt(
+  protected void loadAndEnableCache() {
+    var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
+    var s3Client = new FakeS3Client();
+    var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
+    attempt(
             () ->
                 s3Driver.insertFile(
                     UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
-            .orElseThrow();
-        new CacheService(getClient()).loadCache(s3Client);
-    }
+        .orElseThrow();
+    new CacheService(getClient()).loadCache(s3Client);
+  }
 
-    protected DynamoDbEnhancedClient getClient() {
-        return DynamoDbEnhancedClient
-                   .builder()
-                   .dynamoDbClient(client)
-                   .build();
-    }
+  protected DynamoDbEnhancedClient getClient() {
+    return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+  }
 
-    protected void setupDynamoDbTable() {
-        this.client = DynamoDBEmbedded
-                          .create()
-                          .dynamoDbClient();
-        createTable(new Environment().readEnv("TABLE_NAME"));
-    }
+  protected void setupDynamoDbTable() {
+    this.client = DynamoDBEmbedded.create().dynamoDbClient();
+    createTable(new Environment().readEnv("TABLE_NAME"));
+  }
 
-    private void createTable(String tableName) {
-        var request =
-            CreateTableRequest
-                .builder()
-                .attributeDefinitions(
-                    AttributeDefinition
-                        .builder()
-                        .attributeName(PRIMARY_KEY)
-                        .attributeType(ScalarAttributeType.S) // UUID as String
-                        .build(),
-                    AttributeDefinition
-                        .builder()
-                        .attributeName(SORT_KEY)
-                        .attributeType(ScalarAttributeType.S) // type as String
-                        .build())
-                .keySchema(
-                    KeySchemaElement
-                        .builder()
-                        .attributeName(PRIMARY_KEY)
-                        .keyType(KeyType.HASH) // Partition key
-                        .build(),
-                    KeySchemaElement
-                        .builder()
-                        .attributeName(SORT_KEY)
-                        .keyType(KeyType.RANGE) // Sort key
-                        .build())
-                .provisionedThroughput(
-                    ProvisionedThroughput
-                        .builder()
-                        .readCapacityUnits(10L)
-                        .writeCapacityUnits(10L)
-                        .build())
-                .tableName(tableName)
-                .build();
+  private void createTable(String tableName) {
+    var request =
+        CreateTableRequest.builder()
+            .attributeDefinitions(
+                AttributeDefinition.builder()
+                    .attributeName(PRIMARY_KEY)
+                    .attributeType(ScalarAttributeType.S) // UUID as String
+                    .build(),
+                AttributeDefinition.builder()
+                    .attributeName(SORT_KEY)
+                    .attributeType(ScalarAttributeType.S) // type as String
+                    .build())
+            .keySchema(
+                KeySchemaElement.builder()
+                    .attributeName(PRIMARY_KEY)
+                    .keyType(KeyType.HASH) // Partition key
+                    .build(),
+                KeySchemaElement.builder()
+                    .attributeName(SORT_KEY)
+                    .keyType(KeyType.RANGE) // Sort key
+                    .build())
+            .provisionedThroughput(
+                ProvisionedThroughput.builder()
+                    .readCapacityUnits(10L)
+                    .writeCapacityUnits(10L)
+                    .build())
+            .tableName(tableName)
+            .build();
 
-        client.createTable(request);
-    }
+    client.createTable(request);
+  }
 }

@@ -4,5 +4,5 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public interface AuthClient {
 
-    String getToken() throws ApiGatewayException;
+  String getToken() throws ApiGatewayException;
 }

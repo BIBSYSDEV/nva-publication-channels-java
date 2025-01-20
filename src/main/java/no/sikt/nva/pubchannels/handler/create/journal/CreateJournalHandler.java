@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.handler.create.journal;
 
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -18,46 +19,43 @@ import nva.commons.core.JacocoGenerated;
 public class CreateJournalHandler
     extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
-    private static final String JOURNAL_PATH_ELEMENT = "journal";
+  private static final String JOURNAL_PATH_ELEMENT = "journal";
 
-    @JacocoGenerated
-    public CreateJournalHandler() {
-        super(CreateSerialPublicationRequest.class, new Environment());
-    }
+  @JacocoGenerated
+  public CreateJournalHandler() {
+    super(CreateSerialPublicationRequest.class, new Environment());
+  }
 
-    public CreateJournalHandler(
-        Environment environment, PublicationChannelClient publicationChannelClient) {
-        super(CreateSerialPublicationRequest.class, environment, publicationChannelClient);
-    }
+  public CreateJournalHandler(
+      Environment environment, PublicationChannelClient publicationChannelClient) {
+    super(CreateSerialPublicationRequest.class, environment, publicationChannelClient);
+  }
 
-    @Override
-    protected void validateRequest(
-        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        userIsAuthorizedToCreate(requestInfo);
-        request.validate();
-    }
+  @Override
+  protected void validateRequest(
+      CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    userIsAuthorizedToCreate(requestInfo);
+    request.validate();
+  }
 
-    @Override
-    protected SerialPublicationDto processInput(
-        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        var response =
-            publicationChannelClient.createJournal(
+  @Override
+  protected SerialPublicationDto processInput(
+      CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    var response =
+        publicationChannelClient.createJournal(
             ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request));
 
-        // Fetch the new journal from the channel registry to build the full response
-        var year = getYear();
-        var newJournal =
-            (ThirdPartySerialPublication)
-                publicationChannelClient.getChannel(JOURNAL, response.pid(), year);
-        var journalDto =
-            SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
+    // Fetch the new journal from the channel registry to build the full response
+    var year = getYear();
+    var newJournal =
+        (ThirdPartySerialPublication)
+            publicationChannelClient.getChannel(JOURNAL, response.pid(), year);
+    var journalDto =
+        SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
 
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION,
-                                          journalDto
-                                              .id()
-                                              .toString()));
-        return journalDto;
-    }
+    addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, journalDto.id().toString()));
+    return journalDto;
+  }
 }

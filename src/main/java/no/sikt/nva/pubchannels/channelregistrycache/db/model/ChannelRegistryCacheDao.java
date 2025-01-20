@@ -21,98 +21,97 @@ public record ChannelRegistryCacheDao(
     List<LevelForYear> levelHistory,
     URI uri) {
 
-    public static final String PRIMARY_KEY = "PK0";
-    public static final String SORT_KEY = "SK0";
+  public static final String PRIMARY_KEY = "PK0";
+  public static final String SORT_KEY = "SK0";
 
-    @DynamoDbPartitionKey
-    @DynamoDbAttribute(PRIMARY_KEY)
-    public UUID primaryKeyHashKey() {
-        return identifier;
+  @DynamoDbPartitionKey
+  @DynamoDbAttribute(PRIMARY_KEY)
+  public UUID primaryKeyHashKey() {
+    return identifier;
+  }
+
+  @DynamoDbSortKey
+  @DynamoDbAttribute(SORT_KEY)
+  public UUID primaryKeyRangeKey() {
+    return identifier;
+  }
+
+  public static Builder builder() {
+    return new ChannelRegistryCacheDao.Builder();
+  }
+
+  public static final class Builder {
+
+    private UUID identifier;
+    private String type;
+    private String title;
+    private String printIssn;
+    private String onlineIssn;
+    private String isbn;
+    private String ceased;
+    private List<LevelForYear> levelHistory;
+    private URI uri;
+
+    private Builder() {}
+
+    public Builder identifier(UUID identifier) {
+      this.identifier = identifier;
+      return this;
     }
 
-    @DynamoDbSortKey
-    @DynamoDbAttribute(SORT_KEY)
-    public UUID primaryKeyRangeKey() {
-        return identifier;
+    public Builder type(String type) {
+      this.type = type;
+      return this;
     }
 
-    public static Builder builder() {
-        return new ChannelRegistryCacheDao.Builder();
+    public Builder title(String title) {
+      this.title = title;
+      return this;
     }
 
-    public static final class Builder {
-
-        private UUID identifier;
-        private String type;
-        private String title;
-        private String printIssn;
-        private String onlineIssn;
-        private String isbn;
-        private String ceased;
-        private List<LevelForYear> levelHistory;
-        private URI uri;
-
-        private Builder() {
-        }
-
-        public Builder identifier(UUID identifier) {
-            this.identifier = identifier;
-            return this;
-        }
-
-        public Builder type(String type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder title(String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder printIssn(String printIssn) {
-            this.printIssn = printIssn;
-            return this;
-        }
-
-        public Builder onlineIssn(String onlineIssn) {
-            this.onlineIssn = onlineIssn;
-            return this;
-        }
-
-        public Builder isbn(String isbn) {
-            this.isbn = isbn;
-            return this;
-        }
-
-        public Builder ceased(String ceased) {
-            this.ceased = ceased;
-            return this;
-        }
-
-        public Builder levelHistory(List<LevelForYear> levelHistory) {
-            this.levelHistory = levelHistory;
-            return this;
-        }
-
-        public Builder uri(URI uri) {
-            this.uri = uri;
-            return this;
-        }
-
-        public Builder primaryKeyHashKey(UUID noop) {
-            // Used by @DynamoDbImmutable for building the object
-            return this;
-        }
-
-        public Builder primaryKeyRangeKey(UUID noop) {
-            // Used by @DynamoDbImmutable for building the object
-            return this;
-        }
-
-        public ChannelRegistryCacheDao build() {
-            return new ChannelRegistryCacheDao(
-                identifier, type, title, printIssn, onlineIssn, isbn, ceased, levelHistory, uri);
-        }
+    public Builder printIssn(String printIssn) {
+      this.printIssn = printIssn;
+      return this;
     }
+
+    public Builder onlineIssn(String onlineIssn) {
+      this.onlineIssn = onlineIssn;
+      return this;
+    }
+
+    public Builder isbn(String isbn) {
+      this.isbn = isbn;
+      return this;
+    }
+
+    public Builder ceased(String ceased) {
+      this.ceased = ceased;
+      return this;
+    }
+
+    public Builder levelHistory(List<LevelForYear> levelHistory) {
+      this.levelHistory = levelHistory;
+      return this;
+    }
+
+    public Builder uri(URI uri) {
+      this.uri = uri;
+      return this;
+    }
+
+    public Builder primaryKeyHashKey(UUID noop) {
+      // Used by @DynamoDbImmutable for building the object
+      return this;
+    }
+
+    public Builder primaryKeyRangeKey(UUID noop) {
+      // Used by @DynamoDbImmutable for building the object
+      return this;
+    }
+
+    public ChannelRegistryCacheDao build() {
+      return new ChannelRegistryCacheDao(
+          identifier, type, title, printIssn, onlineIssn, isbn, ceased, levelHistory, uri);
+    }
+  }
 }
