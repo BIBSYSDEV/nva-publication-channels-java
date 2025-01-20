@@ -2,8 +2,8 @@ package no.sikt.nva.pubchannels.utils;
 
 import static java.util.Objects.isNull;
 import static nva.commons.core.attempt.Try.attempt;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
@@ -12,11 +12,11 @@ import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ApplicationConfiguration implements AppConfig {
 
-    public static final String PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM = "publicationChannelCacheEnabled";
+    public static final String PUBLICATION_CHANNEL_CACHE_ENABLED_CONFIG_PARAM =
+        "publicationChannelCacheEnabled";
     private static final Environment ENVIRONMENT = new Environment();
     private final AppConfigDataClient client;
     private static final long CACHE_DURATION_MILLIS = 60_000; // 1 minute
@@ -56,21 +56,25 @@ public class ApplicationConfiguration implements AppConfig {
     }
 
     private String startConfigurationSession() {
-        var request = StartConfigurationSessionRequest.builder()
-                                                       .applicationIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_NAME"))
-                                                       .environmentIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_ENVIRONMENT_NAME"))
-                                                       .configurationProfileIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_PROFILE_NAME"))
-                                                       .build();
+        var request =
+            StartConfigurationSessionRequest
+                .builder()
+                .applicationIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_NAME"))
+                .environmentIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_ENVIRONMENT_NAME"))
+                .configurationProfileIdentifier(ENVIRONMENT.readEnv("APPLICATION_CONFIG_PROFILE_NAME"))
+                .build();
         var response = client.startConfigurationSession(request);
         return response.initialConfigurationToken();
     }
 
     private GetLatestConfigurationRequest createGetLatestConfigurationRequest() {
-        return GetLatestConfigurationRequest.builder()
+        return GetLatestConfigurationRequest
+                   .builder()
                    .configurationToken(configurationToken)
                    .build();
     }
 
     private record CacheEntry(boolean shouldUseCache, long timestamp) {
+
     }
 }

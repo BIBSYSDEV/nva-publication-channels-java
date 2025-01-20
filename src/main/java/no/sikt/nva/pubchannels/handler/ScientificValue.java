@@ -24,8 +24,9 @@ public enum ScientificValue {
 
     @JsonCreator
     public static ScientificValue lookup(String serializedValue) {
-        return Arrays.stream(values())
-                     .filter(item -> item.serializedValue.equalsIgnoreCase(serializedValue))
-                     .collect(SingletonCollector.collectOrElse(UNASSIGNED));
+        return Arrays
+                   .stream(values())
+                   .filter(item -> item.serializedValue.equalsIgnoreCase(serializedValue))
+                   .collect(SingletonCollector.collectOrElse(UNASSIGNED));
     }
 }

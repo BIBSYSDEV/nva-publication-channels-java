@@ -20,22 +20,31 @@ import nva.commons.core.JacocoGenerated;
 public class ChannelRegistryCacheEntry {
 
     public static final String NULL = "0";
+
     @CsvBindByName(column = "PID")
     private UUID pid;
+
     @CsvBindByName(column = "type")
     private String type;
+
     @CsvBindByName(column = "Original tittel")
     private String originalTitle;
+
     @CsvBindByName(column = "Print ISSN")
     private String printIssn;
+
     @CsvBindByName(column = "Online ISSN")
     private String onlineIssn;
+
     @CsvBindByName(column = "ISBN-prefiks")
     private String isbn;
+
     @CsvBindByName(column = "Nedlagt")
     private String ceased;
+
     @CsvCustomBindByName(column = "Nivåhistorikk", converter = LevelForYearConverter.class)
     private List<LevelForYear> levelHistory;
+
     @CsvBindByName(column = "KURL")
     private String uri;
 
@@ -44,7 +53,8 @@ public class ChannelRegistryCacheEntry {
     }
 
     public static ChannelRegistryCacheEntry fromDao(ChannelRegistryCacheDao dao) {
-        return builder().withPid(dao.identifier())
+        return builder()
+                   .withPid(dao.identifier())
                    .withType(dao.type())
                    .withOriginalTitle(dao.title())
                    .withPrintIssn(dao.printIssn())
@@ -52,12 +62,16 @@ public class ChannelRegistryCacheEntry {
                    .withIsbn(dao.isbn())
                    .withCeased(dao.ceased())
                    .withLevelHistory(dao.levelHistory())
-                   .withUri(dao.uri().toString())
+                   .withUri(dao
+                                .uri()
+                                .toString())
                    .build();
     }
 
     public String getPidAsString() {
-        return pid.toString().toUpperCase(Locale.ROOT);
+        return pid
+                   .toString()
+                   .toUpperCase(Locale.ROOT);
     }
 
     public UUID getPid() {
@@ -103,7 +117,8 @@ public class ChannelRegistryCacheEntry {
         return nonNull(levelHistory) ? parseLevels() : List.of();
     }
 
-    public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(ChannelType type, String year) {
+    public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(
+        ChannelType type, String year) {
         return switch (type) {
             case JOURNAL, SERIES, SERIAL_PUBLICATION -> toThirdPartySerialPublication(year);
             case PUBLISHER -> toPublisher(year);
@@ -111,7 +126,8 @@ public class ChannelRegistryCacheEntry {
     }
 
     public ChannelRegistryCacheDao toDao() {
-        return ChannelRegistryCacheDao.builder()
+        return ChannelRegistryCacheDao
+                   .builder()
                    .identifier(getPid())
                    .type(getType())
                    .title(getOriginalTitle())
@@ -125,22 +141,26 @@ public class ChannelRegistryCacheEntry {
     }
 
     public ThirdPartyPublisher toPublisher(String year) {
-        return new ChannelRegistryPublisher(getPidAsString(),
-                                            getChannelRegistryLevel(year),
-                                            getIsbn(),
-                                            getOriginalTitle(),
-                                            getUri(), getCeased(), "publisher");
+        return new ChannelRegistryPublisher(
+            getPidAsString(),
+            getChannelRegistryLevel(year),
+            getIsbn(),
+            getOriginalTitle(),
+            getUri(),
+            getCeased(),
+            "publisher");
     }
 
     public ThirdPartySerialPublication toThirdPartySerialPublication(String year) {
-        return new ChannelRegistrySerialPublication(getPidAsString(),
-                                                    getOriginalTitle(),
-                                                    getOnlineIssn(),
-                                                    getPrintIssn(),
-                                                    getChannelRegistryLevel(year),
-                                                    getUri(),
-                                                    getCeased(),
-                                                    getType());
+        return new ChannelRegistrySerialPublication(
+            getPidAsString(),
+            getOriginalTitle(),
+            getOnlineIssn(),
+            getPrintIssn(),
+            getChannelRegistryLevel(year),
+            getUri(),
+            getCeased(),
+            getType());
     }
 
     private List<LevelForYear> parseLevels() {
@@ -148,12 +168,16 @@ public class ChannelRegistryCacheEntry {
     }
 
     private ChannelRegistryLevel getChannelRegistryLevel(String year) {
-        return new ChannelRegistryLevel(Integer.parseInt(year), getLevelForYear(year), null, null, null);
+        return new ChannelRegistryLevel(
+            Integer.parseInt(year), getLevelForYear(year), null, null, null);
     }
 
     private String getLevelForYear(String year) {
-        return getLevelHistory().stream()
-                   .filter(levelForYear -> levelForYear.year().equals(year))
+        return getLevelHistory()
+                   .stream()
+                   .filter(levelForYear -> levelForYear
+                                               .year()
+                                               .equals(year))
                    .map(LevelForYear::level)
                    .findFirst()
                    .orElse(null);

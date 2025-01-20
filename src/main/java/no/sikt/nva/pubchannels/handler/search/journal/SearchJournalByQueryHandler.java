@@ -20,12 +20,15 @@ public class SearchJournalByQueryHandler extends SearchByQueryHandler<SerialPubl
         super(PATH_ELEMENT, CHANNEL_TYPE);
     }
 
-    public SearchJournalByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
+    public SearchJournalByQueryHandler(
+        Environment environment, PublicationChannelClient publicationChannelClient) {
         super(environment, publicationChannelClient, PATH_ELEMENT, CHANNEL_TYPE);
     }
 
     @Override
-    protected SerialPublicationDto createResult(URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
-        return SerialPublicationDto.create(baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
+    protected SerialPublicationDto createResult(
+        URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
+        return SerialPublicationDto.create(
+            baseUri, (ThirdPartySerialPublication) entityResult, requestedYear);
     }
 }

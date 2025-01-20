@@ -15,7 +15,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
+public class CreateJournalHandler
+    extends CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -24,33 +25,39 @@ public class CreateJournalHandler extends CreateHandler<CreateSerialPublicationR
         super(CreateSerialPublicationRequest.class, new Environment());
     }
 
-    public CreateJournalHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
+    public CreateJournalHandler(
+        Environment environment, PublicationChannelClient publicationChannelClient) {
         super(CreateSerialPublicationRequest.class, environment, publicationChannelClient);
     }
 
     @Override
-    protected void validateRequest(CreateSerialPublicationRequest request,
-                                   RequestInfo requestInfo, Context context)
+    protected void validateRequest(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         request.validate();
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateSerialPublicationRequest request, RequestInfo requestInfo,
-                                                Context context)
+    protected SerialPublicationDto processInput(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
-        var response = publicationChannelClient.createJournal(
+        var response =
+            publicationChannelClient.createJournal(
             ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request));
 
         // Fetch the new journal from the channel registry to build the full response
         var year = getYear();
-        var newJournal = (ThirdPartySerialPublication) publicationChannelClient.getChannel(JOURNAL,
-                                                                                           response.pid(),
-                                                                                           year);
-        var journalDto = SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
+        var newJournal =
+            (ThirdPartySerialPublication)
+                publicationChannelClient.getChannel(JOURNAL, response.pid(), year);
+        var journalDto =
+            SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
 
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, journalDto.id().toString()));
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION,
+                                          journalDto
+                                              .id()
+                                              .toString()));
         return journalDto;
     }
 }

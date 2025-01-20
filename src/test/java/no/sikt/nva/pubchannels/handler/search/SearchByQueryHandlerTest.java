@@ -78,7 +78,9 @@ public abstract class SearchByQueryHandlerTest {
     protected static String year = randomYear();
     protected static String issn = randomIssn();
     protected static String name = randomString();
-    protected static String pid = UUID.randomUUID().toString();
+    protected static String pid = UUID
+                                      .randomUUID()
+                                      .toString();
     protected final ByteArrayOutputStream output = new ByteArrayOutputStream();
     protected SearchByQueryHandler<?> handlerUnderTest;
     protected String customChannelPath;
@@ -87,9 +89,8 @@ public abstract class SearchByQueryHandlerTest {
     protected URI selfBaseUri;
     protected TypeReference<PaginatedSearchResult<?>> typeRef;
 
-    protected abstract PaginatedSearchResult<?> getExpectedSearchResult(String year,
-                                                                        String queryParamValue,
-                                                                        TestChannel testChannel)
+    protected abstract PaginatedSearchResult<?> getExpectedSearchResult(
+        String year, String queryParamValue, TestChannel testChannel)
         throws UnprocessableContentException;
 
     protected abstract PaginatedSearchResult<?> getActualSearchResult(GatewayResponse<?> response)
@@ -102,45 +103,53 @@ public abstract class SearchByQueryHandlerTest {
         var queryParams = getStringStringValuePatternHashMap(queryValue);
 
         var testUrl = "/" + customChannelPath + "/channels";
-        stubFor(get(urlPathEqualTo(testUrl)).withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
-                                            .withQueryParams(queryParams)
-                                            .willReturn(aResponse().withStatus(status)
-                                                                   .withHeader(CONTENT_TYPE,
-                                                                               CONTENT_TYPE_APPLICATION_JSON_UTF8)
-                                                                   .withBody(body)));
+        stubFor(
+            get(urlPathEqualTo(testUrl))
+                .withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
+                .withQueryParams(queryParams)
+                .willReturn(
+                    aResponse()
+                        .withStatus(status)
+                        .withHeader(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON_UTF8)
+                        .withBody(body)));
     }
 
-    protected void mockChannelRegistryResponse(String year,
-                                               String queryParamKey,
-                                               String queryParamValue,
-                                               List<String> channelRegistryEntityResult) {
-        mockChannelRegistryResponse(year,
-                                    queryParamKey,
-                                    queryParamValue,
-                                    channelRegistryEntityResult,
-                                    DEFAULT_SIZE_INT,
-                                    DEFAULT_OFFSET_INT);
+    protected void mockChannelRegistryResponse(
+        String year,
+        String queryParamKey,
+        String queryParamValue,
+        List<String> channelRegistryEntityResult) {
+        mockChannelRegistryResponse(
+            year,
+            queryParamKey,
+            queryParamValue,
+            channelRegistryEntityResult,
+            DEFAULT_SIZE_INT,
+            DEFAULT_OFFSET_INT);
     }
 
-    protected void mockChannelRegistryResponse(String year,
-                                               String queryParamKey,
-                                               String queryParamValue,
-                                               List<String> channelRegistryEntityResult,
-                                               int size,
-                                               int offset) {
+    protected void mockChannelRegistryResponse(
+        String year,
+        String queryParamKey,
+        String queryParamValue,
+        List<String> channelRegistryEntityResult,
+        int size,
+        int offset) {
 
-        var responseBody = getChannelRegistrySearchResponseBody(channelRegistryEntityResult, offset, size);
+        var responseBody =
+            getChannelRegistrySearchResponseBody(channelRegistryEntityResult, offset, size);
         var pageNumber = size == 0 ? "0" : String.valueOf(offset / size);
-        stubChannelRegistrySearchResponse(responseBody,
-                                          HttpURLConnection.HTTP_OK,
-                                          YEAR_QUERY_PARAM,
-                                          year,
-                                          queryParamKey,
-                                          queryParamValue,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          String.valueOf(size),
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          pageNumber);
+        stubChannelRegistrySearchResponse(
+            responseBody,
+            HttpURLConnection.HTTP_OK,
+            YEAR_QUERY_PARAM,
+            year,
+            queryParamKey,
+            queryParamValue,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
+            String.valueOf(size),
+            CHANNEL_REGISTRY_PAGE_NO_PARAM,
+            pageNumber);
     }
 
     @BeforeAll
@@ -168,27 +177,38 @@ public abstract class SearchByQueryHandlerTest {
     void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType)
         throws IOException, UnprocessableContentException {
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
-        mockChannelRegistryResponse(year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
 
         var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
         var expectedMediaType =
-            mediaType.equals(MediaType.ANY_TYPE) ? MediaType.JSON_UTF_8.toString() : mediaType.toString();
+            mediaType.equals(MediaType.ANY_TYPE)
+                ? MediaType.JSON_UTF_8.toString()
+                : mediaType.toString();
 
         var input = constructRequest(Map.of("year", year, "query", issn), mediaType);
         this.handlerUnderTest.handleRequest(input, output, context);
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualSearchResult = getActualSearchResult(response);
-        var contentType = response.getHeaders().get(CONTENT_TYPE);
+        var contentType = response
+                              .getHeaders()
+                              .get(CONTENT_TYPE);
 
-        assertThat(actualSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+        assertThat(
+            actualSearchResult.getHits(),
+            containsInAnyOrder(expectedSearchResult
+                                   .getHits()
+                                   .toArray()));
         assertThat(contentType, is(equalTo(expectedMediaType)));
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
     }
 
     @Test
-    void shouldReturnResultWithSuccessWhenQueryIsIssn() throws IOException, UnprocessableContentException {
+    void shouldReturnResultWithSuccessWhenQueryIsIssn()
+        throws IOException, UnprocessableContentException {
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
-        mockChannelRegistryResponse(year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
 
         var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
 
@@ -199,14 +219,19 @@ public abstract class SearchByQueryHandlerTest {
         var actualSearchResult = getActualSearchResult(response);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(actualSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+        assertThat(
+            actualSearchResult.getHits(),
+            containsInAnyOrder(expectedSearchResult
+                                   .getHits()
+                                   .toArray()));
     }
 
     @Test
     void shouldReturnResultWithRequestedYearIfThirdPartyDoesNotProvideYear()
         throws IOException, UnprocessableContentException {
         var testChannel = new TestChannel(null, pid, type).withPrintIssn(issn);
-        mockChannelRegistryResponse(year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            year, ISSN_QUERY_PARAM, issn, List.of(testChannel.asChannelRegistryResponseBody()));
         var expectedSearchResult = getExpectedSearchResult(year, issn, testChannel);
 
         var input = constructRequest(Map.of("year", year, "query", issn), MediaType.ANY_TYPE);
@@ -217,13 +242,19 @@ public abstract class SearchByQueryHandlerTest {
         var actualSearchResult = getActualSearchResult(response);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(actualSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+        assertThat(
+            actualSearchResult.getHits(),
+            containsInAnyOrder(expectedSearchResult
+                                   .getHits()
+                                   .toArray()));
     }
 
     @Test
-    void shouldReturnResultWithSuccessWhenQueryIsName() throws IOException, UnprocessableContentException {
+    void shouldReturnResultWithSuccessWhenQueryIsName()
+        throws IOException, UnprocessableContentException {
         var testChannel = new TestChannel(year, pid, type).withName(name);
-        mockChannelRegistryResponse(year, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
+        mockChannelRegistryResponse(
+            year, NAME_QUERY_PARAM, name, List.of(testChannel.asChannelRegistryResponseBody()));
 
         var expectedSearchResult = getExpectedSearchResult(year, name, testChannel);
 
@@ -234,8 +265,16 @@ public abstract class SearchByQueryHandlerTest {
         var actualSearchResult = getActualSearchResult(response);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
-        assertThat(actualSearchResult.getTotalHits(), is(equalTo(expectedSearchResult.getHits().size())));
-        assertThat(actualSearchResult.getHits(), containsInAnyOrder(expectedSearchResult.getHits().toArray()));
+        assertThat(
+            actualSearchResult.getTotalHits(),
+            is(equalTo(expectedSearchResult
+                           .getHits()
+                           .size())));
+        assertThat(
+            actualSearchResult.getHits(),
+            containsInAnyOrder(expectedSearchResult
+                                   .getHits()
+                                   .toArray()));
     }
 
     @Test
@@ -243,27 +282,34 @@ public abstract class SearchByQueryHandlerTest {
         var size = 20;
         var offset = 40;
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
-        var expectedId = UriWrapper.fromUri(selfBaseUri)
-                                   .addQueryParameter("year", year)
-                                   .addQueryParameter("query", issn)
-                                   .addQueryParameter("size", String.valueOf(size))
-                                   .addQueryParameter("offset", String.valueOf(offset))
-                                   .getUri();
-        mockChannelRegistryResponse(year,
-                                    ISSN_QUERY_PARAM,
-                                    testChannel.getPrintIssnValue(),
-                                    List.of(testChannel.asChannelRegistryResponseBody()),
-                                    size,
-                                    offset);
+        var expectedId =
+            UriWrapper
+                .fromUri(selfBaseUri)
+                .addQueryParameter("year", year)
+                .addQueryParameter("query", issn)
+                .addQueryParameter("size", String.valueOf(size))
+                .addQueryParameter("offset", String.valueOf(offset))
+                .getUri();
+        mockChannelRegistryResponse(
+            year,
+            ISSN_QUERY_PARAM,
+            testChannel.getPrintIssnValue(),
+            List.of(testChannel.asChannelRegistryResponseBody()),
+            size,
+            offset);
 
-        var input = constructRequest(Map.of("year",
-                                            year,
-                                            "query",
-                                            issn,
-                                            "size",
-                                            String.valueOf(size),
-                                            "offset",
-                                            String.valueOf(offset)), MediaType.ANY_TYPE);
+        var input =
+            constructRequest(
+                Map.of(
+                    "year",
+                    year,
+                    "query",
+                    issn,
+                    "size",
+                    String.valueOf(size),
+                    "offset",
+                    String.valueOf(offset)),
+                MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
@@ -277,42 +323,52 @@ public abstract class SearchByQueryHandlerTest {
     @ValueSource(ints = {0, 10, 20})
     void shouldReturnIdWithOffsetMatchingRequest(int offset) throws IOException {
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
-        mockChannelRegistryResponse(year,
-                                    ISSN_QUERY_PARAM,
-                                    testChannel.getPrintIssnValue(),
-                                    List.of(testChannel.asChannelRegistryResponseBody()),
-                                    DEFAULT_SIZE_INT,
-                                    offset);
+        mockChannelRegistryResponse(
+            year,
+            ISSN_QUERY_PARAM,
+            testChannel.getPrintIssnValue(),
+            List.of(testChannel.asChannelRegistryResponseBody()),
+            DEFAULT_SIZE_INT,
+            offset);
 
-        var input = constructRequest(Map.of("year", year, "query", issn, "offset", String.valueOf(offset)),
-                                     MediaType.ANY_TYPE);
+        var input =
+            constructRequest(
+                Map.of("year", year, "query", issn, "offset", String.valueOf(offset)),
+                MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualSearchResult = getActualSearchResult(response);
 
-        assertThat(actualSearchResult.getId().toString(), containsStringIgnoringCase("offset=" + offset));
+        assertThat(
+            actualSearchResult
+                .getId()
+                .toString(), containsStringIgnoringCase("offset=" + offset));
     }
 
     @ParameterizedTest(name = "Should accept size \"{0}\"")
     @ValueSource(ints = {1, 10, 20})
     void shouldReturnIdWithSizeMatchingRequest(int size) throws IOException {
         var testChannel = new TestChannel(year, pid, type).withPrintIssn(issn);
-        mockChannelRegistryResponse(year,
-                                    ISSN_QUERY_PARAM,
-                                    testChannel.getPrintIssnValue(),
-                                    List.of(testChannel.asChannelRegistryResponseBody()),
-                                    size,
-                                    DEFAULT_OFFSET_INT);
+        mockChannelRegistryResponse(
+            year,
+            ISSN_QUERY_PARAM,
+            testChannel.getPrintIssnValue(),
+            List.of(testChannel.asChannelRegistryResponseBody()),
+            size,
+            DEFAULT_OFFSET_INT);
 
-        var input = constructRequest(Map.of("year", year, "query", issn, "size", String.valueOf(size)),
-                                     MediaType.ANY_TYPE);
+        var input =
+            constructRequest(
+                Map.of("year", year, "query", issn, "size", String.valueOf(size)), MediaType.ANY_TYPE);
         handlerUnderTest.handleRequest(input, output, context);
 
         var response = GatewayResponse.fromOutputStream(output, PaginatedSearchResult.class);
         var actualSearchResult = getActualSearchResult(response);
 
-        assertThat(actualSearchResult.getId().toString(), containsStringIgnoringCase("size=" + size));
+        assertThat(actualSearchResult
+                       .getId()
+                       .toString(), containsStringIgnoringCase("size=" + size));
     }
 
     @ParameterizedTest(name = "year {0} is invalid")
@@ -343,7 +399,9 @@ public abstract class SearchByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenQueryParamTooLong() throws IOException {
-        var input = constructRequest(Map.of("year", randomYear(), "query", TOO_LONG_INPUT_STRING), MediaType.ANY_TYPE);
+        var input =
+            constructRequest(
+                Map.of("year", randomYear(), "query", TOO_LONG_INPUT_STRING), MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
@@ -355,8 +413,10 @@ public abstract class SearchByQueryHandlerTest {
 
     @Test
     void shouldReturnBadRequestWhenOffsetAndSizeAreNotDivisible() throws IOException {
-        var input = constructRequest(Map.of("year", randomYear(), "query", randomString(), "offset", "5", "size", "8"),
-                                     MediaType.ANY_TYPE);
+        var input =
+            constructRequest(
+                Map.of("year", randomYear(), "query", randomString(), "offset", "5", "size", "8"),
+                MediaType.ANY_TYPE);
 
         this.handlerUnderTest.handleRequest(input, output, context);
 
@@ -368,21 +428,23 @@ public abstract class SearchByQueryHandlerTest {
     }
 
     @Test
-    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode() throws IOException {
+    void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode()
+        throws IOException {
 
         int maxNr = 30;
         var result = getChannelRegistrySearchResult(year, name, maxNr);
         var responseBody = getChannelRegistrySearchResponseBody(result, 0, 10);
-        stubChannelRegistrySearchResponse(responseBody,
-                                          HttpURLConnection.HTTP_INTERNAL_ERROR,
-                                          YEAR_QUERY_PARAM,
-                                          year,
-                                          CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
-                                          DEFAULT_SIZE,
-                                          CHANNEL_REGISTRY_PAGE_NO_PARAM,
-                                          DEFAULT_OFFSET,
-                                          NAME_QUERY_PARAM,
-                                          name);
+        stubChannelRegistrySearchResponse(
+            responseBody,
+            HttpURLConnection.HTTP_INTERNAL_ERROR,
+            YEAR_QUERY_PARAM,
+            year,
+            CHANNEL_REGISTRY_PAGE_COUNT_PARAM,
+            DEFAULT_SIZE,
+            CHANNEL_REGISTRY_PAGE_NO_PARAM,
+            DEFAULT_OFFSET,
+            NAME_QUERY_PARAM,
+            name);
         var input = constructRequest(Map.of("year", year, "query", name), MediaType.ANY_TYPE);
 
         handlerUnderTest.handleRequest(input, output, context);

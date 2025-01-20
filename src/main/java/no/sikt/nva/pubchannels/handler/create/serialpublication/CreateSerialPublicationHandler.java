@@ -31,35 +31,44 @@ public class CreateSerialPublicationHandler
         super(CreateSerialPublicationRequest.class, new Environment());
     }
 
-    public CreateSerialPublicationHandler(Environment environment, ChannelRegistryClient channelRegistryClient) {
+    public CreateSerialPublicationHandler(
+        Environment environment, ChannelRegistryClient channelRegistryClient) {
         super(CreateSerialPublicationRequest.class, environment, channelRegistryClient);
     }
 
     @Override
-    protected void validateRequest(CreateSerialPublicationRequest request,
-                                   RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected void validateRequest(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         userIsAuthorizedToCreate(requestInfo);
         request.validate();
         validateType(request);
     }
 
     @Override
-    protected SerialPublicationDto processInput(CreateSerialPublicationRequest request,
-                                                RequestInfo requestInfo, Context context) throws ApiGatewayException {
-        var channelRegistryCreateRequest = ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request);
-        var response = JOURNAL.equalsIgnoreCase(request.type())
-                           ? publicationChannelClient.createJournal(channelRegistryCreateRequest)
-                           : publicationChannelClient.createSeries(channelRegistryCreateRequest);
+    protected SerialPublicationDto processInput(
+        CreateSerialPublicationRequest request, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
+        var channelRegistryCreateRequest =
+            ChannelRegistryCreateSerialPublicationRequest.fromClientRequest(request);
+        var response =
+            JOURNAL.equalsIgnoreCase(request.type())
+                ? publicationChannelClient.createJournal(channelRegistryCreateRequest)
+                : publicationChannelClient.createSeries(channelRegistryCreateRequest);
 
         // Fetch the new channel to build the full response
         var year = getYear();
-        var newSerialPublication = (ThirdPartySerialPublication) publicationChannelClient.getChannel(SERIAL_PUBLICATION,
-                                                                                                     response.pid(),
-                                                                                                     year);
-        var responseBody = SerialPublicationDto.create(constructBaseUri(CUSTOM_PATH_ELEMENT), newSerialPublication,
-                                                       year);
+        var newSerialPublication =
+            (ThirdPartySerialPublication)
+                publicationChannelClient.getChannel(SERIAL_PUBLICATION, response.pid(), year);
+        var responseBody =
+            SerialPublicationDto.create(
+                constructBaseUri(CUSTOM_PATH_ELEMENT), newSerialPublication, year);
 
-        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, responseBody.id().toString()));
+        addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION,
+                                          responseBody
+                                              .id()
+                                              .toString()));
         return responseBody;
     }
 
@@ -67,7 +76,8 @@ public class CreateSerialPublicationHandler
         try {
             String type = input.type();
             if (isNull(type)) {
-                throw new ValidationException("Type cannot be null! Type must be either 'Journal' or 'Series'");
+                throw new ValidationException(
+                    "Type cannot be null! Type must be either 'Journal' or 'Series'");
             }
             var typeLowerCase = type.toLowerCase(Locale.ROOT);
             if (!JOURNAL.equals(typeLowerCase) && !SERIES.equals(typeLowerCase)) {

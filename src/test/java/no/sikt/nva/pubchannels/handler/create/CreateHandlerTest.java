@@ -39,6 +39,7 @@ import org.mockito.Mockito;
 
 @WireMockTest(httpsEnabled = true)
 public abstract class CreateHandlerTest {
+
     protected static final String PASSWORD = "";
     protected static final String USERNAME = "";
     protected static final String VALID_NAME = "Valid Name";
@@ -53,34 +54,32 @@ public abstract class CreateHandlerTest {
 
     protected static void stubAuth(int statusCode) throws JsonProcessingException {
         stubFor(
-                post("/oauth/token")
-                        .withBasicAuth(USERNAME, PASSWORD)
-                        .withHeader(
-                                HttpHeaders.CONTENT_TYPE,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(statusCode)
-                                        .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))));
+            post("/oauth/token")
+                .withBasicAuth(USERNAME, PASSWORD)
+                .withHeader(
+                    HttpHeaders.CONTENT_TYPE,
+                    WireMock.equalTo(HttpHeaders.CONTENT_TYPE_X_WWW_FORM_URLENCODED))
+                .willReturn(
+                    aResponse()
+                        .withStatus(statusCode)
+                        .withBody(dtoObjectMapper.writeValueAsString(TOKEN_BODY))));
     }
 
     protected static void stubResponse(int statusCode, String url, String body, String request) {
         stubFor(
-                post(url)
-                        .withHeader(
-                                HttpHeaders.ACCEPT,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(
-                                HttpHeaders.CONTENT_TYPE,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .withHeader(
-                                HttpHeaders.AUTHORIZATION,
-                                WireMock.equalTo(
-                                        TOKEN_BODY.getTokenType()
-                                                + " "
-                                                + TOKEN_BODY.getAccessToken()))
-                        .withRequestBody(equalToJson(request))
-                        .willReturn(aResponse().withStatus(statusCode).withBody(body)));
+            post(url)
+                .withHeader(
+                    HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                .withHeader(
+                    HttpHeaders.CONTENT_TYPE,
+                    WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                .withHeader(
+                    HttpHeaders.AUTHORIZATION,
+                    WireMock.equalTo(TOKEN_BODY.getTokenType() + " " + TOKEN_BODY.getAccessToken()))
+                .withRequestBody(equalToJson(request))
+                .willReturn(aResponse()
+                                .withStatus(statusCode)
+                                .withBody(body)));
     }
 
     protected static Stream<String> invalidNames() {
@@ -100,42 +99,43 @@ public abstract class CreateHandlerTest {
     }
 
     protected static ChannelRegistryClient setupInteruptedClient()
-            throws IOException, InterruptedException {
+        throws IOException, InterruptedException {
         var httpAuthClient = mock(HttpClient.class);
         when(httpAuthClient.send(any(), any())).thenThrow(new InterruptedException());
         var dataportenAuthBaseUri = URI.create("https://localhost:9898");
         var dataportenAuthClient =
-                new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
+            new DataportenAuthClient(httpAuthClient, dataportenAuthBaseUri, null, null);
         var httpPublicationChannelClient = mock(HttpClient.class);
         return new ChannelRegistryClient(
-                httpPublicationChannelClient, dataportenAuthBaseUri, dataportenAuthClient);
+            httpPublicationChannelClient, dataportenAuthBaseUri, dataportenAuthClient);
     }
 
     protected static <T> InputStream constructRequest(T body) throws JsonProcessingException {
         var customerId = randomUri();
         return new HandlerRequestBuilder<T>(dtoObjectMapper)
-                .withCurrentCustomer(customerId)
-                .withBody(body)
-                .build();
+                   .withCurrentCustomer(customerId)
+                   .withBody(body)
+                   .build();
     }
 
     protected static <T> InputStream constructUnauthorizedRequest(T body)
-            throws JsonProcessingException {
-        return new HandlerRequestBuilder<T>(dtoObjectMapper).withBody(body).build();
+        throws JsonProcessingException {
+        return new HandlerRequestBuilder<T>(dtoObjectMapper)
+                   .withBody(body)
+                   .build();
     }
 
     protected static void stubGetResponse(int statusCode, String url, String body) {
         stubFor(
-                get(url).withHeader(
-                                HttpHeaders.ACCEPT,
-                                WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
-                        .willReturn(
-                                aResponse()
-                                        .withHeader(
-                                                HttpHeaders.CONTENT_TYPE,
-                                                HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8)
-                                        .withStatus(statusCode)
-                                        .withBody(body)));
+            get(url)
+                .withHeader(
+                    HttpHeaders.ACCEPT, WireMock.equalTo(HttpHeaders.CONTENT_TYPE_APPLICATION_JSON))
+                .willReturn(
+                    aResponse()
+                        .withHeader(
+                            HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8)
+                        .withStatus(statusCode)
+                        .withBody(body)));
     }
 
     @BeforeAll
@@ -156,8 +156,8 @@ public abstract class CreateHandlerTest {
         var dataportenBaseUri = URI.create(runtimeInfo.getHttpsBaseUrl());
         var httpClient = WiremockHttpClient.create();
         var dataportenAuthSource =
-                new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
+            new DataportenAuthClient(httpClient, dataportenBaseUri, USERNAME, PASSWORD);
         publicationChannelClient =
-                new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
+            new ChannelRegistryClient(httpClient, dataportenBaseUri, dataportenAuthSource);
     }
 }

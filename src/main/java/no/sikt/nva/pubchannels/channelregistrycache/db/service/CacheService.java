@@ -31,22 +31,32 @@ public class CacheService implements PublicationChannelFetchClient {
 
     public CacheService(DynamoDbEnhancedClient client) {
         this.client = client;
-        this.table = client.table(new Environment().readEnv("TABLE_NAME"),
-                                  TableSchema.fromImmutableClass(ChannelRegistryCacheDao.class));
+        this.table =
+            client.table(
+                new Environment().readEnv("TABLE_NAME"),
+                TableSchema.fromImmutableClass(ChannelRegistryCacheDao.class));
     }
 
     @JacocoGenerated
     public static CacheService defaultInstance() {
-        return new CacheService(DynamoDbEnhancedClient.builder().build());
+        return new CacheService(DynamoDbEnhancedClient
+                                    .builder()
+                                    .build());
     }
 
     public void loadCache(S3Client s3Client) {
-        var entries = ChannelRegistryCsvLoader.load(s3Client).getCacheEntries();
+        var entries = ChannelRegistryCsvLoader
+                          .load(s3Client)
+                          .getCacheEntries();
         var uniqueEntries = filterDuplicatesBasedOnPid(entries);
         int start = 0;
         while (start < uniqueEntries.size()) {
-            var writeBatchBuilder = WriteBatch.builder(ChannelRegistryCacheDao.class).mappedTableResource(table);
-            uniqueEntries.subList(start, Math.min(start + BATCH_SIZE, uniqueEntries.size()))
+            var writeBatchBuilder =
+                WriteBatch
+                    .builder(ChannelRegistryCacheDao.class)
+                    .mappedTableResource(table);
+            uniqueEntries
+                .subList(start, Math.min(start + BATCH_SIZE, uniqueEntries.size()))
                 .stream()
                 .map(ChannelRegistryCacheEntry::toDao)
                 .forEach(writeBatchBuilder::addPutItem);
@@ -65,23 +75,32 @@ public class CacheService implements PublicationChannelFetchClient {
     @Override
     public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
         throws CachedPublicationChannelNotFoundException {
-        return attempt(() -> UUID.fromString(identifier)).map(CacheService::entryWithIdentifier)
+        return attempt(() -> UUID.fromString(identifier))
+                   .map(CacheService::entryWithIdentifier)
                    .map(table::getItem)
                    .map(ChannelRegistryCacheEntry::fromDao)
                    .map(entry -> entry.toThirdPartyPublicationChannel(type, year))
                    .orElseThrow(failure -> new CachedPublicationChannelNotFoundException(identifier));
     }
 
-    private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(List<ChannelRegistryCacheEntry> entries) {
-        return entries.stream()
-                   .collect(Collectors.toMap(ChannelRegistryCacheEntry::getPid, Function.identity(),
-                                             (existing, replacement) -> existing))
+    private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(
+        List<ChannelRegistryCacheEntry> entries) {
+        return entries
+                   .stream()
+                   .collect(
+                       Collectors.toMap(
+                           ChannelRegistryCacheEntry::getPid,
+                           Function.identity(),
+                           (existing, replacement) -> existing))
                    .values()
                    .stream()
                    .toList();
     }
 
     private static ChannelRegistryCacheDao entryWithIdentifier(UUID uuid) {
-        return ChannelRegistryCacheDao.builder().identifier(uuid).build();
+        return ChannelRegistryCacheDao
+                   .builder()
+                   .identifier(uuid)
+                   .build();
     }
 }

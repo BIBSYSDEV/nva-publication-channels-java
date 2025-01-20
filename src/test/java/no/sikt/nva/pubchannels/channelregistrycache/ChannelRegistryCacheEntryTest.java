@@ -17,12 +17,15 @@ class ChannelRegistryCacheEntryTest {
     void shouldParseCsvToListOfBeans() throws FileNotFoundException {
         var beans = getChannelRegistryCacheEntries();
 
-        assertTrue(beans.stream().allMatch(Objects::nonNull));
+        assertTrue(beans
+                       .stream()
+                       .allMatch(Objects::nonNull));
     }
 
-    private static List<ChannelRegistryCacheEntry> getChannelRegistryCacheEntries() throws FileNotFoundException {
-        return new CsvToBeanBuilder<ChannelRegistryCacheEntry>(new FileReader(TEST_CSV)).withType(
-                ChannelRegistryCacheEntry.class)
+    private static List<ChannelRegistryCacheEntry> getChannelRegistryCacheEntries()
+        throws FileNotFoundException {
+        return new CsvToBeanBuilder<ChannelRegistryCacheEntry>(new FileReader(TEST_CSV))
+                   .withType(ChannelRegistryCacheEntry.class)
                    .withSeparator(';')
                    .withIgnoreEmptyLine(true)
                    .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH)

@@ -20,13 +20,14 @@ public class SearchPublisherByQueryHandler extends SearchByQueryHandler<Publishe
         super(PUBLISHER_PATH_ELEMENT, CHANNEL_TYPE);
     }
 
-    public SearchPublisherByQueryHandler(Environment environment, PublicationChannelClient publicationChannelClient) {
+    public SearchPublisherByQueryHandler(
+        Environment environment, PublicationChannelClient publicationChannelClient) {
         super(environment, publicationChannelClient, PUBLISHER_PATH_ELEMENT, CHANNEL_TYPE);
     }
 
     @Override
-    protected PublisherDto createResult(URI baseUri, ThirdPartyPublicationChannel entityResult,
-                                           String requestedYear) {
+    protected PublisherDto createResult(
+        URI baseUri, ThirdPartyPublicationChannel entityResult, String requestedYear) {
         return PublisherDto.create(baseUri, (ThirdPartyPublisher) entityResult, requestedYear);
     }
 }

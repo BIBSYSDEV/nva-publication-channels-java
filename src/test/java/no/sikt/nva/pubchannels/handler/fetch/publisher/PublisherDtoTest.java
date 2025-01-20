@@ -35,56 +35,59 @@ class PublisherDtoTest {
     void shouldSerializeWithJsonLdContext() throws JsonProcessingException {
         var serializedPublisher = dtoObjectMapper.writeValueAsString(randomPublisher());
 
-        assertTrue(objectMapper.readTree(serializedPublisher).has("@context"));
+        assertTrue(objectMapper
+                       .readTree(serializedPublisher)
+                       .has("@context"));
     }
 
     private static PublisherDto randomPublisher() {
-        var publisher = new ThirdPartyPublisher() {
+        var publisher =
+            new ThirdPartyPublisher() {
 
-            @Override
-            public String identifier() {
-                return randomString();
-            }
+                @Override
+                public String identifier() {
+                    return randomString();
+                }
 
-            @Override
-            public String getYear() {
-                return randomString();
-            }
+                @Override
+                public String getYear() {
+                    return randomString();
+                }
 
-            @Override
-            public String name() {
-                return randomString();
-            }
+                @Override
+                public String name() {
+                    return randomString();
+                }
 
-            @Override
-            public String isbnPrefix() {
-                return randomString();
-            }
+                @Override
+                public ScientificValue getScientificValue() {
+                    return randomElement(ScientificValue.values());
+                }
 
-            @Override
-            public ScientificValue getScientificValue() {
-                return randomElement(ScientificValue.values());
-            }
+                @Override
+                public URI homepage() {
+                    return randomUri();
+                }
 
-            @Override
-            public URI homepage() {
-                return randomUri();
-            }
+                @Override
+                public String discontinued() {
+                    return randomString();
+                }
 
-            @Override
-            public String discontinued() {
-                return randomString();
-            }
+                @Override
+                public ScientificValueReviewNotice reviewNotice() {
+                    return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
+                }
 
-            @Override
-            public ScientificValueReviewNotice reviewNotice() {
-                return new ScientificValueReviewNotice(Map.of(randomString(), randomString()));
-            }
+                @Override
+                public String type() {
+                    return "publisher";
+                }
 
-            @Override
-            public String type() {
-                return "publisher";
-            }
+                @Override
+                public String isbnPrefix() {
+                    return randomString();
+                }
         };
         return PublisherDto.create(randomUri(), publisher, randomString());
     }

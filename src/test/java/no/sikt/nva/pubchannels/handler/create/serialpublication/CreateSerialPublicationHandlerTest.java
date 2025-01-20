@@ -37,18 +37,20 @@ import org.zalando.problem.Problem;
 class CreateSerialPublicationHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
     @Override
-    protected CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> createHandler(Environment environment,
-                                                                                                ChannelRegistryClient channelRegistryClient) {
+    protected CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> createHandler(
+        Environment environment, ChannelRegistryClient channelRegistryClient) {
         return new CreateSerialPublicationHandler(environment, channelRegistryClient);
     }
 
     @BeforeEach
     void setUp() {
         handlerUnderTest = new CreateSerialPublicationHandler(environment, publicationChannelClient);
-        baseUri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                      .addChild(SERIAL_PUBLICATION_PATH)
-                      .getUri();
+        baseUri =
+            UriWrapper
+                .fromHost(environment.readEnv("API_DOMAIN"))
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(SERIAL_PUBLICATION_PATH)
+                .getUri();
         channelRegistryCreatePathElement = "/createseries/";
         channelRegistryFetchPathElement = "/findjournalserie/";
         type = SERIES_TYPE;
@@ -57,40 +59,59 @@ class CreateSerialPublicationHandlerTest extends BaseCreateSerialPublicationHand
 
     @Test
     void shouldReturnBadRequestWhenTypeIsInvalid() throws IOException {
-        var requestBody = new CreateSerialPublicationRequestBuilder().withName("someName").withType("invalid").build();
+        var requestBody =
+            new CreateSerialPublicationRequestBuilder()
+                .withName("someName")
+                .withType("invalid")
+                .build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
 
         var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(containsString("Type must be either 'Journal' or 'Series'")));
+        assertThat(
+            problem.getDetail(), is(containsString("Type must be either 'Journal' or 'Series'")));
     }
 
     @ParameterizedTest(name = "Should create new channel for type: {0}")
-    @EnumSource(value = ChannelType.class, names = {"JOURNAL", "SERIES"})
+    @EnumSource(
+        value = ChannelType.class,
+        names = {"JOURNAL", "SERIES"})
     void shouldCreateNewChannel(ChannelType type) throws IOException {
-        var expectedPid = UUID.randomUUID().toString();
+        var expectedPid = UUID
+                              .randomUUID()
+                              .toString();
 
-        var channelRegistryRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
-        var channelRegistryCreatePathElement = ChannelType.JOURNAL.equals(type) ? "/createjournal/" : "/createseries/";
-        stubPostResponse(expectedPid, channelRegistryRequest, HttpURLConnection.HTTP_CREATED,
-                         channelRegistryCreatePathElement);
+        var channelRegistryRequest =
+            new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+        var channelRegistryCreatePathElement =
+            ChannelType.JOURNAL.equals(type) ? "/createjournal/" : "/createseries/";
+        stubPostResponse(
+            expectedPid,
+            channelRegistryRequest,
+            HttpURLConnection.HTTP_CREATED,
+            channelRegistryCreatePathElement);
 
         var typeName = ChannelType.JOURNAL.equals(type) ? JOURNAL_TYPE : SERIES_TYPE;
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, typeName).withName(
-            VALID_NAME);
+        var testChannel =
+            createEmptyTestChannel(currentYearAsInteger(), expectedPid, typeName).withName(VALID_NAME);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody = requestBuilderWithRequiredFields().withType(typeName).build();
+        var requestBody = requestBuilderWithRequiredFields()
+                              .withType(typeName)
+                              .build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
 
-        var actualLocation = URI.create(response.getHeaders().get(HttpHeaders.LOCATION));
-        assertThat(actualLocation,
-                   is(equalTo(createPublicationChannelUri(expectedPid, customChannelPath, currentYear()))));
+        var actualLocation = URI.create(response
+                                            .getHeaders()
+                                            .get(HttpHeaders.LOCATION));
+        assertThat(
+            actualLocation,
+            is(equalTo(createPublicationChannelUri(expectedPid, customChannelPath, currentYear()))));
 
         var expectedChannel = testChannel.asSerialPublicationDto(baseUri, currentYear());
         assertThat(response.getBodyObject(SerialPublicationDto.class), is(equalTo(expectedChannel)));

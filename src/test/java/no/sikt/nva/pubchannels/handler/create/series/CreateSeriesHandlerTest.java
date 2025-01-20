@@ -27,18 +27,20 @@ import org.junit.jupiter.api.Test;
 class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
     @Override
-    protected CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> createHandler(Environment environment,
-                                                                                                ChannelRegistryClient channelRegistryClient) {
+    protected CreateHandler<CreateSerialPublicationRequest, SerialPublicationDto> createHandler(
+        Environment environment, ChannelRegistryClient channelRegistryClient) {
         return new CreateSeriesHandler(environment, channelRegistryClient);
     }
 
     @BeforeEach
     void setUp() {
         handlerUnderTest = new CreateSeriesHandler(environment, publicationChannelClient);
-        baseUri = UriWrapper.fromHost(environment.readEnv("API_DOMAIN"))
-                      .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                      .addChild(SERIES_PATH)
-                      .getUri();
+        baseUri =
+            UriWrapper
+                .fromHost(environment.readEnv("API_DOMAIN"))
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(SERIES_PATH)
+                .getUri();
         channelRegistryCreatePathElement = "/createseries/";
         channelRegistryFetchPathElement = "/findseries/";
         type = SERIES_TYPE;
@@ -47,15 +49,25 @@ class CreateSeriesHandlerTest extends BaseCreateSerialPublicationHandlerTest {
 
     @Test
     void shouldNotRequireTypeAsInput() throws IOException {
-        var expectedPid = UUID.randomUUID().toString();
+        var expectedPid = UUID
+                              .randomUUID()
+                              .toString();
 
-        var clientRequest = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
-        stubPostResponse(expectedPid, clientRequest, HttpURLConnection.HTTP_CREATED, channelRegistryCreatePathElement);
+        var clientRequest =
+            new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+        stubPostResponse(
+            expectedPid,
+            clientRequest,
+            HttpURLConnection.HTTP_CREATED,
+            channelRegistryCreatePathElement);
 
-        var testChannel = createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(VALID_NAME);
+        var testChannel =
+            createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(VALID_NAME);
         stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
 
-        var requestBody = new CreateSerialPublicationRequestBuilder().withName(VALID_NAME).build();
+        var requestBody = new CreateSerialPublicationRequestBuilder()
+                              .withName(VALID_NAME)
+                              .build();
         handlerUnderTest.handleRequest(constructRequest(requestBody), output, context);
 
         var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);

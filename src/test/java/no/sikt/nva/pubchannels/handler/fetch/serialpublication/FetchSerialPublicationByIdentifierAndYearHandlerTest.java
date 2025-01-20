@@ -26,39 +26,45 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class FetchSerialPublicationByIdentifierAndYearHandlerTest extends
-                                                                  BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
+class FetchSerialPublicationByIdentifierAndYearHandlerTest
+    extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
     @Override
     protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
         ChannelRegistryClient publicationChannelClient) {
-        return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient,
-                                                                    cacheService,
-                                                                    super.getAppConfigWithCacheEnabled(false));
+        return new FetchSerialPublicationByIdentifierAndYearHandler(
+            environment,
+            publicationChannelClient,
+            cacheService,
+            super.getAppConfigWithCacheEnabled(false));
     }
 
     @Override
-    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(Environment environment,
-                                                                     PublicationChannelClient publicationChannelClient,
-                                                                     CacheService cacheService,
-                                                                     AppConfig appConfigWithCacheEnabled) {
-        return new FetchSerialPublicationByIdentifierAndYearHandler(environment, publicationChannelClient, cacheService,
-                                                                    appConfigWithCacheEnabled);
+    protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+        Environment environment,
+        PublicationChannelClient publicationChannelClient,
+        CacheService cacheService,
+        AppConfig appConfigWithCacheEnabled) {
+        return new FetchSerialPublicationByIdentifierAndYearHandler(
+            environment, publicationChannelClient, cacheService, appConfigWithCacheEnabled);
     }
 
     @BeforeEach
     void setup() {
-        this.handlerUnderTest = new FetchSerialPublicationByIdentifierAndYearHandler(environment,
-                                                                                     this.channelRegistryClient,
-                                                                                     this.cacheService,
-                                                                                     super.getAppConfigWithCacheEnabled(
-                                                                                         false));
+        this.handlerUnderTest =
+            new FetchSerialPublicationByIdentifierAndYearHandler(
+                environment,
+                this.channelRegistryClient,
+                this.cacheService,
+                super.getAppConfigWithCacheEnabled(false));
         this.type = JOURNAL_TYPE;
         this.customChannelPath = SERIAL_PUBLICATION_PATH;
-        this.selfBaseUri = UriWrapper.fromHost(API_DOMAIN)
-                                     .addChild(CUSTOM_DOMAIN_BASE_PATH)
-                                     .addChild(SERIAL_PUBLICATION_PATH)
-                                     .getUri();
+        this.selfBaseUri =
+            UriWrapper
+                .fromHost(API_DOMAIN)
+                .addChild(CUSTOM_DOMAIN_BASE_PATH)
+                .addChild(SERIAL_PUBLICATION_PATH)
+                .getUri();
         this.channelRegistryPathElement = "/findjournalserie/";
     }
 

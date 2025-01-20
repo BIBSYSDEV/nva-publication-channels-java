@@ -14,14 +14,15 @@ import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.unit.nva.commons.json.JsonSerializable;
 
 @JsonSerialize
-public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) String identifier,
-                                               @JsonProperty(NAME_FIELD) String name,
-                                               @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
-                                               @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
-                                               @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
-                                               @JsonProperty(HOMEPAGE_FIELD) URI homepage,
-                                               @JsonProperty(DISCONTINUED_FIELD) String discontinued,
-                                               @JsonProperty(TYPE_FIELD) String type)
+public record ChannelRegistrySerialPublication(
+    @JsonProperty(IDENTIFIER_FIELD) String identifier,
+    @JsonProperty(NAME_FIELD) String name,
+    @JsonProperty(ONLINE_ISSN_FIELD) String onlineIssn,
+    @JsonProperty(PRINT_ISSN_FIELD) String printIssn,
+    @JsonProperty(LEVEL_FIELD) ChannelRegistryLevel channelRegistryLevel,
+    @JsonProperty(HOMEPAGE_FIELD) URI homepage,
+    @JsonProperty(DISCONTINUED_FIELD) String discontinued,
+    @JsonProperty(TYPE_FIELD) String type)
     implements Immutable, ThirdPartySerialPublication, JsonSerializable {
 
     private static final String IDENTIFIER_FIELD = "pid";
@@ -35,7 +36,8 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
 
     @Override
     public String getYear() {
-        return Optional.ofNullable(channelRegistryLevel())
+        return Optional
+                   .ofNullable(channelRegistryLevel())
                    .map(ChannelRegistryLevel::year)
                    .map(String::valueOf)
                    .orElse(null);
@@ -56,13 +58,14 @@ public record ChannelRegistrySerialPublication(@JsonProperty(IDENTIFIER_FIELD) S
         return switch (type.toLowerCase(Locale.ROOT)) {
             case "journal", "tidsskrift" -> "Journal";
             case "series", "serie" -> "Series";
-            case null, default -> throw new IllegalArgumentException("Unknown type found. Expected one of ['journal', "
-                                                                     + "'series'].");
+            case null, default -> throw new IllegalArgumentException(
+                "Unknown type found. Expected one of ['journal', " + "'series'].");
         };
     }
 
     private ScientificValue levelToScientificValue(ScientificValueMapper mapper) {
-        return Optional.ofNullable(channelRegistryLevel())
+        return Optional
+                   .ofNullable(channelRegistryLevel())
                    .map(level -> mapper.map(level.level()))
                    .orElse(ScientificValue.UNASSIGNED);
     }

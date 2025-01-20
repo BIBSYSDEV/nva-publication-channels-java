@@ -14,7 +14,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
-public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> {
+public class FetchJournalByIdentifierAndYearHandler
+    extends FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> {
 
     private static final String JOURNAL_PATH_ELEMENT = "journal";
 
@@ -23,23 +24,28 @@ public class FetchJournalByIdentifierAndYearHandler extends FetchByIdentifierAnd
         super(Void.class, new Environment());
     }
 
-    public FetchJournalByIdentifierAndYearHandler(Environment environment,
-                                                  PublicationChannelClient publicationChannelClient,
-                                                  CacheService cacheService, AppConfig appConfig) {
+    public FetchJournalByIdentifierAndYearHandler(
+        Environment environment,
+        PublicationChannelClient publicationChannelClient,
+        CacheService cacheService,
+        AppConfig appConfig) {
         super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
     }
 
     @Override
-    protected SerialPublicationDto processInput(Void input, RequestInfo requestInfo, Context context) throws ApiGatewayException {
+    protected SerialPublicationDto processInput(Void input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
         var request = new FetchByIdAndYearRequest(requestInfo);
         var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
 
         var identifier = request.getIdentifier();
         var year = request.getYear();
-        var journal = super.shouldUseCache()
-                          ? super.fetchChannelFromCache(JOURNAL, identifier, year)
-                          : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
-        return SerialPublicationDto.create(journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
+        var journal =
+            super.shouldUseCache()
+                ? super.fetchChannelFromCache(JOURNAL, identifier, year)
+                : super.fetchChannelOrFetchFromCache(JOURNAL, identifier, year);
+        return SerialPublicationDto.create(
+            journalIdBaseUri, (ThirdPartySerialPublication) journal, year);
     }
 
     @Override

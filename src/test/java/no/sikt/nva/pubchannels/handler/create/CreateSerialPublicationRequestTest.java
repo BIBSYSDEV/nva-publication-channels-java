@@ -12,11 +12,14 @@ class CreateSerialPublicationRequestTest {
 
     @Test
     void shouldBeAbleToRoundTripRecordViaJackson() throws JsonProcessingException {
-        var createJournalRequest = new CreateSerialPublicationRequest(randomString(), randomString(), randomString(),
-                                                                      randomString(), randomString());
-        var createJournalRequestString = JsonUtils.dtoObjectMapper.writeValueAsString(createJournalRequest);
-        var createJournalRequestRoundTripped = JsonUtils.dtoObjectMapper.readValue(createJournalRequestString,
-                                                                                   CreateSerialPublicationRequest.class);
+        var createJournalRequest =
+            new CreateSerialPublicationRequest(
+                randomString(), randomString(), randomString(), randomString(), randomString());
+        var createJournalRequestString =
+            JsonUtils.dtoObjectMapper.writeValueAsString(createJournalRequest);
+        var createJournalRequestRoundTripped =
+            JsonUtils.dtoObjectMapper.readValue(
+                createJournalRequestString, CreateSerialPublicationRequest.class);
         assertThat(createJournalRequestRoundTripped, is(equalTo(createJournalRequest)));
     }
 }

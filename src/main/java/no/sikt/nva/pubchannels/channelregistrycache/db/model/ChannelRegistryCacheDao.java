@@ -10,10 +10,16 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbImmutable(builder = ChannelRegistryCacheDao.Builder.class)
-public record ChannelRegistryCacheDao(UUID identifier,
-                                      String type, String title,
-                                      String printIssn, String onlineIssn, String isbn, String ceased,
-                                      List<LevelForYear> levelHistory, URI uri) {
+public record ChannelRegistryCacheDao(
+    UUID identifier,
+    String type,
+    String title,
+    String printIssn,
+    String onlineIssn,
+    String isbn,
+    String ceased,
+    List<LevelForYear> levelHistory,
+    URI uri) {
 
     public static final String PRIMARY_KEY = "PK0";
     public static final String SORT_KEY = "SK0";
@@ -33,7 +39,6 @@ public record ChannelRegistryCacheDao(UUID identifier,
     public static Builder builder() {
         return new ChannelRegistryCacheDao.Builder();
     }
-
 
     public static final class Builder {
 
@@ -106,8 +111,8 @@ public record ChannelRegistryCacheDao(UUID identifier,
         }
 
         public ChannelRegistryCacheDao build() {
-            return new ChannelRegistryCacheDao(identifier, type, title, printIssn, onlineIssn, isbn, ceased,
-                                               levelHistory, uri);
+            return new ChannelRegistryCacheDao(
+                identifier, type, title, printIssn, onlineIssn, isbn, ceased, levelHistory, uri);
         }
     }
 }

@@ -6,7 +6,8 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public record ChannelRegistrySearchJournalResponse(
     @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
-    @JsonProperty(ENTITY_RESULT_SET) ChannelRegistryEntityResultSet<ChannelRegistrySerialPublication> resultSet)
+    @JsonProperty(ENTITY_RESULT_SET)
+    ChannelRegistryEntityResultSet<ChannelRegistrySerialPublication> resultSet)
     implements ThirdPartySearchResponse {
 
     private static final String ENTITY_RESULT_SET = "entityResultSetDto";

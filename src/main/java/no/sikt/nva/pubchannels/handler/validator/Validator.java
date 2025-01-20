@@ -24,16 +24,19 @@ public final class Validator {
     public static void validateString(String value, int minLength, int maxLength, String name) {
         Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
         if (value.length() < minLength) {
-            throw new ValidationException(format("%s is too short. Minimum length is %d", name, minLength));
+            throw new ValidationException(
+                format("%s is too short. Minimum length is %d", name, minLength));
         }
         if (value.length() > maxLength) {
-            throw new ValidationException(format("%s is too long. Maximum length is %d", name, maxLength));
+            throw new ValidationException(
+                format("%s is too long. Maximum length is %d", name, maxLength));
         }
     }
 
     public static void validateOptionalIsbnPrefix(String isbnPrefix, String name) {
         if (nonNull(isbnPrefix) && isbnPrefix.length() > MAX_LENGTH_ISBN_PREFIX) {
-            throw new ValidationException(format("%s is too long. Maximum length is %d", name, MAX_LENGTH_ISBN_PREFIX));
+            throw new ValidationException(
+                format("%s is too long. Maximum length is %d", name, MAX_LENGTH_ISBN_PREFIX));
         }
         if (nonNull(isbnPrefix) && !Pattern.matches(ISBN_PREFIX_PATTERN, isbnPrefix)) {
             throw new ValidationException(format("%s has an invalid format.", name));
@@ -41,13 +44,17 @@ public final class Validator {
     }
 
     public static void validateOptionalIssn(String issn, String name) {
-        if (issn != null && !ISSNValidator.getInstance().isValid(issn.trim())) {
+        if (issn != null && !ISSNValidator
+                                 .getInstance()
+                                 .isValid(issn.trim())) {
             throw new ValidationException(format("%s has an invalid ISSN format.", name));
         }
     }
 
     public static void validateOptionalUrl(String url, String name) {
-        if (url != null && !UrlValidator.getInstance().isValid(url)) {
+        if (url != null && !UrlValidator
+                                .getInstance()
+                                .isValid(url)) {
             throw new ValidationException(format("%s has an invalid URL format", name));
         }
     }
@@ -55,21 +62,23 @@ public final class Validator {
     public static void validateUuid(String value, String name) {
         Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
         attempt(() -> UUID.fromString(value))
-            .orElseThrow(failure ->
-                             new ValidationException(format("%s has an invalid UUIDv4 format", name)));
+            .orElseThrow(
+                failure -> new ValidationException(format("%s has an invalid UUIDv4 format", name)));
     }
 
     public static void validateYear(String value, Year minAcceptableYear, String name) {
         if (value != null) {
-            var year = attempt(() -> Year.parse(value)).orElseThrow(failure -> new ValidationException(format(
-                "%s field is not a valid year.",
-                name)));
+            var year =
+                attempt(() -> Year.parse(value))
+                    .orElseThrow(
+                        failure ->
+                            new ValidationException(format("%s field is not a valid year.", name)));
             var now = Year.now();
             if (year.isBefore(minAcceptableYear) || year.isAfter(now.plusYears(1))) {
-                throw new ValidationException(format("%s is not between the year %d and %d",
-                                                     name,
-                                                     minAcceptableYear.getValue(),
-                                                     now.getValue()));
+                throw new ValidationException(
+                    format(
+                        "%s is not between the year %d and %d",
+                        name, minAcceptableYear.getValue(), now.getValue()));
             }
         }
     }

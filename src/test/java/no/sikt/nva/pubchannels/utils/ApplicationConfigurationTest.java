@@ -20,10 +20,10 @@ class ApplicationConfigurationTest {
     @Test
     void shouldReturnTrueWhenAppConfigHasCachingEnabled() {
         var client = mock(AppConfigDataClient.class);
-        when(client.getLatestConfiguration(any(GetLatestConfigurationRequest.class))).thenReturn(
-            mockedLatestResponse());
-        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(
-            mockedStartResponse());
+        when(client.getLatestConfiguration(any(GetLatestConfigurationRequest.class)))
+            .thenReturn(mockedLatestResponse());
+        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class)))
+            .thenReturn(mockedStartResponse());
         var appConfig = new ApplicationConfiguration(client);
 
         assertTrue(appConfig.shouldUseCache());
@@ -32,17 +32,18 @@ class ApplicationConfigurationTest {
     @Test
     void shouldReturnFalseWhenFetchingConfigurationFails() {
         var client = mock(AppConfigDataClient.class);
-        when(client.getLatestConfiguration(any(
-            GetLatestConfigurationRequest.class))).thenThrow(ResourceNotFoundException.class);
-        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(
-            mockedStartResponse());
+        when(client.getLatestConfiguration(any(GetLatestConfigurationRequest.class)))
+            .thenThrow(ResourceNotFoundException.class);
+        when(client.startConfigurationSession(any(StartConfigurationSessionRequest.class)))
+            .thenReturn(mockedStartResponse());
         var appConfig = new ApplicationConfiguration(client);
 
         assertFalse(appConfig.shouldUseCache());
     }
 
     private static GetLatestConfigurationResponse mockedLatestResponse() {
-        return GetLatestConfigurationResponse.builder()
+        return GetLatestConfigurationResponse
+                   .builder()
                    .configuration(SdkBytes.fromString(configContent(), StandardCharsets.UTF_8))
                    .build();
     }
@@ -56,6 +57,9 @@ class ApplicationConfigurationTest {
     }
 
     private static StartConfigurationSessionResponse mockedStartResponse() {
-        return StartConfigurationSessionResponse.builder().initialConfigurationToken("mockToken").build();
+        return StartConfigurationSessionResponse
+                   .builder()
+                   .initialConfigurationToken("mockToken")
+                   .build();
     }
 }

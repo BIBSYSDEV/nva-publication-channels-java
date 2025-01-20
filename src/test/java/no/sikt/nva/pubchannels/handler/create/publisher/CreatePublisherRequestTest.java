@@ -12,10 +12,13 @@ class CreatePublisherRequestTest {
 
     @Test
     void shouldBeAbleToRoundTripRecordViaJackson() throws JsonProcessingException {
-        var createPublisherRequest = new CreatePublisherRequest(randomString(), randomString(), randomString());
-        var createPublisherRequestString = JsonUtils.dtoObjectMapper.writeValueAsString(createPublisherRequest);
-        var createPublisherRequestRoundTripped = JsonUtils.dtoObjectMapper.readValue(createPublisherRequestString,
-                                                                                     CreatePublisherRequest.class);
+        var createPublisherRequest =
+            new CreatePublisherRequest(randomString(), randomString(), randomString());
+        var createPublisherRequestString =
+            JsonUtils.dtoObjectMapper.writeValueAsString(createPublisherRequest);
+        var createPublisherRequestRoundTripped =
+            JsonUtils.dtoObjectMapper.readValue(
+                createPublisherRequestString, CreatePublisherRequest.class);
         assertThat(createPublisherRequestRoundTripped, is(equalTo(createPublisherRequest)));
     }
 }
