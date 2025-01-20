@@ -9,5 +9,5 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartyResultSet;
 public record ChannelRegistryEntityResultSet<T>(@JsonProperty(PAGERESULT_FIELD) List<T> pageResult)
     implements ThirdPartyResultSet<T> {
 
-    private static final String PAGERESULT_FIELD = "pageresult";
+  private static final String PAGERESULT_FIELD = "pageresult";
 }

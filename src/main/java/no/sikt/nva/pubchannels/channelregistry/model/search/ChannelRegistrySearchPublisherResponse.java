@@ -9,9 +9,9 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 public record ChannelRegistrySearchPublisherResponse(
     @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
     @JsonProperty(ENTITY_RESULT_SET)
-    ChannelRegistryEntityResultSet<ChannelRegistryPublisher> resultSet)
+        ChannelRegistryEntityResultSet<ChannelRegistryPublisher> resultSet)
     implements ThirdPartySearchResponse {
 
-    private static final String ENTITY_RESULT_SET = "entityResultSetDto";
-    private static final String ENTITY_PAGE_INFORMATION = "entityPageInformationDto";
+  private static final String ENTITY_RESULT_SET = "entityResultSetDto";
+  private static final String ENTITY_PAGE_INFORMATION = "entityPageInformationDto";
 }

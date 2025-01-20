@@ -10,33 +10,33 @@ import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public enum ChannelType {
-    JOURNAL(
-        "findjournal",
-        ChannelRegistrySerialPublication.class,
-        ChannelRegistrySearchJournalResponse.class),
-    PUBLISHER(
-        "findpublisher",
-        ChannelRegistryPublisher.class,
-        ChannelRegistrySearchPublisherResponse.class),
-    SERIES(
-        "findseries",
-        ChannelRegistrySerialPublication.class,
-        ChannelRegistrySearchSeriesResponse.class),
-    SERIAL_PUBLICATION(
-        "findjournalserie",
-        ChannelRegistrySerialPublication.class,
-        ChannelRegistrySearchSerialPublicationResponse.class);
+  JOURNAL(
+      "findjournal",
+      ChannelRegistrySerialPublication.class,
+      ChannelRegistrySearchJournalResponse.class),
+  PUBLISHER(
+      "findpublisher",
+      ChannelRegistryPublisher.class,
+      ChannelRegistrySearchPublisherResponse.class),
+  SERIES(
+      "findseries",
+      ChannelRegistrySerialPublication.class,
+      ChannelRegistrySearchSeriesResponse.class),
+  SERIAL_PUBLICATION(
+      "findjournalserie",
+      ChannelRegistrySerialPublication.class,
+      ChannelRegistrySearchSerialPublicationResponse.class);
 
-    public final String pathElement;
-    public final Class<? extends ThirdPartyPublicationChannel> fetchResponseClass;
-    public final Class<? extends ThirdPartySearchResponse> searchResponseClass;
+  public final String pathElement;
+  public final Class<? extends ThirdPartyPublicationChannel> fetchResponseClass;
+  public final Class<? extends ThirdPartySearchResponse> searchResponseClass;
 
-    ChannelType(
-        String pathElement,
-        Class<? extends ThirdPartyPublicationChannel> fetchResponseClass,
-        Class<? extends ThirdPartySearchResponse> searchResponseClass) {
-        this.pathElement = pathElement;
-        this.fetchResponseClass = fetchResponseClass;
-        this.searchResponseClass = searchResponseClass;
-    }
+  ChannelType(
+      String pathElement,
+      Class<? extends ThirdPartyPublicationChannel> fetchResponseClass,
+      Class<? extends ThirdPartySearchResponse> searchResponseClass) {
+    this.pathElement = pathElement;
+    this.fetchResponseClass = fetchResponseClass;
+    this.searchResponseClass = searchResponseClass;
+  }
 }

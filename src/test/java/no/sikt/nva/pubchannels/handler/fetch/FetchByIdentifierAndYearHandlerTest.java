@@ -23,6 +23,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -59,170 +60,157 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTestSetup {
 
-    protected static final Context context = new FakeContext();
-    protected static Environment environment;
-    protected CacheService cacheService;
-    protected ByteArrayOutputStream output;
-    protected String channelRegistryBaseUri;
-    protected String customChannelPath;
-    protected String channelRegistryPathElement;
-    protected ChannelRegistryClient channelRegistryClient;
-    protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
-    protected static String year = randomYear();
-    protected static String name = randomString();
-    protected static String identifier = UUID
-                                             .randomUUID()
-                                             .toString();
+  protected static final Context context = new FakeContext();
+  protected static Environment environment;
+  protected CacheService cacheService;
+  protected ByteArrayOutputStream output;
+  protected String channelRegistryBaseUri;
+  protected String customChannelPath;
+  protected String channelRegistryPathElement;
+  protected ChannelRegistryClient channelRegistryClient;
+  protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
+  protected static String year = randomYear();
+  protected static String name = randomString();
+  protected static String identifier = UUID.randomUUID().toString();
 
-    @BeforeAll
-    public static void commonBeforeAll() {
-        environment = Mockito.mock(Environment.class);
-        when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
-        when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
-        when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
-    }
+  @BeforeAll
+  public static void commonBeforeAll() {
+    environment = Mockito.mock(Environment.class);
+    when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
+    when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
+    when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+  }
 
-    protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
-        ChannelRegistryClient publicationChannelClient);
+  protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+      ChannelRegistryClient publicationChannelClient);
 
-    @BeforeEach
-    void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
-        super.setupDynamoDbTable();
-        channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
-        HttpClient httpClient = WiremockHttpClient.create();
-        channelRegistryClient =
-            new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
-        cacheService = new CacheService(super.getClient());
-        output = new ByteArrayOutputStream();
-    }
+  @BeforeEach
+  void commonBeforeEach(WireMockRuntimeInfo runtimeInfo) {
+    super.setupDynamoDbTable();
+    channelRegistryBaseUri = runtimeInfo.getHttpsBaseUrl();
+    HttpClient httpClient = WiremockHttpClient.create();
+    channelRegistryClient =
+        new ChannelRegistryClient(httpClient, URI.create(channelRegistryBaseUri), null);
+    cacheService = new CacheService(super.getClient());
+    output = new ByteArrayOutputStream();
+  }
 
-    @ParameterizedTest(name = "year {0} is invalid")
-    @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
-    void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String invalidYear)
-        throws IOException {
+  @ParameterizedTest(name = "year {0} is invalid")
+  @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#invalidYearsProvider")
+  void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String invalidYear)
+      throws IOException {
 
-        var input = constructRequest(invalidYear, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(invalidYear, identifier, MediaType.ANY_TYPE);
 
-        handlerUnderTest.handleRequest(input, output, context);
+    handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
-        var problem = response.getBodyObject(Problem.class);
+    var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(containsString("Year")));
-    }
+    assertThat(problem.getDetail(), is(containsString("Year")));
+  }
 
-    @ParameterizedTest(name = "identifier \"{0}\" is invalid")
-    @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
-    void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String invalidIdentifier)
-        throws IOException {
+  @ParameterizedTest(name = "identifier \"{0}\" is invalid")
+  @ValueSource(strings = {" ", "abcd", "ab78ab78ab78ab78ab78a7ba87b8a7ba87b8"})
+  void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String invalidIdentifier)
+      throws IOException {
 
-        var input = constructRequest(year, invalidIdentifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, invalidIdentifier, MediaType.ANY_TYPE);
 
-        handlerUnderTest.handleRequest(input, output, context);
+    handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_REQUEST)));
 
-        var problem = response.getBodyObject(Problem.class);
+    var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(containsString("Pid")));
-    }
+    assertThat(problem.getDetail(), is(containsString("Pid")));
+  }
 
-    @Test
-    void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
-        mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_NOT_FOUND);
+  @Test
+  void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
+    mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_NOT_FOUND);
 
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
-        handlerUnderTest.handleRequest(input, output, context);
+    handlerUnderTest.handleRequest(input, output, context);
 
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
 
-        var problem = response.getBodyObject(Problem.class);
+    var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
-    }
+    assertThat(problem.getDetail(), is(equalTo("Publication channel not found!")));
+  }
 
-    @Test
-    void
-    shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndChannelIsNotCached()
-        throws IOException {
-        mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_INTERNAL_ERROR);
+  @Test
+  void
+      shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCodeAndChannelIsNotCached()
+          throws IOException {
+    mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_INTERNAL_ERROR);
 
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
+    var appender = LogUtils.getTestingAppenderForRootLogger();
+    handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
-        assertThat(appender.getMessages(), containsString("500"));
+    assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
+    assertThat(appender.getMessages(), containsString("500"));
 
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
-        var problem = response.getBodyObject(Problem.class);
+    var problem = response.getBodyObject(Problem.class);
 
-        assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
-    }
+    assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
+  }
 
-    @Test
-    void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs()
-        throws IOException, InterruptedException {
-        var publicationChannelClient = setupInterruptedClient();
+  @Test
+  void shouldLogErrorAndReturnBadGatewayWhenInterruptionOccurs()
+      throws IOException, InterruptedException {
+    var publicationChannelClient = setupInterruptedClient();
 
-        this.handlerUnderTest = createHandler(publicationChannelClient);
+    this.handlerUnderTest = createHandler(publicationChannelClient);
 
-        var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
 
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        handlerUnderTest.handleRequest(input, output, context);
+    var appender = LogUtils.getTestingAppenderForRootLogger();
+    handlerUnderTest.handleRequest(input, output, context);
 
-        assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-        assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+    assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
+    assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
 
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
-        assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_BAD_GATEWAY)));
 
-        var problem = response.getBodyObject(Problem.class);
-        assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
-    }
+    var problem = response.getBodyObject(Problem.class);
+    assertThat(problem.getDetail(), is(equalTo("Unable to reach upstream!")));
+  }
 
-    @Test
-    void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-        var requestedIdentifier = UUID
-                                      .randomUUID()
-                                      .toString();
-        var newIdentifier = UUID
-                                .randomUUID()
-                                .toString();
-        var newChannelRegistryLocation =
-            UriWrapper
-                .fromHost(channelRegistryBaseUri)
-                .addChild(channelRegistryPathElement, newIdentifier, year)
-                .toString();
-        mockRedirectedClient(
-            requestedIdentifier, newChannelRegistryLocation, year, channelRegistryPathElement);
-        handlerUnderTest.handleRequest(
-            constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output, context);
-        var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-        assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
-        var expectedLocation =
-            createPublicationChannelUri(newIdentifier, customChannelPath, year).toString();
-        assertEquals(expectedLocation,
-                     response
-                         .getHeaders()
-                         .get(LOCATION));
-        assertEquals(WILD_CARD,
-                     response
-                         .getHeaders()
-                         .get(ACCESS_CONTROL_ALLOW_ORIGIN));
-    }
+  @Test
+  void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
+    var requestedIdentifier = UUID.randomUUID().toString();
+    var newIdentifier = UUID.randomUUID().toString();
+    var newChannelRegistryLocation =
+        UriWrapper.fromHost(channelRegistryBaseUri)
+            .addChild(channelRegistryPathElement, newIdentifier, year)
+            .toString();
+    mockRedirectedClient(
+        requestedIdentifier, newChannelRegistryLocation, year, channelRegistryPathElement);
+    handlerUnderTest.handleRequest(
+        constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output, context);
+    var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
+    assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
+    var expectedLocation =
+        createPublicationChannelUri(newIdentifier, customChannelPath, year).toString();
+    assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
+    assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
+  }
 }

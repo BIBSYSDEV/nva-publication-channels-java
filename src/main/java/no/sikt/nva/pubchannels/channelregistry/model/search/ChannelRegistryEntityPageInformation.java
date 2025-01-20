@@ -5,6 +5,4 @@ import no.sikt.nva.pubchannels.handler.search.ThirdPartyPageInformation;
 
 @JsonSerialize
 public record ChannelRegistryEntityPageInformation(Integer totalResults)
-    implements ThirdPartyPageInformation {
-
-}
+    implements ThirdPartyPageInformation {}

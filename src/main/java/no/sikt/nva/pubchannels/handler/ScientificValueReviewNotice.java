@@ -7,6 +7,4 @@ import java.util.Map;
 
 @JsonSerialize
 @JsonTypeInfo(use = Id.NAME, property = "type")
-public record ScientificValueReviewNotice(Map<String, String> comments) {
-
-}
+public record ScientificValueReviewNotice(Map<String, String> comments) {}

@@ -9,6 +9,7 @@ import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -37,194 +38,177 @@ import org.slf4j.LoggerFactory;
 
 public class ChannelRegistryClient implements PublicationChannelClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryClient.class);
-    private static final String ENV_CHANNEL_REGISTRY_BASE_URL =
-        "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
-    private static final Set<Integer> OK_STATUSES =
-        Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
-    private static final String SEARCH_PATH_ELEMENT = "channels";
-    private final HttpClient httpClient;
-    private final URI channelRegistryBaseUri;
-    private final AuthClient authClient;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryClient.class);
+  private static final String ENV_CHANNEL_REGISTRY_BASE_URL =
+      "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
+  private static final Set<Integer> OK_STATUSES =
+      Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+  private static final String SEARCH_PATH_ELEMENT = "channels";
+  private final HttpClient httpClient;
+  private final URI channelRegistryBaseUri;
+  private final AuthClient authClient;
 
-    public ChannelRegistryClient(
-        HttpClient httpClient, URI channelRegistryBaseUri, AuthClient authClient) {
-        this.httpClient = httpClient;
-        this.channelRegistryBaseUri = channelRegistryBaseUri;
-        this.authClient = authClient;
-    }
+  public ChannelRegistryClient(
+      HttpClient httpClient, URI channelRegistryBaseUri, AuthClient authClient) {
+    this.httpClient = httpClient;
+    this.channelRegistryBaseUri = channelRegistryBaseUri;
+    this.authClient = authClient;
+  }
 
-    @JacocoGenerated // only used when running on AWS
-    public static PublicationChannelClient defaultInstance() {
-        var environment = new Environment();
-        var baseUri = URI.create(environment.readEnv(ENV_CHANNEL_REGISTRY_BASE_URL));
-        return new ChannelRegistryClient(HttpClient
-                                             .newBuilder()
-                                             .build(), baseUri, null);
-    }
+  @JacocoGenerated // only used when running on AWS
+  public static PublicationChannelClient defaultInstance() {
+    var environment = new Environment();
+    var baseUri = URI.create(environment.readEnv(ENV_CHANNEL_REGISTRY_BASE_URL));
+    return new ChannelRegistryClient(HttpClient.newBuilder().build(), baseUri, null);
+  }
 
-    @Override
-    public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
-        throws ApiGatewayException {
-        var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
-        return attempt(() -> executeRequest(request, type.fetchResponseClass))
-                   .orElseThrow(
+  @Override
+  public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+      throws ApiGatewayException {
+    var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
+    return attempt(() -> executeRequest(request, type.fetchResponseClass))
+        .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public ThirdPartySearchResponse searchChannel(
+      ChannelType type, Map<String, String> queryParameters) throws ApiGatewayException {
+    var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
+    return attempt(() -> executeRequest(request, type.searchResponseClass))
+        .orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest body)
+      throws ApiGatewayException {
+    var token = authClient.getToken();
+    var request = createCreateJournalRequest(token, body);
+    return attempt(() -> executeRequest(request, CreateChannelResponse.class))
+        .orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest body)
+      throws ApiGatewayException {
+    var token = authClient.getToken();
+    var request = createCreatePublisherRequest(token, body);
+    return attempt(() -> executeRequest(request, CreateChannelResponse.class))
+        .orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest body)
+      throws ApiGatewayException {
+    var token = authClient.getToken();
+    var request = createCreateSeriesRequest(token, body);
+    return attempt(() -> executeRequest(request, CreateChannelResponse.class))
+        .orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  private <T> T executeRequest(HttpRequest request, Class<T> clazz)
+      throws ApiGatewayException, IOException, InterruptedException {
+    var response = httpClient.send(request, BodyHandlers.ofString());
+
+    if (!OK_STATUSES.contains(response.statusCode())) {
+      handleError(request.uri(), response);
     }
 
-    @Override
-    public ThirdPartySearchResponse searchChannel(
-        ChannelType type, Map<String, String> queryParameters) throws ApiGatewayException {
-        var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
-        return attempt(() -> executeRequest(request, type.searchResponseClass))
-                   .orElseThrow(
-                       failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
+  }
+
+  private void handleError(URI requestedUri, HttpResponse<String> response)
+      throws ApiGatewayException {
+    var statusCode = response.statusCode();
+    if (HTTP_NOT_FOUND == statusCode) {
+      LOGGER.info("Publication channel not found: {} {}", requestedUri, response.body());
+      throw new NotFoundException("Publication channel not found!");
     }
-
-    @Override
-    public CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest body)
-        throws ApiGatewayException {
-        var token = authClient.getToken();
-        var request = createCreateJournalRequest(token, body);
-        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
-                   .orElseThrow(
-                       failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    if (HTTP_BAD_REQUEST == statusCode) {
+      throw new BadRequestException(response.body());
     }
-
-    @Override
-    public CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest body)
-        throws ApiGatewayException {
-        var token = authClient.getToken();
-        var request = createCreatePublisherRequest(token, body);
-        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
-                   .orElseThrow(
-                       failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+    if (HTTP_MOVED_PERM == statusCode) {
+      var location = response.headers().map().get("Location").getFirst();
+      LOGGER.info("Publication channel {} moved permanently to: {}", requestedUri, location);
+      throw new PublicationChannelMovedException(
+          "Publication channel moved permanently!", URI.create(location));
     }
+    LOGGER.error(
+        "Error fetching publication channel: {} {} {}", requestedUri, statusCode, response.body());
+    throw new BadGatewayException("Unexpected response from upstream!");
+  }
 
-    @Override
-    public CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest body)
-        throws ApiGatewayException {
-        var token = authClient.getToken();
-        var request = createCreateSeriesRequest(token, body);
-        return attempt(() -> executeRequest(request, CreateChannelResponse.class))
-                   .orElseThrow(
-                       failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
+    if (e instanceof InterruptedException) {
+      LOGGER.error("Thread interrupted when fetching: {}", uri, e);
+      Thread.currentThread().interrupt();
+    } else if (e instanceof ApiGatewayException apiGatewayException) {
+      return apiGatewayException;
     }
+    LOGGER.error("Unable to reach upstream: {}", uri, e);
+    return new BadGatewayException("Unable to reach upstream!");
+  }
 
-    private <T> T executeRequest(HttpRequest request, Class<T> clazz)
-        throws ApiGatewayException, IOException, InterruptedException {
-        var response = httpClient.send(request, BodyHandlers.ofString());
+  private HttpRequest createFetchPublicationChannelRequest(
+      String pathElement, String identifier, String year) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .uri(constructUri(pathElement, identifier, year))
+        .GET()
+        .build();
+  }
 
-        if (!OK_STATUSES.contains(response.statusCode())) {
-            handleError(request.uri(), response);
-        }
+  private HttpRequest createFindPublicationChannelRequest(
+      String pathElement, Map<String, String> queryParams) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .uri(addQueryParameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
+        .GET()
+        .build();
+  }
 
-        return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
-    }
+  private HttpRequest createCreateJournalRequest(
+      String token, ChannelRegistryCreateSerialPublicationRequest body) {
 
-    private void handleError(URI requestedUri, HttpResponse<String> response)
-        throws ApiGatewayException {
-        var statusCode = response.statusCode();
-        if (HTTP_NOT_FOUND == statusCode) {
-            LOGGER.info("Publication channel not found: {} {}", requestedUri, response.body());
-            throw new NotFoundException("Publication channel not found!");
-        }
-        if (HTTP_BAD_REQUEST == statusCode) {
-            throw new BadRequestException(response.body());
-        }
-        if (HTTP_MOVED_PERM == statusCode) {
-            var location = response
-                               .headers()
-                               .map()
-                               .get("Location")
-                               .getFirst();
-            LOGGER.info("Publication channel {} moved permanently to: {}", requestedUri, location);
-            throw new PublicationChannelMovedException(
-                "Publication channel moved permanently!", URI.create(location));
-        }
-        LOGGER.error(
-            "Error fetching publication channel: {} {} {}", requestedUri, statusCode, response.body());
-        throw new BadGatewayException("Unexpected response from upstream!");
-    }
+    var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(body)).orElseThrow();
 
-    private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
-        if (e instanceof InterruptedException) {
-            LOGGER.error("Thread interrupted when fetching: {}", uri, e);
-            Thread
-                .currentThread()
-                .interrupt();
-        } else if (e instanceof ApiGatewayException apiGatewayException) {
-            return apiGatewayException;
-        }
-        LOGGER.error("Unable to reach upstream: {}", uri, e);
-        return new BadGatewayException("Unable to reach upstream!");
-    }
+    return getHttpRequest(token, bodyAsJsonString, "createjournal");
+  }
 
-    private HttpRequest createFetchPublicationChannelRequest(
-        String pathElement, String identifier, String year) {
-        return HttpRequest
-                   .newBuilder()
-                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                   .uri(constructUri(pathElement, identifier, year))
-                   .GET()
-                   .build();
-    }
+  private HttpRequest createCreatePublisherRequest(
+      String token, ChannelRegistryCreatePublisherRequest request) {
+    var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(request)).orElseThrow();
 
-    private HttpRequest createFindPublicationChannelRequest(
-        String pathElement, Map<String, String> queryParams) {
-        return HttpRequest
-                   .newBuilder()
-                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                   .uri(addQueryParameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
-                   .GET()
-                   .build();
-    }
+    return getHttpRequest(token, bodyAsJsonString, "createpublisher");
+  }
 
-    private HttpRequest createCreateJournalRequest(
-        String token, ChannelRegistryCreateSerialPublicationRequest body) {
+  private HttpRequest createCreateSeriesRequest(
+      String token, ChannelRegistryCreateSerialPublicationRequest body) {
 
-        var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(body)).orElseThrow();
+    var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(body)).orElseThrow();
 
-        return getHttpRequest(token, bodyAsJsonString, "createjournal");
-    }
+    return getHttpRequest(token, bodyAsJsonString, "createseries");
+  }
 
-    private HttpRequest createCreatePublisherRequest(
-        String token, ChannelRegistryCreatePublisherRequest request) {
-        var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(request)).orElseThrow();
+  private HttpRequest getHttpRequest(String token, String journalRequestBodyAsString, String path) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
+        .header(AUTHORIZATION, "Bearer " + token)
+        .uri(constructUri(path, "createpid"))
+        .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
+        .build();
+  }
 
-        return getHttpRequest(token, bodyAsJsonString, "createpublisher");
-    }
+  private URI constructUri(String... children) {
+    return UriWrapper.fromUri(channelRegistryBaseUri).addChild(children).getUri();
+  }
 
-    private HttpRequest createCreateSeriesRequest(
-        String token, ChannelRegistryCreateSerialPublicationRequest body) {
-
-        var bodyAsJsonString = attempt(() -> dtoObjectMapper.writeValueAsString(body)).orElseThrow();
-
-        return getHttpRequest(token, bodyAsJsonString, "createseries");
-    }
-
-    private HttpRequest getHttpRequest(String token, String journalRequestBodyAsString, String path) {
-        return HttpRequest
-                   .newBuilder()
-                   .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-                   .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
-                   .header(AUTHORIZATION, "Bearer " + token)
-                   .uri(constructUri(path, "createpid"))
-                   .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
-                   .build();
-    }
-
-    private URI constructUri(String... children) {
-        return UriWrapper
-                   .fromUri(channelRegistryBaseUri)
-                   .addChild(children)
-                   .getUri();
-    }
-
-    private URI addQueryParameters(URI uri, Map<String, String> queryParameters) {
-        return UriWrapper
-                   .fromUri(uri)
-                   .addQueryParameters(queryParameters)
-                   .getUri();
-    }
+  private URI addQueryParameters(URI uri, Map<String, String> queryParameters) {
+    return UriWrapper.fromUri(uri).addQueryParameters(queryParameters).getUri();
+  }
 }

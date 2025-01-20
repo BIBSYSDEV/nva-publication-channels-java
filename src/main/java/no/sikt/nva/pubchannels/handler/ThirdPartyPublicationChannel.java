@@ -4,19 +4,19 @@ import java.net.URI;
 
 public interface ThirdPartyPublicationChannel {
 
-    String identifier();
+  String identifier();
 
-    String getYear();
+  String getYear();
 
-    String name();
+  String name();
 
-    ScientificValue getScientificValue();
+  ScientificValue getScientificValue();
 
-    URI homepage();
+  URI homepage();
 
-    String discontinued();
+  String discontinued();
 
-    ScientificValueReviewNotice reviewNotice();
+  ScientificValueReviewNotice reviewNotice();
 
-    String type();
+  String type();
 }

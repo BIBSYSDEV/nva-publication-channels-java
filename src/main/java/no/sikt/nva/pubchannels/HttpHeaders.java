@@ -11,6 +11,5 @@ public final class HttpHeaders {
   public static final String ACCEPT = "Accept";
   public static final String LOCATION = "Location";
 
-  private HttpHeaders() {
-  }
+  private HttpHeaders() {}
 }

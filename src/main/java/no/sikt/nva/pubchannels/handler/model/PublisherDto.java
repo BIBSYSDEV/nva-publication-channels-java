@@ -22,36 +22,31 @@ public record PublisherDto(
     ScientificValueReviewNotice reviewNotice)
     implements JsonSerializable {
 
-    public static final String TYPE = "Publisher";
+  public static final String TYPE = "Publisher";
 
-    public static PublisherDto create(
-        URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
-        var year = Optional
-                       .ofNullable(publisher.getYear())
-                       .orElse(requestedYear);
-        var id = UriWrapper
-                     .fromUri(selfUriBase)
-                     .addChild(publisher.identifier(), year)
-                     .getUri();
-        return new PublisherDto(
-            id,
-            publisher.identifier(),
-            publisher.name(),
-            publisher.isbnPrefix(),
-            publisher.getScientificValue(),
-            publisher.homepage(),
-            publisher.discontinued(),
-            year,
-            publisher.reviewNotice());
-    }
+  public static PublisherDto create(
+      URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
+    var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
+    var id = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier(), year).getUri();
+    return new PublisherDto(
+        id,
+        publisher.identifier(),
+        publisher.name(),
+        publisher.isbnPrefix(),
+        publisher.getScientificValue(),
+        publisher.homepage(),
+        publisher.discontinued(),
+        year,
+        publisher.reviewNotice());
+  }
 
-    @JsonProperty("type")
-    public String getType() {
-        return TYPE;
-    }
+  @JsonProperty("type")
+  public String getType() {
+    return TYPE;
+  }
 
-    @JsonProperty("@context")
-    public URI getContext() {
-        return URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
-    }
+  @JsonProperty("@context")
+  public URI getContext() {
+    return URI.create(Contexts.PUBLICATION_CHANNEL_CONTEXT);
+  }
 }

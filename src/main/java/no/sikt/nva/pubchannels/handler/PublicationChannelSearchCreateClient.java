@@ -10,15 +10,15 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public interface PublicationChannelSearchCreateClient {
 
-    ThirdPartySearchResponse searchChannel(ChannelType type, Map<String, String> queryParameters)
-        throws ApiGatewayException;
+  ThirdPartySearchResponse searchChannel(ChannelType type, Map<String, String> queryParameters)
+      throws ApiGatewayException;
 
-    CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest request)
-        throws ApiGatewayException;
+  CreateChannelResponse createJournal(ChannelRegistryCreateSerialPublicationRequest request)
+      throws ApiGatewayException;
 
-    CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest request)
-        throws ApiGatewayException;
+  CreateChannelResponse createPublisher(ChannelRegistryCreatePublisherRequest request)
+      throws ApiGatewayException;
 
-    CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest request)
-        throws ApiGatewayException;
+  CreateChannelResponse createSeries(ChannelRegistryCreateSerialPublicationRequest request)
+      throws ApiGatewayException;
 }
