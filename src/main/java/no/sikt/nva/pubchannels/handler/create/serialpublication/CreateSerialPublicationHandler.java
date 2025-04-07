@@ -13,7 +13,6 @@ import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
-import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -71,18 +70,13 @@ public class CreateSerialPublicationHandler
   }
 
   private void validateType(CreateSerialPublicationRequest input) throws BadRequestException {
-    try {
-      String type = input.type();
-      if (isNull(type)) {
-        throw new ValidationException(
-            "Type cannot be null! Type must be either 'Journal' or 'Series'");
-      }
-      var typeLowerCase = type.toLowerCase(Locale.ROOT);
-      if (!JOURNAL.equals(typeLowerCase) && !SERIES.equals(typeLowerCase)) {
-        throw new ValidationException("Type must be either 'Journal' or 'Series'");
-      }
-    } catch (ValidationException exception) {
-      throw new BadRequestException(exception.getMessage());
+    if (isNull(input.type())) {
+      throw new BadRequestException(
+          "Type cannot be null! Type must be either 'Journal' or 'Series'");
+    }
+    var typeLowerCase = input.type().toLowerCase(Locale.ROOT);
+    if (!JOURNAL.equals(typeLowerCase) && !SERIES.equals(typeLowerCase)) {
+      throw new BadRequestException("Type must be either 'Journal' or 'Series'");
     }
   }
 }

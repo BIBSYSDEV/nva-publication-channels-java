@@ -97,6 +97,7 @@ public class DataportenAuthClient implements AuthClient {
         .orElseThrow();
   }
 
+  @SuppressWarnings("PMD.DoNotUseThreads")
   private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
 
     LOGGER.error("Unable to reach upstream: {}", uri, e);
