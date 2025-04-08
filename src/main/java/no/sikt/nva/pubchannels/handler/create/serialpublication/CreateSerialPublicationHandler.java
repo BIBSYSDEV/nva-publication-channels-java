@@ -4,7 +4,6 @@ import static java.util.Objects.isNull;
 import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICATION;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import java.util.Locale;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -74,8 +73,7 @@ public class CreateSerialPublicationHandler
       throw new BadRequestException(
           "Type cannot be null! Type must be either 'Journal' or 'Series'");
     }
-    var typeLowerCase = input.type().toLowerCase(Locale.ROOT);
-    if (!JOURNAL.equals(typeLowerCase) && !SERIES.equals(typeLowerCase)) {
+    if (!JOURNAL.equalsIgnoreCase(input.type()) && !SERIES.equalsIgnoreCase(input.type())) {
       throw new BadRequestException("Type must be either 'Journal' or 'Series'");
     }
   }
