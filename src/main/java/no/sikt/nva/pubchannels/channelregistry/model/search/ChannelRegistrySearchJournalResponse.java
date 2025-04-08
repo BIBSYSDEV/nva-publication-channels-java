@@ -5,11 +5,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublic
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 
 public record ChannelRegistrySearchJournalResponse(
-    @JsonProperty(ENTITY_PAGE_INFORMATION) ChannelRegistryEntityPageInformation pageInformation,
-    @JsonProperty(ENTITY_RESULT_SET)
+    @JsonProperty("entityPageInformationDto") ChannelRegistryEntityPageInformation pageInformation,
+    @JsonProperty("entityResultSetDto")
         ChannelRegistryEntityResultSet<ChannelRegistrySerialPublication> resultSet)
-    implements ThirdPartySearchResponse {
-
-  private static final String ENTITY_RESULT_SET = "entityResultSetDto";
-  private static final String ENTITY_PAGE_INFORMATION = "entityPageInformationDto";
-}
+    implements ThirdPartySearchResponse {}

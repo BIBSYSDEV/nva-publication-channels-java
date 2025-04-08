@@ -43,7 +43,7 @@ public record ChannelRegistryPublisher(
 
   @Override
   public String type() {
-    if ("publisher".equalsIgnoreCase(type)) {
+    if (PUBLISHER.equalsIgnoreCase(type)) {
       return PUBLISHER;
     } else {
       throw new IllegalArgumentException("Unknown type found. Expected 'publisher'.");

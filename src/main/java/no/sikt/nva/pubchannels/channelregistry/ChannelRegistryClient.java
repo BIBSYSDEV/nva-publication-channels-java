@@ -142,6 +142,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     throw new BadGatewayException("Unexpected response from upstream!");
   }
 
+  @SuppressWarnings("PMD.DoNotUseThreads")
   private ApiGatewayException logAndCreateBadGatewayException(URI uri, Exception e) {
     if (e instanceof InterruptedException) {
       LOGGER.error("Thread interrupted when fetching: {}", uri, e);
