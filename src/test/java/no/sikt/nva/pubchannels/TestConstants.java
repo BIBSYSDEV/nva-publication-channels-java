@@ -3,6 +3,7 @@ package no.sikt.nva.pubchannels;
 public final class TestConstants {
 
   public static final String API_DOMAIN = "localhost";
+  public static final String COGNITO_AUTHORIZER_URLS = "http://localhost:3000";
   public static final String CUSTOM_DOMAIN_BASE_PATH = "publication-channels";
   public static final String NAME_QUERY_PARAM = "name";
   public static final String YEAR_QUERY_PARAM = "year";

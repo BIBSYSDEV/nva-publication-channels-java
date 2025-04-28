@@ -7,6 +7,7 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.COGNITO_AUTHORIZER_URLS;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
@@ -79,6 +80,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
     when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
     when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+    when(environment.readEnv("API_HOST")).thenReturn(API_DOMAIN);
+    when(environment.readEnv("COGNITO_AUTHORIZER_URLS")).thenReturn(COGNITO_AUTHORIZER_URLS);
   }
 
   protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
