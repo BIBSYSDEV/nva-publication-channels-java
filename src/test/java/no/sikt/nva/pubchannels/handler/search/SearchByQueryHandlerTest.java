@@ -11,6 +11,7 @@ import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_COUNT_PARAM;
 import static no.sikt.nva.pubchannels.TestConstants.CHANNEL_REGISTRY_PAGE_NO_PARAM;
+import static no.sikt.nva.pubchannels.TestConstants.COGNITO_AUTHORIZER_URLS;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET;
 import static no.sikt.nva.pubchannels.TestConstants.DEFAULT_OFFSET_INT;
@@ -157,6 +158,8 @@ public abstract class SearchByQueryHandlerTest {
     when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
     when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
     when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+    when(environment.readEnv("API_HOST")).thenReturn(API_DOMAIN);
+    when(environment.readEnv("COGNITO_AUTHORIZER_URLS")).thenReturn(COGNITO_AUTHORIZER_URLS);
   }
 
   @BeforeEach

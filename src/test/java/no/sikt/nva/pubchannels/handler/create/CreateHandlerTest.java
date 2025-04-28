@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
+import static no.sikt.nva.pubchannels.TestConstants.COGNITO_AUTHORIZER_URLS;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
 import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
@@ -141,6 +142,8 @@ public abstract class CreateHandlerTest {
     when(environment.readEnv("ALLOWED_ORIGIN")).thenReturn(WILD_CARD);
     when(environment.readEnv("API_DOMAIN")).thenReturn(API_DOMAIN);
     when(environment.readEnv("CUSTOM_DOMAIN_BASE_PATH")).thenReturn(CUSTOM_DOMAIN_BASE_PATH);
+    when(environment.readEnv("API_HOST")).thenReturn(API_DOMAIN);
+    when(environment.readEnv("COGNITO_AUTHORIZER_URLS")).thenReturn(COGNITO_AUTHORIZER_URLS);
   }
 
   @AfterEach
