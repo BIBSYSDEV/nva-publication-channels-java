@@ -49,7 +49,7 @@ import org.zalando.problem.Problem;
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
   private static final String PUBLISHER_IDENTIFIER_FROM_CACHE =
-      "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
+      "50561B90-6679-4FCD-BCB0-99E521B18962";
   private static final URI SELF_URI_BASE =
       UriWrapper.fromHost(API_DOMAIN)
           .addChild(CUSTOM_DOMAIN_BASE_PATH)

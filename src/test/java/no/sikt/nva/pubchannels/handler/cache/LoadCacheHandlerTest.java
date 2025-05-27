@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class LoadCacheHandlerTest extends CacheServiceTestSetup {
 
-  public static final String CHANNEL_ID_FROM_CSV = "1013C82D-B452-43E4-9396-FA958F2BC2E9";
+  public static final String CHANNEL_ID_FROM_CSV = "50561B90-6679-4FCD-BCB0-99E521B18962";
 
   @Test
   void shouldLoadCache() throws IOException {

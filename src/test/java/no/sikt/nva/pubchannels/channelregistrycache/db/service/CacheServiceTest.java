@@ -98,8 +98,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
   void shouldLoadCachedPublicationChannelWhenPublisher() throws ApiGatewayException {
     var s3Client = s3ClientWithCsvFileInCacheBucket();
     cacheService.loadCache(s3Client);
-    var channelIdentifier = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
-    var year = "2024";
+    var channelIdentifier = "75C2551B-995B-4764-A8AB-C9AEBDED0692";
+    var year = "2025";
 
     var journal =
         (ChannelRegistryPublisher)
@@ -119,7 +119,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
         new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
         URI.create(
             "https://kanalregister.hkdir"
-                + ".no/publiseringskanaler/KanalTidsskriftInfo"
+                + ".no/publiseringskanaler/info/tidsskrift"
                 + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
         null,
         "Tidsskrift");
@@ -147,7 +147,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
         new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
         URI.create(
             "https://kanalregister.hkdir"
-                + ".no/publiseringskanaler/KanalTidsskriftInfo"
+                + ".no/publiseringskanaler/info/tidsskrift"
                 + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
         null,
         "Tidsskrift");
@@ -155,12 +155,11 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
   private ChannelRegistryPublisher createExpectedPublisher(String channelIdentifier, String year) {
     var homepage =
-        "https://kanalregister.hkdir.no/publiseringskanaler/KanalForslagInfo?pid=09D6F92E-B0F6-4B62"
-            + "-90AB-1B9E767E9E11";
+        "https://kanalregister.hkdir.no/publiseringskanaler/info/forlag?pid=75C2551B-995B-4764-A8AB-C9AEBDED0692";
     return new ChannelRegistryPublisher(
         channelIdentifier,
-        new ChannelRegistryLevel(Integer.parseInt(year), null, null, null, null),
-        "978-1-9996187",
+        new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
+        "978-1-911116,978-1-7882",
         "Agenda Publishing",
         URI.create(homepage),
         null,
