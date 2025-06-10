@@ -71,7 +71,7 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest
   @ParameterizedTest(name = "Should return correct data for type \"{0}\"")
   @ValueSource(strings = {JOURNAL_TYPE, SERIES_TYPE})
   void shouldReturnCorrectDataWithSuccessWhenExists(String type) throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
 
     var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 

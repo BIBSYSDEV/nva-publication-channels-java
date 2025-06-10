@@ -13,6 +13,7 @@ import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
 import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
@@ -74,6 +75,18 @@ public class CacheService implements PublicationChannelFetchClient {
         .map(ChannelRegistryCacheEntry::fromDao)
         .map(entry -> entry.toThirdPartyPublicationChannel(type, year))
         .orElseThrow(failure -> new CachedPublicationChannelNotFoundException(identifier));
+  }
+
+  @Override
+  public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
+      throws CachedPublicationChannelNotFoundException {
+    return attempt(requestObject::identifier)
+        .map(CacheService::entryWithIdentifier)
+        .map(table::getItem)
+        .map(ChannelRegistryCacheEntry::fromDao)
+        .map(entry -> entry.toThirdPartyPublicationChannel(requestObject))
+        .orElseThrow(
+            failure -> new CachedPublicationChannelNotFoundException(requestObject.identifier()));
   }
 
   private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(

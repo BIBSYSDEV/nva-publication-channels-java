@@ -20,6 +20,7 @@ import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
@@ -90,6 +91,19 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
   }
 
+  protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(
+      RequestObject requestObject) throws ApiGatewayException {
+    try {
+      LOGGER.info(
+          FETCHING_FROM_CHANNEL_REGISTER_MESSAGE, requestObject.type(), requestObject.identifier());
+      return publicationChannelClient.getChannel(requestObject);
+    } catch (PublicationChannelMovedException movedException) {
+      throw new PublicationChannelMovedException(
+          "%s moved".formatted(requestObject.type()),
+          constructNewLocation(getPathElement(), movedException.getLocation(), requestObject));
+    }
+  }
+
   protected boolean shouldUseCache() {
     return appConfig.shouldUseCache();
   }
@@ -105,6 +119,16 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
   }
 
+  protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(
+      RequestObject requestObject, ApiGatewayException e) throws ApiGatewayException {
+    if (isServerError(e)) {
+      return attempt(() -> fetchChannelFromCache(requestObject))
+          .orElseThrow(throwOriginalException(e));
+    } else {
+      throw e;
+    }
+  }
+
   protected ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(
       ChannelType type, String identifier, String year) throws ApiGatewayException {
     try {
@@ -114,10 +138,25 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     }
   }
 
+  protected ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(RequestObject requestObject)
+      throws ApiGatewayException {
+    try {
+      return fetchChannelFromChannelRegister(requestObject);
+    } catch (ApiGatewayException e) {
+      return fetchFromCacheWhenServerError(requestObject, e);
+    }
+  }
+
   protected ThirdPartyPublicationChannel fetchChannelFromCache(
       ChannelType type, String identifier, String year) throws ApiGatewayException {
     LOGGER.info(FETCHING_FROM_CACHE_MESSAGE, type.name(), identifier);
     return cacheService.getChannel(type, identifier, year);
+  }
+
+  protected ThirdPartyPublicationChannel fetchChannelFromCache(RequestObject requestObject)
+      throws ApiGatewayException {
+    LOGGER.info(FETCHING_FROM_CACHE_MESSAGE, requestObject.type(), requestObject.identifier());
+    return cacheService.getChannel(requestObject);
   }
 
   protected URI constructPublicationChannelIdBaseUri(String publicationChannelPathElement) {
@@ -135,6 +174,19 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
         .addChild(newIdentifier)
         .addChild(year)
         .getUri();
+  }
+
+  protected URI constructNewLocation(
+      String pathElement, URI channelRegistryLocation, RequestObject requestObject) {
+    var newIdentifier =
+        UriWrapper.fromUri(channelRegistryLocation).getPath().getPathElementByIndexFromEnd(1);
+    var uriWrapper =
+        UriWrapper.fromUri(constructPublicationChannelIdBaseUri(pathElement))
+            .addChild(newIdentifier);
+    if (requestObject.year().isPresent()) {
+      return uriWrapper.addChild(requestObject.year().get()).getUri();
+    }
+    return uriWrapper.getUri();
   }
 
   @Override

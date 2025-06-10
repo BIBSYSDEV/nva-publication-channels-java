@@ -63,9 +63,24 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   }
 
   @Test
-  void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+  void shouldReturnJournalWithSuccessWhenExists() throws IOException {
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
+    handlerUnderTest.handleRequest(input, output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+
+    var statusCode = response.getStatusCode();
+    assertThat(statusCode, is(equalTo(HTTP_OK)));
+
+    var actualSeries = response.getBodyObject(SerialPublicationDto.class);
+    assertThat(actualSeries, is(equalTo(expectedChannel)));
+  }
+
+  @Test
+  void shouldReturnSeriesWithSuccessWhenExists() throws IOException {
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
     var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -81,7 +96,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldIncludeYearInResponse() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
     mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -94,7 +109,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   @ParameterizedTest(name = "Should return requested media type \"{0}\"")
   @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
   void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-    var input = constructRequest(year, identifier, mediaType);
+    var input = constructRequest(year, identifier, customChannelPath, mediaType);
 
     final var expectedMediaType =
         mediaType.equals(MediaType.ANY_TYPE)
@@ -116,9 +131,11 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
 
-    var expectedSeries = mockChannelFoundYearValueNull(year, identifier);
+    var expectedSeries =
+        mockChannelWithScientificValueReviewNotice(
+            year, identifier, channelRegistryPathElement, type);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -133,8 +150,10 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
-    var expectedSeries = mockChannelWithScientificValueReviewNotice(year, identifier);
+    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var expectedSeries =
+        mockChannelWithScientificValueReviewNotice(
+            year, identifier, channelRegistryPathElement, type);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -150,7 +169,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
     handlerUnderTest.handleRequest(
-        constructRequest(year, identifier, MediaType.ANY_TYPE), output, context);
+        constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE), output, context);
 
     var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
     assertEquals(HTTP_OK, response.getStatusCode());
@@ -166,7 +185,10 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
     var input =
         constructRequest(
-            JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
+            JOURNAL_YEAR_FROM_CACHE,
+            JOURNAL_IDENTIFIER_FROM_CACHE,
+            customChannelPath,
+            MediaType.ANY_TYPE);
 
     super.loadAndEnableCache();
     handlerUnderTest.handleRequest(input, output, context);
@@ -184,7 +206,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
     var input =
         constructRequest(
-            JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, MediaType.ANY_TYPE);
+            JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, type, MediaType.ANY_TYPE);
 
     when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
     super.loadAndEnableCache();
@@ -217,7 +239,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
             cacheService,
             super.getAppConfigWithCacheEnabled(true));
 
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, type, MediaType.ANY_TYPE);
 
     var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -233,7 +255,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   private SerialPublicationDto mockChannelFoundYearValueNull(String year, String identifier) {
     var testChannel =
-        new TestChannel(year, identifier, type)
+        new TestChannel(year, identifier, handlerUnderTest.getPathElement())
             .withScientificValueReviewNotice(
                 Map.of(
                     "en", "This is a review notice",
@@ -246,7 +268,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   }
 
   private SerialPublicationDto mockChannelWithScientificValueReviewNotice(
-      String year, String identifier) {
+      String year, String identifier, String pathElement, String type) {
     var testChannel =
         new TestChannel(year, identifier, type)
             .withScientificValueReviewNotice(
@@ -255,7 +277,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
                     "no", "Vedtak"));
     var body = testChannel.asChannelRegistrySerialPublicationBody();
 
-    mockChannelRegistryResponse(channelRegistryPathElement, String.valueOf(year), identifier, body);
+    mockChannelRegistryResponse(pathElement, String.valueOf(year), identifier, body);
 
     return testChannel.asSerialPublicationDto(selfBaseUri, String.valueOf(year));
   }

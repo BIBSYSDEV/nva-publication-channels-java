@@ -1,5 +1,6 @@
 package no.sikt.nva.pubchannels.channelregistry;
 
+import java.util.Locale;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.channelregistry.model.search.ChannelRegistrySearchJournalResponse;
@@ -38,5 +39,25 @@ public enum ChannelType {
     this.pathElement = pathElement;
     this.fetchResponseClass = fetchResponseClass;
     this.searchResponseClass = searchResponseClass;
+  }
+
+  public static ChannelType fromNvaPathElement(String value) {
+    return switch (value.toLowerCase(Locale.getDefault())) {
+      case "publisher" -> PUBLISHER;
+      case "serial-publication" -> SERIAL_PUBLICATION;
+      case "journal" -> JOURNAL;
+      case "series" -> SERIES;
+      default ->
+          throw new IllegalStateException(
+              "Unexpected value: " + value.toLowerCase(Locale.getDefault()));
+    };
+  }
+
+  public Class<? extends ThirdPartyPublicationChannel> getFetchResponseClass() {
+    return fetchResponseClass;
+  }
+
+  public String getPathElement() {
+    return pathElement;
   }
 }

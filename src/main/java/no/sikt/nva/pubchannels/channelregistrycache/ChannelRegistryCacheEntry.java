@@ -16,6 +16,7 @@ import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCach
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import nva.commons.core.JacocoGenerated;
 
 public class ChannelRegistryCacheEntry {
@@ -122,6 +123,19 @@ public class ChannelRegistryCacheEntry {
     };
   }
 
+  public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
+    return switch (requestObject.type()) {
+      case JOURNAL, SERIES, SERIAL_PUBLICATION ->
+          requestObject
+              .year()
+              .map(this::toThirdPartySerialPublication)
+              .orElseGet(this::toThirdPartySerialPublication);
+      case PUBLISHER -> requestObject.year().map(this::toPublisher).orElseGet(this::toPublisher);
+      default ->
+          throw new IllegalStateException("Unexpected channel type: " + requestObject.type());
+    };
+  }
+
   public ChannelRegistryCacheDao toDao() {
     return ChannelRegistryCacheDao.builder()
         .identifier(getPid())
@@ -147,6 +161,11 @@ public class ChannelRegistryCacheEntry {
         "publisher");
   }
 
+  public ThirdPartyPublisher toPublisher() {
+    return new ChannelRegistryPublisher(
+        getPidAsString(), null, getIsbn(), getOriginalTitle(), getUri(), getCeased(), "publisher");
+  }
+
   public ThirdPartySerialPublication toThirdPartySerialPublication(String year) {
     return new ChannelRegistrySerialPublication(
         getPidAsString(),
@@ -154,6 +173,18 @@ public class ChannelRegistryCacheEntry {
         getOnlineIssn(),
         getPrintIssn(),
         getChannelRegistryLevel(year),
+        getUri(),
+        getCeased(),
+        getType());
+  }
+
+  public ThirdPartySerialPublication toThirdPartySerialPublication() {
+    return new ChannelRegistrySerialPublication(
+        getPidAsString(),
+        getOriginalTitle(),
+        getOnlineIssn(),
+        getPrintIssn(),
+        null,
         getUri(),
         getCeased(),
         getType());

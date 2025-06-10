@@ -25,6 +25,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelRespons
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
@@ -67,6 +68,15 @@ public class ChannelRegistryClient implements PublicationChannelClient {
       throws ApiGatewayException {
     var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
     return attempt(() -> executeRequest(request, type.fetchResponseClass))
+        .orElseThrow(
+            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
+      throws ApiGatewayException {
+    var request = createFetchPublicationChannelRequest(requestObject);
+    return attempt(() -> executeRequest(request, requestObject.type().getFetchResponseClass()))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
   }
@@ -163,6 +173,14 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         .build();
   }
 
+  private HttpRequest createFetchPublicationChannelRequest(RequestObject requestObject) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .uri(constructUri(requestObject))
+        .GET()
+        .build();
+  }
+
   private HttpRequest createFindPublicationChannelRequest(
       String pathElement, Map<String, String> queryParams) {
     return HttpRequest.newBuilder()
@@ -207,6 +225,19 @@ public class ChannelRegistryClient implements PublicationChannelClient {
 
   private URI constructUri(String... children) {
     return UriWrapper.fromUri(channelRegistryBaseUri).addChild(children).getUri();
+  }
+
+  private URI constructUri(RequestObject requestObject) {
+    var uriWrapper =
+        UriWrapper.fromUri(channelRegistryBaseUri)
+            .addChild(requestObject.type().getPathElement())
+            .addChild(requestObject.identifier().toString());
+
+    if (requestObject.year().isPresent()) {
+      return uriWrapper.addChild(requestObject.year().get()).getUri();
+    }
+
+    return uriWrapper.getUri();
   }
 
   private URI addQueryParameters(URI uri, Map<String, String> queryParameters) {

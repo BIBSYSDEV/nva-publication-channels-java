@@ -17,7 +17,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static no.sikt.nva.pubchannels.handler.TestUtils.setupInterruptedClient;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -71,7 +70,6 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   protected ChannelRegistryClient channelRegistryClient;
   protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
   protected static String year = randomYear();
-  protected static String name = randomString();
   protected static String identifier = UUID.randomUUID().toString();
 
   @BeforeAll
@@ -103,7 +101,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   void shouldReturnBadRequestWhenPathParameterYearIsNotValid(String invalidYear)
       throws IOException {
 
-    var input = constructRequest(invalidYear, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(invalidYear, identifier, "journal", MediaType.ANY_TYPE);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -121,7 +119,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   void shouldReturnBadRequestWhenPathParameterIdentifierIsNotValid(String invalidIdentifier)
       throws IOException {
 
-    var input = constructRequest(year, invalidIdentifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, invalidIdentifier, "journal", MediaType.ANY_TYPE);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -138,7 +136,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   void shouldReturnNotFoundWhenExternalApiRespondsWithNotFound() throws IOException {
     mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_NOT_FOUND);
 
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "journal", MediaType.ANY_TYPE);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -157,7 +155,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
           throws IOException {
     mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_INTERNAL_ERROR);
 
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input =
+        constructRequest(year, identifier, handlerUnderTest.getPathElement(), MediaType.ANY_TYPE);
 
     var appender = LogUtils.getTestingAppenderForRootLogger();
     handlerUnderTest.handleRequest(input, output, context);
@@ -181,7 +180,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     this.handlerUnderTest = createHandler(publicationChannelClient);
 
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "journal", MediaType.ANY_TYPE);
 
     var appender = LogUtils.getTestingAppenderForRootLogger();
     handlerUnderTest.handleRequest(input, output, context);
@@ -208,7 +207,10 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     mockRedirectedClient(
         requestedIdentifier, newChannelRegistryLocation, year, channelRegistryPathElement);
     handlerUnderTest.handleRequest(
-        constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output, context);
+        constructRequest(
+            year, requestedIdentifier, handlerUnderTest.getPathElement(), MediaType.ANY_TYPE),
+        output,
+        context);
     var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
     assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
     var expectedLocation =
