@@ -1,7 +1,10 @@
 package no.sikt.nva.pubchannels.handler.model;
 
+import static java.util.Objects.nonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
@@ -26,8 +29,17 @@ public record PublisherDto(
 
   public static PublisherDto create(
       URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
-    var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
-    var id = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier(), year).getUri();
+    var year =
+        publisher
+            .getYear()
+            .or(() -> Optional.ofNullable(requestedYear))
+            .orElse(String.valueOf(LocalDate.now().getYear()));
+
+    var uriWrapper = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier());
+    if (nonNull(requestedYear)) {
+      uriWrapper = uriWrapper.addChild(year);
+    }
+    var id = uriWrapper.getUri();
     return new PublisherDto(
         id,
         publisher.identifier(),

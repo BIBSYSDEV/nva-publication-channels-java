@@ -1,9 +1,15 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
+import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8;
 import static no.sikt.nva.pubchannels.TestConstants.HARDCODED_CACHED_TITLE;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
@@ -15,9 +21,12 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.net.MediaType;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -58,6 +67,16 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     var body = testChannel.asChannelRegistrySerialPublicationBody();
 
     mockChannelFoundWithBody(year, identifier, body);
+
+    return testChannel.asSerialPublicationDto(selfBaseUri, year);
+  }
+
+  protected SerialPublicationDto mockChannelWithoutYearFoundAndReturnExpectedResponse(
+      String identifier, String type) {
+    var testChannel = new TestChannel(String.valueOf(LocalDate.now().getYear()), identifier, type);
+    var body = testChannel.asChannelRegistrySerialPublicationBody();
+
+    mockChannelWithoutYearFoundWithBody(identifier, body);
 
     return testChannel.asSerialPublicationDto(selfBaseUri, year);
   }
@@ -253,18 +272,18 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
   }
 
-  private SerialPublicationDto mockChannelFoundYearValueNull(String year, String identifier) {
-    var testChannel =
-        new TestChannel(year, identifier, handlerUnderTest.getPathElement())
-            .withScientificValueReviewNotice(
-                Map.of(
-                    "en", "This is a review notice",
-                    "no", "Vedtak"));
-    var body = testChannel.asChannelRegistrySerialPublicationBody();
+  @Test
+  void shouldIncludeCurrentYearInResponseWhenYearIsNotProvidedInRequest() throws IOException {
+    var input = constructRequest(identifier, customChannelPath, MediaType.ANY_TYPE);
+    mockChannelWithoutYearFoundAndReturnExpectedResponse(identifier, type);
 
-    mockChannelRegistryResponse(channelRegistryPathElement, year, identifier, body);
+    handlerUnderTest.handleRequest(input, output, context);
 
-    return testChannel.asSerialPublicationDto(selfBaseUri, year);
+    var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+    var dto = response.getBodyObject(SerialPublicationDto.class);
+
+    var currentYear = String.valueOf(LocalDate.now().getYear());
+    assertThat(dto.year(), is(equalTo(currentYear)));
   }
 
   private SerialPublicationDto mockChannelWithScientificValueReviewNotice(
@@ -286,5 +305,16 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
       String year, String identifier, String channelRegistryResponseBody) {
     mockChannelRegistryResponse(
         channelRegistryPathElement, year, identifier, channelRegistryResponseBody);
+  }
+
+  private void mockChannelWithoutYearFoundWithBody(String identifier, String responseBody) {
+    stubFor(
+        get(channelRegistryPathElement + identifier)
+            .withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpURLConnection.HTTP_OK)
+                    .withHeader(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON_UTF8)
+                    .withBody(responseBody)));
   }
 }

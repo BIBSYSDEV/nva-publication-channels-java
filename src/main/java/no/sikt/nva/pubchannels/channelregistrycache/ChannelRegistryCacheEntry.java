@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -124,15 +125,15 @@ public class ChannelRegistryCacheEntry {
   }
 
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
+    var currentYear = String.valueOf(LocalDate.now().getYear());
     return switch (requestObject.type()) {
       case JOURNAL, SERIES, SERIAL_PUBLICATION ->
           requestObject
               .year()
               .map(this::toThirdPartySerialPublication)
-              .orElseGet(this::toThirdPartySerialPublication);
-      case PUBLISHER -> requestObject.year().map(this::toPublisher).orElseGet(this::toPublisher);
-      default ->
-          throw new IllegalStateException("Unexpected channel type: " + requestObject.type());
+              .orElseGet(() -> toThirdPartySerialPublication(currentYear));
+      case PUBLISHER ->
+          requestObject.year().map(this::toPublisher).orElseGet(() -> toPublisher(currentYear));
     };
   }
 
@@ -161,11 +162,6 @@ public class ChannelRegistryCacheEntry {
         "publisher");
   }
 
-  public ThirdPartyPublisher toPublisher() {
-    return new ChannelRegistryPublisher(
-        getPidAsString(), null, getIsbn(), getOriginalTitle(), getUri(), getCeased(), "publisher");
-  }
-
   public ThirdPartySerialPublication toThirdPartySerialPublication(String year) {
     return new ChannelRegistrySerialPublication(
         getPidAsString(),
@@ -173,18 +169,6 @@ public class ChannelRegistryCacheEntry {
         getOnlineIssn(),
         getPrintIssn(),
         getChannelRegistryLevel(year),
-        getUri(),
-        getCeased(),
-        getType());
-  }
-
-  public ThirdPartySerialPublication toThirdPartySerialPublication() {
-    return new ChannelRegistrySerialPublication(
-        getPidAsString(),
-        getOriginalTitle(),
-        getOnlineIssn(),
-        getPrintIssn(),
-        null,
         getUri(),
         getCeased(),
         getType());

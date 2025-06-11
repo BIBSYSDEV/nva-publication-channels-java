@@ -1,8 +1,6 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
 import static com.google.common.net.MediaType.JSON_UTF_8;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateUuid;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
 import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
@@ -11,11 +9,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.google.common.net.MediaType;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.time.Year;
 import java.util.List;
 import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -26,7 +22,6 @@ import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
-import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
@@ -72,25 +67,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     this.appConfig = appConfig;
   }
 
-  protected RequestInfo validate(RequestInfo requestInfo) {
-    validateUuid(requestInfo.getPathParameter(IDENTIFIER_PATH_PARAM_NAME).trim(), PID);
-    validateYear(
-        requestInfo.getPathParameter(YEAR_PATH_PARAM_NAME).trim(), Year.of(Year.MIN_VALUE), YEAR);
-    return requestInfo;
-  }
-
-  protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(
-      ChannelType type, String identifier, String year) throws ApiGatewayException {
-    try {
-      LOGGER.info(FETCHING_FROM_CHANNEL_REGISTER_MESSAGE, type.name(), identifier);
-      return publicationChannelClient.getChannel(type, identifier, year);
-    } catch (PublicationChannelMovedException movedException) {
-      throw new PublicationChannelMovedException(
-          "%s moved".formatted(type.name()),
-          constructNewLocation(getPathElement(), movedException.getLocation(), year));
-    }
-  }
-
   protected ThirdPartyPublicationChannel fetchChannelFromChannelRegister(
       RequestObject requestObject) throws ApiGatewayException {
     try {
@@ -109,32 +85,12 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
   }
 
   protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(
-      ChannelType type, String identifier, String year, ApiGatewayException e)
-      throws ApiGatewayException {
-    if (isServerError(e)) {
-      return attempt(() -> fetchChannelFromCache(type, identifier, year))
-          .orElseThrow(throwOriginalException(e));
-    } else {
-      throw e;
-    }
-  }
-
-  protected ThirdPartyPublicationChannel fetchFromCacheWhenServerError(
       RequestObject requestObject, ApiGatewayException e) throws ApiGatewayException {
     if (isServerError(e)) {
       return attempt(() -> fetchChannelFromCache(requestObject))
           .orElseThrow(throwOriginalException(e));
     } else {
       throw e;
-    }
-  }
-
-  protected ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(
-      ChannelType type, String identifier, String year) throws ApiGatewayException {
-    try {
-      return fetchChannelFromChannelRegister(type, identifier, year);
-    } catch (ApiGatewayException e) {
-      return fetchFromCacheWhenServerError(type, identifier, year, e);
     }
   }
 
@@ -145,12 +101,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     } catch (ApiGatewayException e) {
       return fetchFromCacheWhenServerError(requestObject, e);
     }
-  }
-
-  protected ThirdPartyPublicationChannel fetchChannelFromCache(
-      ChannelType type, String identifier, String year) throws ApiGatewayException {
-    LOGGER.info(FETCHING_FROM_CACHE_MESSAGE, type.name(), identifier);
-    return cacheService.getChannel(type, identifier, year);
   }
 
   protected ThirdPartyPublicationChannel fetchChannelFromCache(RequestObject requestObject)
@@ -164,15 +114,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
     var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
     return new UriWrapper(HTTPS, apiDomain)
         .addChild(customDomainBasePath, publicationChannelPathElement)
-        .getUri();
-  }
-
-  protected URI constructNewLocation(String pathElement, URI channelRegistryLocation, String year) {
-    var newIdentifier =
-        UriWrapper.fromUri(channelRegistryLocation).getPath().getPathElementByIndexFromEnd(1);
-    return UriWrapper.fromUri(constructPublicationChannelIdBaseUri(pathElement))
-        .addChild(newIdentifier)
-        .addChild(year)
         .getUri();
   }
 
@@ -196,10 +137,7 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
 
   @Override
   protected void validateRequest(I input, RequestInfo requestInfo, Context context)
-      throws ApiGatewayException {
-    attempt(() -> validate(requestInfo))
-        .orElseThrow(failure -> new BadRequestException(failure.getException().getMessage()));
-  }
+      throws ApiGatewayException {}
 
   @Override
   protected Integer getSuccessStatusCode(I input, O output) {

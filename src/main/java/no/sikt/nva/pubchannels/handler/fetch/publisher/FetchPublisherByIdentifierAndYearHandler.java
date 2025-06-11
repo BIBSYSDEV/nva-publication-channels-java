@@ -36,13 +36,14 @@ public class FetchPublisherByIdentifierAndYearHandler
       throws ApiGatewayException {
     var requestObject = RequestObject.from(requestInfo);
     var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
-    var year = requestObject.year();
+    var year = requestObject.year().orElse(null);
+    ;
 
     var publisher =
         super.shouldUseCache()
             ? super.fetchChannelFromCache(requestObject)
             : super.fetchChannelOrFetchFromCache(requestObject);
-    return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year.get());
+    return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
   }
 
   @Override

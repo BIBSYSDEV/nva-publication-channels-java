@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdAndYearRequest;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
@@ -35,10 +34,9 @@ public class FetchJournalByIdentifierAndYearHandler
   @Override
   protected SerialPublicationDto processInput(Void input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
-    var request = new FetchByIdAndYearRequest(requestInfo);
     var journalIdBaseUri = constructPublicationChannelIdBaseUri(JOURNAL_PATH_ELEMENT);
     var requestObject = RequestObject.from(requestInfo);
-    var year = request.getYear();
+    var year = requestObject.year().orElse(null);
     var journal =
         super.shouldUseCache()
             ? super.fetchChannelFromCache(requestObject)

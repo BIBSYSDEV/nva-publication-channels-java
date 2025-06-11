@@ -6,20 +6,18 @@ import static nva.commons.core.attempt.Try.attempt;
 
 import java.time.Year;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.regex.Pattern;
-import nva.commons.core.JacocoGenerated;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
-public final class Validator {
+public class Validator {
 
   public static final String ISBN_PREFIX_PATTERN = "^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$";
   public static final int MAX_LENGTH_ISBN_PREFIX = 13;
   private static final String IS_REQUIRED_STRING = "%s is required.";
 
-  @JacocoGenerated
-  private Validator() {}
+  public Validator() {}
 
   public static void validateString(String value, int minLength, int maxLength, String name) {
     Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
@@ -55,13 +53,6 @@ public final class Validator {
     }
   }
 
-  public static void validateUuid(String value, String name) {
-    Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
-    attempt(() -> UUID.fromString(value))
-        .orElseThrow(
-            failure -> new ValidationException(format("%s has an invalid UUIDv4 format", name)));
-  }
-
   public static void validateYear(String value, Year minAcceptableYear, String name) {
     if (value != null) {
       var year =
@@ -83,5 +74,9 @@ public final class Validator {
     if (offset % size != 0) {
       throw new ValidationException("Offset needs to be divisible by size");
     }
+  }
+
+  public void validate(RequestObject requestObject) {
+    requestObject.year().ifPresent(year -> validateYear(year, Year.of(1900), "Year"));
   }
 }

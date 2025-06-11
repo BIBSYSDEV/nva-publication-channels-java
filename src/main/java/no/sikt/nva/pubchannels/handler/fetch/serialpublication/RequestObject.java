@@ -6,7 +6,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
+import no.sikt.nva.pubchannels.handler.validator.Validator;
 import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.BadRequestException;
 
 public final class RequestObject {
 
@@ -20,14 +22,27 @@ public final class RequestObject {
     this.year = year;
   }
 
-  public static RequestObject from(RequestInfo requestInfo) {
-    var identifier = UUID.fromString(requestInfo.getPathParameter("identifier").trim());
+  public static RequestObject from(RequestInfo requestInfo) throws BadRequestException {
+    var identifier =
+        attempt(() -> requestInfo.getPathParameter("identifier").trim())
+            .map(UUID::fromString)
+            .orElseThrow(failure -> new BadRequestException("Invalid identifier"));
     var year =
         attempt(() -> requestInfo.getPathParameter("year"))
             .map(String::trim)
             .orElse(failure -> null);
     var type = ChannelType.fromNvaPathElement(requestInfo.getPathParameter("type").trim());
-    return new RequestObject(type, identifier, year);
+    var requestObject = new RequestObject(type, identifier, year);
+    requestObject.validate(new Validator());
+    return requestObject;
+  }
+
+  public void validate(Validator validator) throws BadRequestException {
+    try {
+      validator.validate(this);
+    } catch (Exception e) {
+      throw new BadRequestException(e.getMessage());
+    }
   }
 
   public ChannelType type() {

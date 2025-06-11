@@ -36,14 +36,14 @@ public class FetchSeriesByIdentifierAndYearHandler
       throws ApiGatewayException {
     var requestObject = RequestObject.from(requestInfo);
     var publisherIdBaseUri = constructPublicationChannelIdBaseUri(SERIES_PATH_ELEMENT);
-    var year = requestObject.year();
+    var year = requestObject.year().orElse(null);
 
     var series =
         super.shouldUseCache()
             ? super.fetchChannelFromCache(requestObject)
             : super.fetchChannelOrFetchFromCache(requestObject);
     return SerialPublicationDto.create(
-        publisherIdBaseUri, (ThirdPartySerialPublication) series, year.get());
+        publisherIdBaseUri, (ThirdPartySerialPublication) series, year);
   }
 
   @Override

@@ -34,11 +34,10 @@ public record ChannelRegistryPublisher(
   private static final String PUBLISHER = "Publisher";
 
   @Override
-  public String getYear() {
+  public Optional<String> getYear() {
     return Optional.ofNullable(channelRegistryLevel)
         .map(ChannelRegistryLevel::year)
-        .map(String::valueOf)
-        .orElse(null);
+        .map(String::valueOf);
   }
 
   @Override

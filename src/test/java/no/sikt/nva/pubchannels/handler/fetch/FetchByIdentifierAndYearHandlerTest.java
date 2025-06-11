@@ -129,7 +129,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     var problem = response.getBodyObject(Problem.class);
 
-    assertThat(problem.getDetail(), is(containsString("Pid")));
+    assertThat(problem.getDetail(), is(containsString("Invalid identifier")));
   }
 
   @Test

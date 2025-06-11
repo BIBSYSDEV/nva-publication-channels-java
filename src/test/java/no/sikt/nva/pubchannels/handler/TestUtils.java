@@ -116,6 +116,17 @@ public final class TestUtils {
         .build();
   }
 
+  public static InputStream constructRequest(String identifier, String type, MediaType mediaType)
+      throws JsonProcessingException {
+    return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+        .withHeaders(Map.of(ACCEPT, mediaType.toString()))
+        .withPathParameters(
+            Map.of(
+                "identifier", identifier,
+                "type", type))
+        .build();
+  }
+
   public static InputStream constructRequest(
       Map<String, String> queryParameters, MediaType mediaType) throws JsonProcessingException {
     return new HandlerRequestBuilder<Void>(dtoObjectMapper)
