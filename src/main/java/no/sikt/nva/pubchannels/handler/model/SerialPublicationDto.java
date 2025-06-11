@@ -25,7 +25,7 @@ public record SerialPublicationDto(
     String type,
     String year,
     ScientificValueReviewNotice reviewNotice)
-    implements JsonSerializable {
+    implements PublicationChannelDto, JsonSerializable {
 
   public static SerialPublicationDto create(
       URI selfUriBase, ThirdPartySerialPublication channel, String requestedYear) {

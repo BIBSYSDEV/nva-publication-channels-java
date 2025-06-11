@@ -65,10 +65,10 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   protected CacheService cacheService;
   protected ByteArrayOutputStream output;
   protected String channelRegistryBaseUri;
-  protected String customChannelPath;
+  protected String nvaChannelPath;
   protected String channelRegistryPathElement;
   protected ChannelRegistryClient channelRegistryClient;
-  protected FetchByIdentifierAndYearHandler<Void, ?> handlerUnderTest;
+  protected FetchPublicationChannelHandler handlerUnderTest;
   protected static String year = randomYear();
   protected static String identifier = UUID.randomUUID().toString();
 
@@ -82,7 +82,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     when(environment.readEnv("COGNITO_AUTHORIZER_URLS")).thenReturn(COGNITO_AUTHORIZER_URLS);
   }
 
-  protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected abstract FetchPublicationChannelHandler createHandler(
       ChannelRegistryClient publicationChannelClient);
 
   @BeforeEach
@@ -155,8 +155,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
           throws IOException {
     mockResponseWithHttpStatus(channelRegistryPathElement, identifier, year, HTTP_INTERNAL_ERROR);
 
-    var input =
-        constructRequest(year, identifier, handlerUnderTest.getPathElement(), MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     var appender = LogUtils.getTestingAppenderForRootLogger();
     handlerUnderTest.handleRequest(input, output, context);
@@ -207,14 +206,13 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     mockRedirectedClient(
         requestedIdentifier, newChannelRegistryLocation, year, channelRegistryPathElement);
     handlerUnderTest.handleRequest(
-        constructRequest(
-            year, requestedIdentifier, handlerUnderTest.getPathElement(), MediaType.ANY_TYPE),
+        constructRequest(year, requestedIdentifier, nvaChannelPath, MediaType.ANY_TYPE),
         output,
         context);
     var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
     assertEquals(HTTP_MOVED_PERM, response.getStatusCode());
     var expectedLocation =
-        createPublicationChannelUri(newIdentifier, customChannelPath, year).toString();
+        createPublicationChannelUri(newIdentifier, nvaChannelPath, year).toString();
     assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
     assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
   }

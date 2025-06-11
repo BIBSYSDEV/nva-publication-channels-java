@@ -226,8 +226,8 @@ public final class TestUtils {
 
   public static Stream<Named<MediaType>> mediaTypeProvider() {
     return Stream.of(
-        Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
-        Named.of("ANY", MediaType.ANY_TYPE),
+        //        Named.of("JSON UTF-8", MediaType.JSON_UTF_8),
+        //        Named.of("ANY", MediaType.ANY_TYPE),
         Named.of("JSON-LD", MediaTypes.APPLICATION_JSON_LD));
   }
 

@@ -55,7 +55,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   protected String type;
   protected URI selfBaseUri;
 
-  protected abstract FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected abstract FetchPublicationChannelHandler createHandler(
       Environment environment,
       PublicationChannelClient publicationChannelClient,
       CacheService cacheService,
@@ -73,7 +73,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldReturnJournalWithSuccessWhenExists() throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
     var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -89,7 +89,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldReturnSeriesWithSuccessWhenExists() throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
     var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -105,7 +105,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldIncludeYearInResponse() throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
     mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -118,7 +118,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   @ParameterizedTest(name = "Should return requested media type \"{0}\"")
   @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
   void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, mediaType);
+    var input = constructRequest(year, identifier, nvaChannelPath, mediaType);
 
     final var expectedMediaType =
         mediaType.equals(MediaType.ANY_TYPE)
@@ -140,7 +140,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     var expectedSeries =
         mockChannelWithScientificValueReviewNotice(
@@ -159,7 +159,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-    var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
     var expectedSeries =
         mockChannelWithScientificValueReviewNotice(
             year, identifier, channelRegistryPathElement, type);
@@ -178,7 +178,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         year, identifier, testChannel.asChannelRegistrySeriesBodyWithoutLevel());
 
     handlerUnderTest.handleRequest(
-        constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE), output, context);
+        constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE), output, context);
 
     var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
     assertEquals(HTTP_OK, response.getStatusCode());
@@ -196,7 +196,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
         constructRequest(
             JOURNAL_YEAR_FROM_CACHE,
             JOURNAL_IDENTIFIER_FROM_CACHE,
-            customChannelPath,
+            nvaChannelPath,
             MediaType.ANY_TYPE);
 
     super.loadAndEnableCache();
@@ -264,7 +264,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void shouldIncludeCurrentYearInResponseWhenYearIsNotProvidedInRequest() throws IOException {
-    var input = constructRequest(identifier, customChannelPath, MediaType.ANY_TYPE);
+    var input = constructRequest(identifier, nvaChannelPath, MediaType.ANY_TYPE);
     mockChannelWithoutYearFoundAndReturnExpectedResponse(identifier, type);
 
     handlerUnderTest.handleRequest(input, output, context);

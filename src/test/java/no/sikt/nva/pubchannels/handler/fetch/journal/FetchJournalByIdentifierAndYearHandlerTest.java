@@ -9,8 +9,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.BaseFetchSerialPublicationByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -20,9 +19,9 @@ class FetchJournalByIdentifierAndYearHandlerTest
     extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       ChannelRegistryClient publicationChannelClient) {
-    return new FetchJournalByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment,
         publicationChannelClient,
         cacheService,
@@ -30,25 +29,25 @@ class FetchJournalByIdentifierAndYearHandlerTest
   }
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       Environment environment,
       PublicationChannelClient publicationChannelClient,
       CacheService cacheService,
       AppConfig appConfigWithCacheEnabled) {
-    return new FetchJournalByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment, publicationChannelClient, cacheService, appConfigWithCacheEnabled);
   }
 
   @BeforeEach
   void setup() {
     this.handlerUnderTest =
-        new FetchJournalByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment,
             this.channelRegistryClient,
             this.cacheService,
             super.getAppConfigWithCacheEnabled(false));
     this.type = JOURNAL_TYPE;
-    this.customChannelPath = JOURNAL_PATH;
+    this.nvaChannelPath = JOURNAL_PATH;
     this.channelRegistryPathElement = "/findjournal/";
     this.selfBaseUri =
         UriWrapper.fromHost(API_DOMAIN)

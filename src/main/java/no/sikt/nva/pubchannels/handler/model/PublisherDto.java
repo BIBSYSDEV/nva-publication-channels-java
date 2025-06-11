@@ -23,7 +23,7 @@ public record PublisherDto(
     String discontinued,
     String year,
     ScientificValueReviewNotice reviewNotice)
-    implements JsonSerializable {
+    implements PublicationChannelDto, JsonSerializable {
 
   public static final String TYPE = "Publisher";
 

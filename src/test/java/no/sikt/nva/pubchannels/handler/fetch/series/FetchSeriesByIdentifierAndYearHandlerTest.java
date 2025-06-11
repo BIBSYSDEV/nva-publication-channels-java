@@ -9,8 +9,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.BaseFetchSerialPublicationByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
-import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
@@ -20,9 +19,9 @@ class FetchSeriesByIdentifierAndYearHandlerTest
     extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       ChannelRegistryClient publicationChannelClient) {
-    return new FetchSeriesByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment,
         publicationChannelClient,
         cacheService,
@@ -30,25 +29,25 @@ class FetchSeriesByIdentifierAndYearHandlerTest
   }
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       Environment environment,
       PublicationChannelClient publicationChannelClient,
       CacheService cacheService,
       AppConfig appConfigWithCacheEnabled) {
-    return new FetchSeriesByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment, publicationChannelClient, cacheService, appConfigWithCacheEnabled);
   }
 
   @BeforeEach
   void setup() {
     this.handlerUnderTest =
-        new FetchSeriesByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment,
             this.channelRegistryClient,
             this.cacheService,
             super.getAppConfigWithCacheEnabled(false));
     this.type = SERIES_TYPE;
-    this.customChannelPath = SERIES_PATH;
+    this.nvaChannelPath = SERIES_PATH;
     this.selfBaseUri =
         UriWrapper.fromHost(API_DOMAIN)
             .addChild(CUSTOM_DOMAIN_BASE_PATH)

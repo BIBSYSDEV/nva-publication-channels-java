@@ -75,7 +75,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   @Override
   public ThirdPartySearchResponse searchChannel(
       ChannelType type, Map<String, String> queryParameters) throws ApiGatewayException {
-    var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
+    var request =
+        createFindPublicationChannelRequest(type.channelRegistryPathElement, queryParameters);
     return attempt(() -> executeRequest(request, type.searchResponseClass))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
@@ -212,7 +213,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private URI constructUri(RequestObject requestObject) {
     var uriWrapper =
         UriWrapper.fromUri(channelRegistryBaseUri)
-            .addChild(requestObject.type().getPathElement())
+            .addChild(requestObject.type().getChannelRegistryPathElement())
             .addChild(requestObject.identifier().toString());
 
     if (requestObject.year().isPresent()) {

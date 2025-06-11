@@ -1,52 +1,42 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
-import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
+import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.fetch.Fetcher;
 import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.model.PublicationChannelDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.sikt.nva.pubchannels.utils.AppConfig;
-import nva.commons.apigateway.RequestInfo;
+import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
-import nva.commons.core.Environment;
-import nva.commons.core.JacocoGenerated;
 
-public class FetchPublisherByIdentifierAndYearHandler
-    extends FetchByIdentifierAndYearHandler<Void, PublisherDto> {
+public class FetchPublisherByIdentifierAndYearHandler {
 
-  private static final String PUBLISHER_PATH_ELEMENT = "publisher";
+  private final RequestObject requestObject;
+  private final Fetcher fetcher;
 
-  @JacocoGenerated
-  public FetchPublisherByIdentifierAndYearHandler() {
-    super(Void.class, new Environment());
+  public FetchPublisherByIdentifierAndYearHandler(RequestObject requestObject, Fetcher fetcher) {
+    this.requestObject = requestObject;
+    this.fetcher = fetcher;
   }
 
-  public FetchPublisherByIdentifierAndYearHandler(
-      Environment environment,
-      PublicationChannelClient publicationChannelClient,
-      CacheService cacheService,
-      AppConfig appConfig) {
-    super(Void.class, environment, publicationChannelClient, cacheService, appConfig);
-  }
-
-  @Override
-  protected PublisherDto processInput(Void input, RequestInfo requestInfo, Context context)
-      throws ApiGatewayException {
-    var requestObject = RequestObject.from(requestInfo);
-    var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
+  public PublicationChannelDto processInput() throws ApiGatewayException {
+    var basUri = fetcher.constructPublicationChannelIdBaseUri(requestObject.type().name());
     var year = requestObject.year().orElse(null);
 
-    var publisher =
-        super.shouldUseCache()
-            ? super.fetchChannelFromCache(requestObject)
-            : super.fetchChannelOrFetchFromCache(requestObject);
-    return PublisherDto.create(publisherIdBaseUri, (ThirdPartyPublisher) publisher, year);
+    var channel = fetchChannel();
+
+    return switch (channel) {
+      case ChannelRegistrySerialPublication serialPublication ->
+          SerialPublicationDto.create(basUri, serialPublication, year);
+      case ThirdPartyPublisher publisher -> PublisherDto.create(basUri, publisher, year);
+      default -> throw new IllegalStateException("Unexpected value: " + channel);
+    };
   }
 
-  @Override
-  protected String getPathElement() {
-    return PUBLISHER_PATH_ELEMENT;
+  private ThirdPartyPublicationChannel fetchChannel() throws ApiGatewayException {
+    return fetcher.shouldUseCache()
+        ? fetcher.fetchChannelFromCache(requestObject)
+        : fetcher.fetchChannelOrFetchFromCache(requestObject);
   }
 }
