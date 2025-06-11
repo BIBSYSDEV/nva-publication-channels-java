@@ -116,7 +116,7 @@ paths:
         type: "AWS_PROXY"
       tags:
         - PublicationChannel
-      summary: Fetch publication channel by identifier and year
+      summary: Fetch publication channel by identifier
       description: Returns a single channel with information for a specific year
       operationId: FetchPublicationChannelByIdentifierAndYear
       parameters:
