@@ -118,7 +118,7 @@ paths:
         - PublicationChannel
       summary: Fetch publication channel by identifier
       description: Returns a single channel with information for a specific year
-      operationId: FetchPublicationChannelByIdentifierAndYear
+      operationId: FetchPublicationChannelByIdentifier
       parameters:
         - name: identifier
           in: path
