@@ -1,6 +1,6 @@
 package no.sikt.nva.pubchannels.handler;
 
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public interface PublicationChannelFetchClient {

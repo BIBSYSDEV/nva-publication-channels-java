@@ -12,7 +12,7 @@ import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
 import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;

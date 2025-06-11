@@ -17,7 +17,7 @@ import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCach
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import nva.commons.core.JacocoGenerated;
 
 public class ChannelRegistryCacheEntry {

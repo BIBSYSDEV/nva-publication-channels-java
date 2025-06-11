@@ -11,7 +11,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;

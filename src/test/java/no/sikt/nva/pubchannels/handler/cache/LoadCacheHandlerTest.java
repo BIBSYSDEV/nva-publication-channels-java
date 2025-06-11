@@ -11,7 +11,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheServiceTestSetup;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.FakeS3Client;

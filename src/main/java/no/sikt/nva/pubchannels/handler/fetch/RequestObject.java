@@ -1,4 +1,4 @@
-package no.sikt.nva.pubchannels.handler.fetch.serialpublication;
+package no.sikt.nva.pubchannels.handler.fetch;
 
 import static nva.commons.core.attempt.Try.attempt;
 

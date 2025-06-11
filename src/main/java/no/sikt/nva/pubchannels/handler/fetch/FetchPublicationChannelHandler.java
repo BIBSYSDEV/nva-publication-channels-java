@@ -9,7 +9,6 @@ import com.google.common.net.MediaType;
 import java.util.List;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.PublicationChannelDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.ApiGatewayHandler;

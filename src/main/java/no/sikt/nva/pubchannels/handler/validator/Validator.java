@@ -7,7 +7,7 @@ import static nva.commons.core.attempt.Try.attempt;
 import java.time.Year;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 

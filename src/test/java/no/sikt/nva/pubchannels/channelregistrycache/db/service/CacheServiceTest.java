@@ -17,7 +17,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.apigateway.exceptions.ApiGatewayException;

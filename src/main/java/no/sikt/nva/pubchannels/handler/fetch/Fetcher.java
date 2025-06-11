@@ -12,7 +12,6 @@ import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
-import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.PublicationChannelDto;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
@@ -48,18 +47,6 @@ public class Fetcher {
     this.environment = environment;
   }
 
-  public PublicationChannelFetchClient getPublicationChannelClient() {
-    return publicationChannelClient;
-  }
-
-  public CacheService getCacheService() {
-    return cacheService;
-  }
-
-  public AppConfig getAppConfig() {
-    return appConfig;
-  }
-
   public URI constructPublicationChannelIdBaseUri(String type) {
     var apiDomain = environment.readEnv(ENV_API_DOMAIN);
     var customDomainBasePath = environment.readEnv(ENV_CUSTOM_DOMAIN_BASE_PATH);
@@ -90,15 +77,13 @@ public class Fetcher {
     };
   }
 
-  public Environment getEnvironment() {
-    return environment;
-  }
-
-  private ThirdPartyPublicationChannel fetchChannel(RequestObject requestObject)
+  public ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(RequestObject requestObject)
       throws ApiGatewayException {
-    return shouldUseCache()
-        ? fetchChannelFromCache(requestObject)
-        : fetchChannelOrFetchFromCache(requestObject);
+    try {
+      return fetchChannelFromChannelRegister(requestObject);
+    } catch (ApiGatewayException e) {
+      return fetchFromCacheWhenServerError(requestObject, e);
+    }
   }
 
   private static boolean isServerError(ApiGatewayException e) {
@@ -110,13 +95,11 @@ public class Fetcher {
     return failure -> e;
   }
 
-  public ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(RequestObject requestObject)
+  private ThirdPartyPublicationChannel fetchChannel(RequestObject requestObject)
       throws ApiGatewayException {
-    try {
-      return fetchChannelFromChannelRegister(requestObject);
-    } catch (ApiGatewayException e) {
-      return fetchFromCacheWhenServerError(requestObject, e);
-    }
+    return shouldUseCache()
+        ? fetchChannelFromCache(requestObject)
+        : fetchChannelOrFetchFromCache(requestObject);
   }
 
   private ThirdPartyPublicationChannel fetchFromCacheWhenServerError(
