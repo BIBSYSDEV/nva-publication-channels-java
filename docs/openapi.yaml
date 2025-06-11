@@ -23,7 +23,7 @@ servers:
   - url: https://api.nva.unit.no/publication-channels
 
 paths:
-  /journal/{identifier}/{year}:
+  /{journal}/{identifier}/{year}:
     get:
       x-amazon-apigateway-integration:
         uri:
@@ -59,6 +59,12 @@ paths:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -184,7 +190,7 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
-  /publisher/{identifier}/{year}:
+  /{publisher}/{identifier}/{year}:
     get:
       x-amazon-apigateway-integration:
         uri:
@@ -220,6 +226,12 @@ paths:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -345,7 +357,7 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
-  /series/{identifier}/{year}:
+  /{series}/{identifier}/{year}:
     get:
       x-amazon-apigateway-integration:
         uri:
@@ -381,6 +393,12 @@ paths:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -506,7 +524,7 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
-  /serial-publication/{identifier}/{year}:
+  /{serial-publication}/{identifier}/{year}:
     get:
       x-amazon-apigateway-integration:
         uri:
@@ -542,6 +560,12 @@ paths:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
