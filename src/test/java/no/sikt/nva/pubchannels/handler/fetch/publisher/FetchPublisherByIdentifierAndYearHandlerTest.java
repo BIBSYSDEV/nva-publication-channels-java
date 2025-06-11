@@ -301,6 +301,31 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
   }
 
+  @Test
+  void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrueWhenYearIsMissing()
+      throws IOException {
+    var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
+
+    var input = constructRequest(publisherIdentifier, customChannelPath, MediaType.ANY_TYPE);
+    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+
+    super.loadAndEnableCache();
+    this.handlerUnderTest =
+        new FetchPublisherByIdentifierAndYearHandler(
+            environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
+    var appender = LogUtils.getTestingAppenderForRootLogger();
+
+    handlerUnderTest.handleRequest(input, output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+    assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
+    assertThat(
+        appender.getMessages(),
+        containsStringIgnoringCase("Fetching PUBLISHER from cache: " + publisherIdentifier));
+  }
+
   private PublisherDto mockPublisherFound(String year, String identifier) {
     var testChannel = new TestChannel(year, identifier, PublisherDto.TYPE);
     var body = testChannel.asChannelRegistryPublisherBody();

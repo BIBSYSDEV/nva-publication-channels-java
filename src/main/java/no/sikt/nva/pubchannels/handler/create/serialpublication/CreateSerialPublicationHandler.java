@@ -5,12 +5,14 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICA
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
+import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -57,9 +59,10 @@ public class CreateSerialPublicationHandler
 
     // Fetch the new channel to build the full response
     var year = getYear();
+    var requestObject =
+        new RequestObject(SERIAL_PUBLICATION, UUID.fromString(response.pid()), year);
     var newSerialPublication =
-        (ThirdPartySerialPublication)
-            publicationChannelClient.getChannel(SERIAL_PUBLICATION, response.pid(), year);
+        (ThirdPartySerialPublication) publicationChannelClient.getChannel(requestObject);
     var responseBody =
         SerialPublicationDto.create(
             constructBaseUri(CUSTOM_PATH_ELEMENT), newSerialPublication, year);

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
@@ -64,17 +63,6 @@ public class CacheService implements PublicationChannelFetchClient {
 
   public void save(ChannelRegistryCacheEntry entry) {
     table.putItem(entry.toDao());
-  }
-
-  @Override
-  public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
-      throws CachedPublicationChannelNotFoundException {
-    return attempt(() -> UUID.fromString(identifier))
-        .map(CacheService::entryWithIdentifier)
-        .map(table::getItem)
-        .map(ChannelRegistryCacheEntry::fromDao)
-        .map(entry -> entry.toThirdPartyPublicationChannel(type, year))
-        .orElseThrow(failure -> new CachedPublicationChannelNotFoundException(identifier));
   }
 
   @Override

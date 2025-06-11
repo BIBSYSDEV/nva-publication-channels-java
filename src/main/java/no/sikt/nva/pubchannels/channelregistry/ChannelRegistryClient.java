@@ -64,15 +64,6 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   }
 
   @Override
-  public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
-      throws ApiGatewayException {
-    var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
-    return attempt(() -> executeRequest(request, type.fetchResponseClass))
-        .orElseThrow(
-            failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
-  }
-
-  @Override
   public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
       throws ApiGatewayException {
     var request = createFetchPublicationChannelRequest(requestObject);
@@ -162,15 +153,6 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     }
     LOGGER.error("Unable to reach upstream: {}", uri, e);
     return new BadGatewayException("Unable to reach upstream!");
-  }
-
-  private HttpRequest createFetchPublicationChannelRequest(
-      String pathElement, String identifier, String year) {
-    return HttpRequest.newBuilder()
-        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-        .uri(constructUri(pathElement, identifier, year))
-        .GET()
-        .build();
   }
 
   private HttpRequest createFetchPublicationChannelRequest(RequestObject requestObject) {

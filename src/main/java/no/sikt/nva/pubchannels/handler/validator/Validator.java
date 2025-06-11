@@ -17,8 +17,6 @@ public class Validator {
   public static final int MAX_LENGTH_ISBN_PREFIX = 13;
   private static final String IS_REQUIRED_STRING = "%s is required.";
 
-  public Validator() {}
-
   public static void validateString(String value, int minLength, int maxLength, String name) {
     Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
     if (value.length() < minLength) {

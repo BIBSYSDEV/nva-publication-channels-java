@@ -54,7 +54,7 @@ paths:
         - name: year
           in: path
           description: year for journal data
-          required: true
+          required: false
           schema:
             type: integer
             description: can maximum be set to next year
@@ -215,7 +215,7 @@ paths:
         - name: year
           in: path
           description: year for publisher data
-          required: true
+          required: false
           schema:
             type: integer
             description: can maximum be set to next year
@@ -376,7 +376,7 @@ paths:
         - name: year
           in: path
           description: year for series data
-          required: true
+          required: false
           schema:
             type: integer
             description: can maximum be set to next year
@@ -537,7 +537,7 @@ paths:
         - name: year
           in: path
           description: year for journal/series data
-          required: true
+          required: false
           schema:
             type: integer
             description: can maximum be set to next year

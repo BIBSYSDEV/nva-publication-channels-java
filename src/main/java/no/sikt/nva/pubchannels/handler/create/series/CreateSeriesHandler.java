@@ -4,12 +4,14 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIES;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
+import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
+import no.sikt.nva.pubchannels.handler.fetch.serialpublication.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -48,9 +50,9 @@ public class CreateSeriesHandler
 
     // Fetch the new series from the channel registry to build the full response
     var year = getYear();
+    var requestObject = new RequestObject(SERIES, UUID.fromString(response.pid()), year);
     var newSeries =
-        (ThirdPartySerialPublication)
-            publicationChannelClient.getChannel(SERIES, response.pid(), year);
+        (ThirdPartySerialPublication) publicationChannelClient.getChannel(requestObject);
     var seriesDto =
         SerialPublicationDto.create(constructBaseUri(SERIES_PATH_ELEMENT), newSeries, year);
 

@@ -37,7 +37,6 @@ public class FetchPublisherByIdentifierAndYearHandler
     var requestObject = RequestObject.from(requestInfo);
     var publisherIdBaseUri = constructPublicationChannelIdBaseUri(PUBLISHER_PATH_ELEMENT);
     var year = requestObject.year().orElse(null);
-    ;
 
     var publisher =
         super.shouldUseCache()

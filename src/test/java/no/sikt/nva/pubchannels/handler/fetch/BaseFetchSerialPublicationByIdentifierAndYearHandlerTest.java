@@ -71,16 +71,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     return testChannel.asSerialPublicationDto(selfBaseUri, year);
   }
 
-  protected SerialPublicationDto mockChannelWithoutYearFoundAndReturnExpectedResponse(
-      String identifier, String type) {
-    var testChannel = new TestChannel(String.valueOf(LocalDate.now().getYear()), identifier, type);
-    var body = testChannel.asChannelRegistrySerialPublicationBody();
-
-    mockChannelWithoutYearFoundWithBody(identifier, body);
-
-    return testChannel.asSerialPublicationDto(selfBaseUri, year);
-  }
-
   @Test
   void shouldReturnJournalWithSuccessWhenExists() throws IOException {
     var input = constructRequest(year, identifier, customChannelPath, MediaType.ANY_TYPE);
@@ -284,6 +274,42 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
     var currentYear = String.valueOf(LocalDate.now().getYear());
     assertThat(dto.year(), is(equalTo(currentYear)));
+  }
+
+  @Test
+  void
+      shouldReturnChannelWithoutYearFromCacheWhenShouldUseCacheEnvironmentVariableIsTrueAndYearIsMissing()
+          throws IOException {
+
+    var input = constructRequest(JOURNAL_IDENTIFIER_FROM_CACHE, type, MediaType.ANY_TYPE);
+
+    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+    super.loadAndEnableCache();
+    this.handlerUnderTest =
+        createHandler(
+            environment,
+            channelRegistryClient,
+            cacheService,
+            super.getAppConfigWithCacheEnabled(true));
+
+    handlerUnderTest.handleRequest(input, output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+    var actualTitle = response.getBodyObject(SerialPublicationDto.class).name();
+    assertThat(actualTitle, is(equalTo(HARDCODED_CACHED_TITLE)));
+
+    var statusCode = response.getStatusCode();
+    assertThat(statusCode, is(equalTo(HTTP_OK)));
+  }
+
+  protected void mockChannelWithoutYearFoundAndReturnExpectedResponse(
+      String identifier, String type) {
+    var testChannel = new TestChannel(String.valueOf(LocalDate.now().getYear()), identifier, type);
+    var body = testChannel.asChannelRegistrySerialPublicationBody();
+
+    mockChannelWithoutYearFoundWithBody(identifier, body);
+
+    testChannel.asSerialPublicationDto(selfBaseUri, year);
   }
 
   private SerialPublicationDto mockChannelWithScientificValueReviewNotice(

@@ -35,10 +35,6 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
       LoggerFactory.getLogger(FetchByIdentifierAndYearHandler.class);
   private static final String ENV_API_DOMAIN = "API_DOMAIN";
   private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
-  private static final String YEAR_PATH_PARAM_NAME = "year";
-  private static final String IDENTIFIER_PATH_PARAM_NAME = "identifier";
-  private static final String YEAR = "Year";
-  private static final String PID = "Pid";
   private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
   private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE =
       "Fetching {} from channel register: {}";
@@ -136,8 +132,10 @@ public abstract class FetchByIdentifierAndYearHandler<I, O> extends ApiGatewayHa
   }
 
   @Override
-  protected void validateRequest(I input, RequestInfo requestInfo, Context context)
-      throws ApiGatewayException {}
+  @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
+  protected void validateRequest(I input, RequestInfo requestInfo, Context context) {
+    // No validation
+  }
 
   @Override
   protected Integer getSuccessStatusCode(I input, O output) {
