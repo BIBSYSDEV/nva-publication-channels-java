@@ -54,11 +54,79 @@ paths:
         - name: year
           in: path
           description: year for publication channel data
-          required: false
+          required: true
           schema:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
+            enum:
+              - journal
+              - series
+              - publisher
+              - serial-publication
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
+  /{type}/{identifier}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+            'method.request.path.identifier'
+          integration.request.path.year:
+            'method.request.path.year'
+        cacheKeyParameters:
+          - 'method.request.path.identifier'
+          - 'method.request.path.year'
+        type: "AWS_PROXY"
+      tags:
+        - PublicationChannel
+      summary: Fetch publication channel by identifier and year
+      description: Returns a single channel with information for a specific year
+      operationId: FetchPublicationChannelByIdentifierAndYear
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of publication channel to return
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
         - name: type
           in: path
           description: type of channel to return
