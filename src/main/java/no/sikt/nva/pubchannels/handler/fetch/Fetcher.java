@@ -70,8 +70,7 @@ public class Fetcher {
     var channel = fetchChannel(requestObject);
 
     return switch (channel) {
-      case ChannelRegistrySerialPublication serialPublication ->
-          SerialPublicationDto.create(basUri, serialPublication, year);
+      case ChannelRegistrySerialPublication serialPublication -> SerialPublicationDto.create(basUri, serialPublication, year);
       case ThirdPartyPublisher publisher -> PublisherDto.create(basUri, publisher, year);
       default -> throw new IllegalStateException("Unexpected value: " + channel);
     };

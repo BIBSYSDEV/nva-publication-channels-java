@@ -7,18 +7,32 @@ import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.google.common.net.MediaType;
 import java.util.List;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.model.PublicationChannelDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
+import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 
 public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, PublicationChannelDto> {
 
   private final Fetcher fetcher;
+
+  @JacocoGenerated
+  public FetchPublicationChannelHandler() {
+    super(Void.class, new Environment());
+    this.fetcher =
+        new Fetcher(
+            ChannelRegistryClient.defaultInstance(),
+            CacheService.defaultInstance(),
+            ApplicationConfiguration.defaultAppConfigClientInstance(),
+            new Environment());
+  }
 
   public FetchPublicationChannelHandler(
       Environment environment,
