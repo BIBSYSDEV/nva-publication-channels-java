@@ -107,12 +107,9 @@ paths:
         httpMethod: POST
         requestParameters:
           integration.request.path.identifier:
-            'method.request.path.identifier'
-          integration.request.path.year:
-            'method.request.path.year'
-        cacheKeyParameters:
           - 'method.request.path.identifier'
-          - 'method.request.path.year'
+        cacheKeyParameters:
+        - 'method.request.path.identifier'
         type: "AWS_PROXY"
       tags:
         - PublicationChannel
