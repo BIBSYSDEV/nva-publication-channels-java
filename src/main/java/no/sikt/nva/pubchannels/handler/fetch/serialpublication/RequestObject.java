@@ -9,6 +9,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.validator.Validator;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadRequestException;
+import nva.commons.core.JacocoGenerated;
 
 public final class RequestObject {
 
@@ -57,11 +58,13 @@ public final class RequestObject {
     return Optional.ofNullable(year);
   }
 
+  @JacocoGenerated
   @Override
   public int hashCode() {
     return Objects.hash(type, identifier, year);
   }
 
+  @JacocoGenerated
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
