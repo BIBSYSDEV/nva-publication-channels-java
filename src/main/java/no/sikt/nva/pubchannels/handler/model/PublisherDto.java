@@ -29,11 +29,7 @@ public record PublisherDto(
 
   public static PublisherDto create(
       URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
-    var year =
-        publisher
-            .getYear()
-            .or(() -> Optional.ofNullable(requestedYear))
-            .orElse(String.valueOf(LocalDate.now().getYear()));
+    var year = getYear(publisher, requestedYear);
 
     var uriWrapper = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier());
     if (nonNull(requestedYear)) {
@@ -50,6 +46,13 @@ public record PublisherDto(
         publisher.discontinued(),
         year,
         publisher.reviewNotice());
+  }
+
+  private static String getYear(ThirdPartyPublisher publisher, String requestedYear) {
+    return publisher
+        .getYear()
+        .or(() -> Optional.ofNullable(requestedYear))
+        .orElse(String.valueOf(LocalDate.now().getYear()));
   }
 
   @JsonProperty("type")

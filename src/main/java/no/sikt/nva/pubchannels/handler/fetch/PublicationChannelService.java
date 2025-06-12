@@ -23,20 +23,20 @@ import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Fetcher {
+public class PublicationChannelService {
 
   private static final String FETCHING_FROM_CHANNEL_REGISTER_MESSAGE =
       "Fetching {} from channel register: {}";
   private static final String FETCHING_FROM_CACHE_MESSAGE = "Fetching {} from cache: {}";
   private static final String ENV_API_DOMAIN = "API_DOMAIN";
   private static final String ENV_CUSTOM_DOMAIN_BASE_PATH = "CUSTOM_DOMAIN_BASE_PATH";
-  private static final Logger LOGGER = LoggerFactory.getLogger(Fetcher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PublicationChannelService.class);
   private final PublicationChannelFetchClient publicationChannelClient;
   private final CacheService cacheService;
   private final AppConfig appConfig;
   private final Environment environment;
 
-  public Fetcher(
+  public PublicationChannelService(
       PublicationChannelFetchClient publicationChannelClient,
       CacheService cacheService,
       AppConfig appConfig,
@@ -59,18 +59,21 @@ public class Fetcher {
 
   public ThirdPartyPublicationChannel fetchChannelFromCache(RequestObject requestObject)
       throws ApiGatewayException {
-    LOGGER.info(FETCHING_FROM_CACHE_MESSAGE, requestObject.type(), requestObject.identifier());
+    LOGGER.info(
+        FETCHING_FROM_CACHE_MESSAGE, requestObject.channelType(), requestObject.identifier());
     return cacheService.getChannel(requestObject);
   }
 
   public PublicationChannelDto fetch(RequestObject requestObject) throws ApiGatewayException {
-    var basUri = constructPublicationChannelIdBaseUri(requestObject.type().getNvaPathElement());
-    var year = requestObject.year().orElse(null);
+    var basUri =
+        constructPublicationChannelIdBaseUri(requestObject.channelType().getNvaPathElement());
+    var year = requestObject.getYear().orElse(null);
 
     var channel = fetchChannel(requestObject);
 
     return switch (channel) {
-      case ChannelRegistrySerialPublication serialPublication -> SerialPublicationDto.create(basUri, serialPublication, year);
+      case ChannelRegistrySerialPublication serialPublication ->
+          SerialPublicationDto.create(basUri, serialPublication, year);
       case ThirdPartyPublisher publisher -> PublisherDto.create(basUri, publisher, year);
       default -> throw new IllegalStateException("Unexpected value: " + channel);
     };
@@ -115,11 +118,13 @@ public class Fetcher {
       throws ApiGatewayException {
     try {
       LOGGER.info(
-          FETCHING_FROM_CHANNEL_REGISTER_MESSAGE, requestObject.type(), requestObject.identifier());
+          FETCHING_FROM_CHANNEL_REGISTER_MESSAGE,
+          requestObject.channelType(),
+          requestObject.identifier());
       return publicationChannelClient.getChannel(requestObject);
     } catch (PublicationChannelMovedException movedException) {
       throw new PublicationChannelMovedException(
-          "%s moved".formatted(requestObject.type()),
+          "%s moved".formatted(requestObject.channelType()),
           constructNewLocation(movedException.getLocation(), requestObject));
     }
   }
@@ -129,10 +134,11 @@ public class Fetcher {
         UriWrapper.fromUri(channelRegistryLocation).getPath().getPathElementByIndexFromEnd(1);
     var uriWrapper =
         UriWrapper.fromUri(
-                constructPublicationChannelIdBaseUri(requestObject.type().getNvaPathElement()))
+                constructPublicationChannelIdBaseUri(
+                    requestObject.channelType().getNvaPathElement()))
             .addChild(newIdentifier);
-    if (requestObject.year().isPresent()) {
-      return uriWrapper.addChild(requestObject.year().get()).getUri();
+    if (requestObject.getYear().isPresent()) {
+      return uriWrapper.addChild(requestObject.getYear().get()).getUri();
     }
     return uriWrapper.getUri();
   }

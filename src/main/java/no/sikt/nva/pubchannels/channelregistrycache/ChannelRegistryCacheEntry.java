@@ -126,14 +126,14 @@ public class ChannelRegistryCacheEntry {
 
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
     var currentYear = String.valueOf(LocalDate.now().getYear());
-    return switch (requestObject.type()) {
+    return switch (requestObject.channelType()) {
       case JOURNAL, SERIES, SERIAL_PUBLICATION ->
           requestObject
-              .year()
+              .getYear()
               .map(this::toThirdPartySerialPublication)
               .orElseGet(() -> toThirdPartySerialPublication(currentYear));
       case PUBLISHER ->
-          requestObject.year().map(this::toPublisher).orElseGet(() -> toPublisher(currentYear));
+          requestObject.getYear().map(this::toPublisher).orElseGet(() -> toPublisher(currentYear));
     };
   }
 

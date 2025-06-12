@@ -21,13 +21,13 @@ import nva.commons.core.JacocoGenerated;
 
 public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, PublicationChannelDto> {
 
-  private final Fetcher fetcher;
+  private final PublicationChannelService publicationChannelService;
 
   @JacocoGenerated
   public FetchPublicationChannelHandler() {
     super(Void.class, new Environment());
-    this.fetcher =
-        new Fetcher(
+    this.publicationChannelService =
+        new PublicationChannelService(
             ChannelRegistryClient.defaultInstance(),
             CacheService.defaultInstance(),
             ApplicationConfiguration.defaultAppConfigClientInstance(),
@@ -40,8 +40,9 @@ public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, Publ
       CacheService cacheService,
       AppConfig appConfigWithCacheEnabled) {
     super(Void.class, environment);
-    this.fetcher =
-        new Fetcher(channelRegistryClient, cacheService, appConfigWithCacheEnabled, environment);
+    this.publicationChannelService =
+        new PublicationChannelService(
+            channelRegistryClient, cacheService, appConfigWithCacheEnabled, environment);
   }
 
   @Override
@@ -56,7 +57,7 @@ public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, Publ
   @Override
   protected PublicationChannelDto processInput(Void input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
-    return fetcher.fetch(RequestObject.from(requestInfo));
+    return publicationChannelService.fetch(RequestObject.fromRequestInfo(requestInfo));
   }
 
   @Override

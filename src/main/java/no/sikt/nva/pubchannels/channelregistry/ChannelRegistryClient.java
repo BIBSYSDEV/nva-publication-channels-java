@@ -67,7 +67,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
       throws ApiGatewayException {
     var request = createFetchPublicationChannelRequest(requestObject);
-    return attempt(() -> executeRequest(request, requestObject.type().getFetchResponseClass()))
+    return attempt(
+            () -> executeRequest(request, requestObject.channelType().getFetchResponseClass()))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
   }
@@ -213,11 +214,11 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private URI constructUri(RequestObject requestObject) {
     var uriWrapper =
         UriWrapper.fromUri(channelRegistryBaseUri)
-            .addChild(requestObject.type().getChannelRegistryPathElement())
+            .addChild(requestObject.channelType().getChannelRegistryPathElement())
             .addChild(requestObject.identifier().toString());
 
-    if (requestObject.year().isPresent()) {
-      return uriWrapper.addChild(requestObject.year().get()).getUri();
+    if (requestObject.getYear().isPresent()) {
+      return uriWrapper.addChild(requestObject.getYear().get()).getUri();
     }
 
     return uriWrapper.getUri();
