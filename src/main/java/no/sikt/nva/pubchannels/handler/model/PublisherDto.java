@@ -1,7 +1,10 @@
 package no.sikt.nva.pubchannels.handler.model;
 
+import static java.util.Objects.nonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
@@ -20,14 +23,19 @@ public record PublisherDto(
     String discontinued,
     String year,
     ScientificValueReviewNotice reviewNotice)
-    implements JsonSerializable {
+    implements PublicationChannelDto, JsonSerializable {
 
   public static final String TYPE = "Publisher";
 
   public static PublisherDto create(
       URI selfUriBase, ThirdPartyPublisher publisher, String requestedYear) {
-    var year = Optional.ofNullable(publisher.getYear()).orElse(requestedYear);
-    var id = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier(), year).getUri();
+    var year = getYear(publisher, requestedYear);
+
+    var uriWrapper = UriWrapper.fromUri(selfUriBase).addChild(publisher.identifier());
+    if (nonNull(requestedYear)) {
+      uriWrapper = uriWrapper.addChild(year);
+    }
+    var id = uriWrapper.getUri();
     return new PublisherDto(
         id,
         publisher.identifier(),
@@ -38,6 +46,13 @@ public record PublisherDto(
         publisher.discontinued(),
         year,
         publisher.reviewNotice());
+  }
+
+  private static String getYear(ThirdPartyPublisher publisher, String requestedYear) {
+    return publisher
+        .getYear()
+        .or(() -> Optional.ofNullable(requestedYear))
+        .orElse(String.valueOf(LocalDate.now().getYear()));
   }
 
   @JsonProperty("type")

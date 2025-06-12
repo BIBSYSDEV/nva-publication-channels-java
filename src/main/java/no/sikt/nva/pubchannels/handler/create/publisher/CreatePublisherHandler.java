@@ -7,11 +7,13 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
+import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -48,10 +50,9 @@ public class CreatePublisherHandler
     var response = publicationChannelClient.createPublisher(getClientRequest(input));
     var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, response.pid());
     addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-    return CreatePublisherResponse.create(
-        createdUri,
-        (ThirdPartyPublisher)
-            publicationChannelClient.getChannel(PUBLISHER, response.pid(), getYear()));
+    var requestObject = new RequestObject(PUBLISHER, UUID.fromString(response.pid()), getYear());
+    var publisher = (ThirdPartyPublisher) publicationChannelClient.getChannel(requestObject);
+    return CreatePublisherResponse.create(createdUri, publisher);
   }
 
   private static ChannelRegistryCreatePublisherRequest getClientRequest(

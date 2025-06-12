@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
 import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
@@ -66,14 +66,15 @@ public class CacheService implements PublicationChannelFetchClient {
   }
 
   @Override
-  public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+  public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
       throws CachedPublicationChannelNotFoundException {
-    return attempt(() -> UUID.fromString(identifier))
+    return attempt(requestObject::identifier)
         .map(CacheService::entryWithIdentifier)
         .map(table::getItem)
         .map(ChannelRegistryCacheEntry::fromDao)
-        .map(entry -> entry.toThirdPartyPublicationChannel(type, year))
-        .orElseThrow(failure -> new CachedPublicationChannelNotFoundException(identifier));
+        .map(entry -> entry.toThirdPartyPublicationChannel(requestObject))
+        .orElseThrow(
+            failure -> new CachedPublicationChannelNotFoundException(requestObject.identifier()));
   }
 
   private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(

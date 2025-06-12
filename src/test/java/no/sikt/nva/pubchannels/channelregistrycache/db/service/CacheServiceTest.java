@@ -17,6 +17,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -49,8 +50,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
     cacheService.save(channel);
 
     var year = randomYear();
-    var persistedChannel =
-        cacheService.getChannel(ChannelType.JOURNAL, channel.getPidAsString(), year);
+    var requestObject = new RequestObject(ChannelType.JOURNAL, channel.getPid(), year);
+    var persistedChannel = cacheService.getChannel(requestObject);
 
     assertEquals(
         channel.toThirdPartyPublicationChannel(ChannelType.JOURNAL, year), persistedChannel);
@@ -61,9 +62,10 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var s3Client = s3ClientWithCsvFileInCacheBucket();
     cacheService.loadCache(s3Client);
 
-    var loadedEntry =
-        cacheService.getChannel(
-            ChannelType.JOURNAL, "50561B90-6679-4FCD-BCB0-99E521B18962", "2008");
+    var requestObject =
+        new RequestObject(
+            ChannelType.JOURNAL, UUID.fromString("50561B90-6679-4FCD-BCB0-99E521B18962"), "2008");
+    var loadedEntry = cacheService.getChannel(requestObject);
 
     assertNotNull(loadedEntry);
   }
@@ -75,7 +77,9 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
     var year = "2008";
 
-    var journal = cacheService.getChannel(ChannelType.JOURNAL, channelIdentifier, year);
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, UUID.fromString(channelIdentifier), year);
+    var journal = cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedJournal(channelIdentifier, year);
 
     assertEquals(expectedJournal, journal);
@@ -88,7 +92,9 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
     var year = "2008";
 
-    var journal = cacheService.getChannel(ChannelType.SERIES, channelIdentifier, year);
+    var requestObject =
+        new RequestObject(ChannelType.SERIES, UUID.fromString(channelIdentifier), year);
+    var journal = cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedSeries(channelIdentifier, year);
 
     assertEquals(expectedJournal, journal);
@@ -101,9 +107,9 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     var year = "2024";
 
-    var journal =
-        (ChannelRegistryPublisher)
-            cacheService.getChannel(ChannelType.PUBLISHER, channelIdentifier, year);
+    var requestObject =
+        new RequestObject(ChannelType.PUBLISHER, UUID.fromString(channelIdentifier), year);
+    var journal = (ChannelRegistryPublisher) cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedPublisher(channelIdentifier, year);
 
     assertEquals(expectedJournal, journal);

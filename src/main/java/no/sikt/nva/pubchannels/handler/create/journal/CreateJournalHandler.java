@@ -4,12 +4,14 @@ import static no.sikt.nva.pubchannels.channelregistry.ChannelType.JOURNAL;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
+import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
 import no.sikt.nva.pubchannels.handler.create.CreateHandler;
 import no.sikt.nva.pubchannels.handler.create.CreateSerialPublicationRequest;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
@@ -49,9 +51,9 @@ public class CreateJournalHandler
 
     // Fetch the new journal from the channel registry to build the full response
     var year = getYear();
+    var requestObject = new RequestObject(JOURNAL, UUID.fromString(response.pid()), year);
     var newJournal =
-        (ThirdPartySerialPublication)
-            publicationChannelClient.getChannel(JOURNAL, response.pid(), year);
+        (ThirdPartySerialPublication) publicationChannelClient.getChannel(requestObject);
     var journalDto =
         SerialPublicationDto.create(constructBaseUri(JOURNAL_PATH_ELEMENT), newJournal, year);
 

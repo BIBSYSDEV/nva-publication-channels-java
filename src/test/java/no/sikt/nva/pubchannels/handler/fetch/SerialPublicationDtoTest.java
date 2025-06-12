@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ScientificValueReviewNotice;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
@@ -48,8 +49,8 @@ class SerialPublicationDtoTest {
           }
 
           @Override
-          public String getYear() {
-            return randomString();
+          public Optional<String> getYear() {
+            return Optional.of(randomString());
           }
 
           @Override

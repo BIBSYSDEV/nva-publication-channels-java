@@ -12,7 +12,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.google.common.net.MediaType;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.time.Year;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,7 +114,7 @@ public abstract class SearchByQueryHandler<T>
     attempt(
             () -> {
               var parameters = SearchParameters.fromRequestInfo(requestInfo);
-              validateYear(parameters.year(), Year.of(1900), "Year");
+              validateYear(parameters.year());
               validateString(parameters.query(), 4, 300, "Query");
               validatePagination(parameters.offset(), parameters.size());
               return null;

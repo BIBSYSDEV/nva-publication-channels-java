@@ -23,11 +23,11 @@ servers:
   - url: https://api.nva.unit.no/publication-channels
 
 paths:
-  /journal/{identifier}/{year}:
+  /{type}/{identifier}/{year}:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchJournalByIdentifierAndYearFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
           integration.request.path.identifier:
@@ -39,26 +39,102 @@ paths:
           - 'method.request.path.year'
         type: "AWS_PROXY"
       tags:
-        - Journal
-      summary: Fetch journal by identifier and year
-      description: Returns a single Journal with information for a specific year
-      operationId: FetchJournalByIdentifierAndYear
+        - PublicationChannel
+      summary: Fetch publication channel by identifier and year
+      description: Returns a single channel with information for a specific year
+      operationId: FetchPublicationChannelByIdentifierAndYear
       parameters:
         - name: identifier
           in: path
-          description: identifier of journal to return
+          description: identifier of publication channel to return
           required: true
           schema:
             type: string
           example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
         - name: year
           in: path
-          description: year for journal data
+          description: year for publication channel data
           required: true
           schema:
             type: integer
             description: can maximum be set to next year
           example: '1910'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
+            enum:
+              - journal
+              - series
+              - publisher
+              - serial-publication
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/SerialPublication'
+              examples:
+                objectExample:
+                  $ref: '#/components/examples/JournalExample'
+        301:
+          description: Moved permanently
+          headers:
+            Location:
+              schema:
+                type: string
+              description: A URI to the new resource
+        400:
+          $ref: '#/components/responses/400'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
+  /{type}/{identifier}:
+    get:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
+        httpMethod: POST
+        requestParameters:
+          integration.request.path.identifier:
+          - 'method.request.path.identifier'
+        cacheKeyParameters:
+        - 'method.request.path.identifier'
+        type: "AWS_PROXY"
+      tags:
+        - PublicationChannel
+      summary: Fetch publication channel by identifier
+      description: Returns a single channel
+      operationId: FetchPublicationChannelByIdentifier
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of publication channel to return
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        - name: type
+          in: path
+          description: type of channel to return
+          required: true
+          schema:
+            type: string
+            enum:
+              - journal
+              - series
+              - publisher
+              - serial-publication
       responses:
         200:
           description: successful operation
@@ -184,71 +260,6 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
-  /publisher/{identifier}/{year}:
-    get:
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublisherByIdentifierAndYearFunction.Arn}/invocations
-        httpMethod: POST
-        requestParameters:
-          integration.request.path.identifier:
-            'method.request.path.identifier'
-          integration.request.path.year:
-            'method.request.path.year'
-        cacheKeyParameters:
-          - 'method.request.path.identifier'
-          - 'method.request.path.year'
-        type: "AWS_PROXY"
-      tags:
-        - Publisher
-      summary: Fetch publisher by identifier and year
-      description: Returns a single Publisher with information for a specific year
-      operationId: FetchPublisherByIdentifierAndYear
-      parameters:
-        - name: identifier
-          in: path
-          description: identifier of publisher to return
-          required: true
-          schema:
-            type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
-        - name: year
-          in: path
-          description: year for publisher data
-          required: true
-          schema:
-            type: integer
-            description: can maximum be set to next year
-          example: '1910'
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PublisherResponse'
-              examples:
-                objectExample:
-                  $ref: '#/components/examples/PublisherResponseExample'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/PublisherResponse'
-              examples:
-                objectExample:
-                  $ref: '#/components/examples/PublisherResponseExample'
-        301:
-          description: Moved permanently
-          headers:
-            Location:
-              schema:
-                type: string
-              description: A URI to the new resource
-        400:
-          $ref: '#/components/responses/400'
-        404:
-          $ref: '#/components/responses/404'
-        502:
-          $ref: '#/components/responses/502'
   /publisher:
     get:
       x-amazon-apigateway-integration:
@@ -345,71 +356,6 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
-  /series/{identifier}/{year}:
-    get:
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchSeriesByIdentifierAndYearFunction.Arn}/invocations
-        httpMethod: POST
-        requestParameters:
-          integration.request.path.identifier:
-            'method.request.path.identifier'
-          integration.request.path.year:
-            'method.request.path.year'
-        cacheKeyParameters:
-          - 'method.request.path.identifier'
-          - 'method.request.path.year'
-        type: "AWS_PROXY"
-      tags:
-        - Series
-      summary: Fetch series by identifier and year
-      description: Returns a single Series with information for a specific year
-      operationId: FetchSeriesByIdentifierAndYear
-      parameters:
-        - name: identifier
-          in: path
-          description: identifier of series to return
-          required: true
-          schema:
-            type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
-        - name: year
-          in: path
-          description: year for series data
-          required: true
-          schema:
-            type: integer
-            description: can maximum be set to next year
-          example: '1910'
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SerialPublication'
-              examples:
-                objectExample:
-                  $ref: '#/components/examples/SeriesExample'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/SerialPublication'
-              examples:
-                objectExample:
-                  $ref: '#/components/examples/SeriesExample'
-        301:
-          description: Moved permanently
-          headers:
-            Location:
-              schema:
-                type: string
-              description: A URI to the new resource
-        400:
-          $ref: '#/components/responses/400'
-        404:
-          $ref: '#/components/responses/404'
-        502:
-          $ref: '#/components/responses/502'
   /series:
     get:
       x-amazon-apigateway-integration:
@@ -504,75 +450,6 @@ paths:
                 $ref: '#/components/schemas/SerialPublication'
         400:
           $ref: '#/components/responses/400'
-        502:
-          $ref: '#/components/responses/502'
-  /serial-publication/{identifier}/{year}:
-    get:
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchSerialPublicationByIdentifierAndYearFunction.Arn}/invocations
-        httpMethod: POST
-        requestParameters:
-          integration.request.path.identifier:
-            'method.request.path.identifier'
-          integration.request.path.year:
-            'method.request.path.year'
-        cacheKeyParameters:
-          - 'method.request.path.identifier'
-          - 'method.request.path.year'
-        type: "AWS_PROXY"
-      tags:
-        - SerialPublication
-      summary: Fetch journal or series by identifier and year
-      description: Returns a single Journal or Series with information for a specific year
-      operationId: FetchSerialPublicationByIdentifierAndYear
-      parameters:
-        - name: identifier
-          in: path
-          description: identifier of journal/series to return
-          required: true
-          schema:
-            type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
-        - name: year
-          in: path
-          description: year for journal/series data
-          required: true
-          schema:
-            type: integer
-            description: can maximum be set to next year
-          example: '1910'
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SerialPublication'
-              examples:
-                journal:
-                  $ref: "#/components/examples/JournalExample"
-                series:
-                  $ref: "#/components/examples/SeriesExample"
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/SerialPublication'
-              examples:
-                journal:
-                  $ref: "#/components/examples/JournalExample"
-                series:
-                  $ref: "#/components/examples/SeriesExample"
-        301:
-          description: Moved permanently
-          headers:
-            Location:
-              schema:
-                type: string
-              description: A URI to the new resource
-        400:
-          $ref: '#/components/responses/400'
-        404:
-          $ref: '#/components/responses/404'
         502:
           $ref: '#/components/responses/502'
   /serial-publication:

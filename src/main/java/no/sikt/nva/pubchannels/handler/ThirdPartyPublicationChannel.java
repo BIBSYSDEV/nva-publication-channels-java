@@ -1,12 +1,13 @@
 package no.sikt.nva.pubchannels.handler;
 
 import java.net.URI;
+import java.util.Optional;
 
 public interface ThirdPartyPublicationChannel {
 
   String identifier();
 
-  String getYear();
+  Optional<String> getYear();
 
   String name();
 

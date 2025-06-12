@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCach
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublisher;
 import no.sikt.nva.pubchannels.handler.ThirdPartySerialPublication;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import nva.commons.core.JacocoGenerated;
 
 public class ChannelRegistryCacheEntry {
@@ -119,6 +121,19 @@ public class ChannelRegistryCacheEntry {
     return switch (type) {
       case JOURNAL, SERIES, SERIAL_PUBLICATION -> toThirdPartySerialPublication(year);
       case PUBLISHER -> toPublisher(year);
+    };
+  }
+
+  public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
+    var currentYear = String.valueOf(LocalDate.now().getYear());
+    return switch (requestObject.channelType()) {
+      case JOURNAL, SERIES, SERIAL_PUBLICATION ->
+          requestObject
+              .getYear()
+              .map(this::toThirdPartySerialPublication)
+              .orElseGet(() -> toThirdPartySerialPublication(currentYear));
+      case PUBLISHER ->
+          requestObject.getYear().map(this::toPublisher).orElseGet(() -> toPublisher(currentYear));
     };
   }
 

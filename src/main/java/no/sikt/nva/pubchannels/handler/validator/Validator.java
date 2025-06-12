@@ -6,20 +6,17 @@ import static nva.commons.core.attempt.Try.attempt;
 
 import java.time.Year;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.regex.Pattern;
-import nva.commons.core.JacocoGenerated;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
-public final class Validator {
+public class Validator {
 
   public static final String ISBN_PREFIX_PATTERN = "^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$";
   public static final int MAX_LENGTH_ISBN_PREFIX = 13;
   private static final String IS_REQUIRED_STRING = "%s is required.";
-
-  @JacocoGenerated
-  private Validator() {}
+  protected static final Year MIN_ACCEPTABLE_YEAR = Year.of(1900);
 
   public static void validateString(String value, int minLength, int maxLength, String name) {
     Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
@@ -55,26 +52,19 @@ public final class Validator {
     }
   }
 
-  public static void validateUuid(String value, String name) {
-    Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
-    attempt(() -> UUID.fromString(value))
-        .orElseThrow(
-            failure -> new ValidationException(format("%s has an invalid UUIDv4 format", name)));
-  }
-
-  public static void validateYear(String value, Year minAcceptableYear, String name) {
+  public static void validateYear(String value) {
     if (value != null) {
       var year =
           attempt(() -> Year.parse(value))
               .orElseThrow(
                   failure ->
-                      new ValidationException(format("%s field is not a valid year.", name)));
+                      new ValidationException(format("%s field is not a valid year.", "Year")));
       var now = Year.now();
-      if (year.isBefore(minAcceptableYear) || year.isAfter(now.plusYears(1))) {
+      if (year.isBefore(MIN_ACCEPTABLE_YEAR) || year.isAfter(now.plusYears(1))) {
         throw new ValidationException(
             format(
                 "%s is not between the year %d and %d",
-                name, minAcceptableYear.getValue(), now.getValue()));
+                "Year", MIN_ACCEPTABLE_YEAR.getValue(), now.getValue()));
       }
     }
   }
@@ -83,5 +73,9 @@ public final class Validator {
     if (offset % size != 0) {
       throw new ValidationException("Offset needs to be divisible by size");
     }
+  }
+
+  public void validate(RequestObject requestObject) {
+    requestObject.getYear().ifPresent(Validator::validateYear);
   }
 }

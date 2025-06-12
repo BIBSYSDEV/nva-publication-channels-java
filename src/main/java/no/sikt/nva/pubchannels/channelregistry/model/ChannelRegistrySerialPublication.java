@@ -36,11 +36,10 @@ public record ChannelRegistrySerialPublication(
   private static final String TYPE_FIELD = "type";
 
   @Override
-  public String getYear() {
+  public Optional<String> getYear() {
     return Optional.ofNullable(channelRegistryLevel())
         .map(ChannelRegistryLevel::year)
-        .map(String::valueOf)
-        .orElse(null);
+        .map(String::valueOf);
   }
 
   @Override

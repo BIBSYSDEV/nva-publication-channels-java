@@ -103,14 +103,27 @@ public final class TestUtils {
     return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
   }
 
-  public static InputStream constructRequest(String year, String identifier, MediaType mediaType)
+  public static InputStream constructRequest(
+      String year, String identifier, String type, MediaType mediaType)
       throws JsonProcessingException {
     return new HandlerRequestBuilder<Void>(dtoObjectMapper)
         .withHeaders(Map.of(ACCEPT, mediaType.toString()))
         .withPathParameters(
             Map.of(
                 "identifier", identifier,
-                "year", year))
+                "year", year,
+                "type", type))
+        .build();
+  }
+
+  public static InputStream constructRequest(String identifier, String type, MediaType mediaType)
+      throws JsonProcessingException {
+    return new HandlerRequestBuilder<Void>(dtoObjectMapper)
+        .withHeaders(Map.of(ACCEPT, mediaType.toString()))
+        .withPathParameters(
+            Map.of(
+                "identifier", identifier,
+                "type", type))
         .build();
   }
 
@@ -162,7 +175,7 @@ public final class TestUtils {
   public static void mockResponseWithHttpStatus(
       String pathParameter, String identifier, String year, int httpStatus) {
     stubFor(
-        get(pathParameter + identifier + "/" + year)
+        get(pathParameter + UUID.fromString(identifier) + "/" + year)
             .withHeader("Accept", equalTo("application/json"))
             .willReturn(aResponse().withStatus(httpStatus)));
   }

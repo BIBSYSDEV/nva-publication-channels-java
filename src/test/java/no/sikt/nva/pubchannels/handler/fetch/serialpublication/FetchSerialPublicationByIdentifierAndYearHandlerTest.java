@@ -17,7 +17,7 @@ import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.fetch.BaseFetchSerialPublicationByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.GatewayResponse;
@@ -31,9 +31,9 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest
     extends BaseFetchSerialPublicationByIdentifierAndYearHandlerTest {
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, SerialPublicationDto> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       ChannelRegistryClient publicationChannelClient) {
-    return new FetchSerialPublicationByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment,
         publicationChannelClient,
         cacheService,
@@ -41,25 +41,25 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest
   }
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       Environment environment,
       PublicationChannelClient publicationChannelClient,
       CacheService cacheService,
       AppConfig appConfigWithCacheEnabled) {
-    return new FetchSerialPublicationByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment, publicationChannelClient, cacheService, appConfigWithCacheEnabled);
   }
 
   @BeforeEach
   void setup() {
     this.handlerUnderTest =
-        new FetchSerialPublicationByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment,
             this.channelRegistryClient,
             this.cacheService,
             super.getAppConfigWithCacheEnabled(false));
     this.type = JOURNAL_TYPE;
-    this.customChannelPath = SERIAL_PUBLICATION_PATH;
+    this.nvaChannelPath = SERIAL_PUBLICATION_PATH;
     this.selfBaseUri =
         UriWrapper.fromHost(API_DOMAIN)
             .addChild(CUSTOM_DOMAIN_BASE_PATH)
@@ -71,7 +71,7 @@ class FetchSerialPublicationByIdentifierAndYearHandlerTest
   @ParameterizedTest(name = "Should return correct data for type \"{0}\"")
   @ValueSource(strings = {JOURNAL_TYPE, SERIES_TYPE})
   void shouldReturnCorrectDataWithSuccessWhenExists(String type) throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     var expectedChannel = mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
 

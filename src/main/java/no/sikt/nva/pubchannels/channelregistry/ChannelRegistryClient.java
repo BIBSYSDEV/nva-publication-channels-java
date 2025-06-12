@@ -25,6 +25,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelRespons
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
+import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
@@ -63,10 +64,11 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   }
 
   @Override
-  public ThirdPartyPublicationChannel getChannel(ChannelType type, String identifier, String year)
+  public ThirdPartyPublicationChannel getChannel(RequestObject requestObject)
       throws ApiGatewayException {
-    var request = createFetchPublicationChannelRequest(type.pathElement, identifier, year);
-    return attempt(() -> executeRequest(request, type.fetchResponseClass))
+    var request = createFetchPublicationChannelRequest(requestObject);
+    return attempt(
+            () -> executeRequest(request, requestObject.channelType().getFetchResponseClass()))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
   }
@@ -74,7 +76,8 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   @Override
   public ThirdPartySearchResponse searchChannel(
       ChannelType type, Map<String, String> queryParameters) throws ApiGatewayException {
-    var request = createFindPublicationChannelRequest(type.pathElement, queryParameters);
+    var request =
+        createFindPublicationChannelRequest(type.channelRegistryPathElement, queryParameters);
     return attempt(() -> executeRequest(request, type.searchResponseClass))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
@@ -154,11 +157,10 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     return new BadGatewayException("Unable to reach upstream!");
   }
 
-  private HttpRequest createFetchPublicationChannelRequest(
-      String pathElement, String identifier, String year) {
+  private HttpRequest createFetchPublicationChannelRequest(RequestObject requestObject) {
     return HttpRequest.newBuilder()
         .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
-        .uri(constructUri(pathElement, identifier, year))
+        .uri(constructUri(requestObject))
         .GET()
         .build();
   }
@@ -207,6 +209,19 @@ public class ChannelRegistryClient implements PublicationChannelClient {
 
   private URI constructUri(String... children) {
     return UriWrapper.fromUri(channelRegistryBaseUri).addChild(children).getUri();
+  }
+
+  private URI constructUri(RequestObject requestObject) {
+    var uriWrapper =
+        UriWrapper.fromUri(channelRegistryBaseUri)
+            .addChild(requestObject.channelType().getChannelRegistryPathElement())
+            .addChild(requestObject.identifier().toString());
+
+    if (requestObject.getYear().isPresent()) {
+      return uriWrapper.addChild(requestObject.getYear().get()).getUri();
+    }
+
+    return uriWrapper.getUri();
   }
 
   private URI addQueryParameters(URI uri, Map<String, String> queryParameters) {

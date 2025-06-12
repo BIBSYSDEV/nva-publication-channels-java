@@ -18,7 +18,7 @@ class SearchSerialPublicationByQueryHandlerTest
     this.handlerUnderTest =
         new SearchSerialPublicationByQueryHandler(environment, publicationChannelClient);
     this.type = JOURNAL_TYPE;
-    this.customChannelPath = ChannelType.SERIAL_PUBLICATION.pathElement;
+    this.customChannelPath = ChannelType.SERIAL_PUBLICATION.channelRegistryPathElement;
     this.selfBaseUri =
         UriWrapper.fromHost(API_DOMAIN)
             .addChild(CUSTOM_DOMAIN_BASE_PATH)

@@ -67,7 +67,7 @@ class SearchPublisherByQueryHandlerTest extends SearchByQueryHandlerTest {
     this.handlerUnderTest =
         new SearchPublisherByQueryHandler(environment, publicationChannelClient);
     this.type = PublisherDto.TYPE;
-    this.customChannelPath = ChannelType.PUBLISHER.pathElement;
+    this.customChannelPath = ChannelType.PUBLISHER.channelRegistryPathElement;
     this.selfBaseUri =
         UriWrapper.fromHost(API_DOMAIN)
             .addChild(CUSTOM_DOMAIN_BASE_PATH)

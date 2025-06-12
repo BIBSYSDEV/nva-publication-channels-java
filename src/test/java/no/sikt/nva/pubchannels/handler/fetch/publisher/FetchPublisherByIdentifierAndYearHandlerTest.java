@@ -16,6 +16,7 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -33,8 +34,8 @@ import java.util.Map;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandler;
 import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
 import no.sikt.nva.pubchannels.handler.model.PublisherDto;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
@@ -57,9 +58,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
           .getUri();
 
   @Override
-  protected FetchByIdentifierAndYearHandler<Void, ?> createHandler(
+  protected FetchPublicationChannelHandler createHandler(
       ChannelRegistryClient publicationChannelClient) {
-    return new FetchPublisherByIdentifierAndYearHandler(
+    return new FetchPublicationChannelHandler(
         environment,
         publicationChannelClient,
         cacheService,
@@ -69,18 +70,18 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
   @BeforeEach
   void setup() {
     this.handlerUnderTest =
-        new FetchPublisherByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment,
             this.channelRegistryClient,
             cacheService,
             super.getAppConfigWithCacheEnabled(false));
-    this.customChannelPath = PUBLISHER_PATH;
+    this.nvaChannelPath = PUBLISHER_PATH;
     this.channelRegistryPathElement = "/findpublisher/";
   }
 
   @Test
   void shouldReturnCorrectDataWithSuccessWhenExists() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "publisher", MediaType.ANY_TYPE);
 
     var expectedPublisher = mockPublisherFound(year, identifier);
 
@@ -97,7 +98,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
   @Test
   void shouldIncludeYearInResponse() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "publisher", MediaType.ANY_TYPE);
     mockPublisherFound(year, identifier);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -114,7 +115,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     mockChannelRegistryResponse("/findpublisher/", year, identifier, channelRegistryPublisherBody);
 
     handlerUnderTest.handleRequest(
-        constructRequest(year, identifier, MediaType.ANY_TYPE), output, context);
+        constructRequest(year, identifier, "publisher", MediaType.ANY_TYPE), output, context);
 
     var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
     assertEquals(HTTP_OK, response.getStatusCode());
@@ -122,7 +123,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
   @Test
   void shouldIncludeScientificReviewNoticeWhenLevelDisplayX() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "publisher", MediaType.ANY_TYPE);
     var expectedPublisher = mockPublisherWithScientificValueReviewNotice(year, identifier);
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -134,7 +135,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
   @Test
   void shouldNotIncludeScientificReviewNoticeWhenLevelDisplayNotX() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, "publisher", MediaType.ANY_TYPE);
 
     handlerUnderTest.handleRequest(input, output, context);
 
@@ -146,7 +147,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
   @ParameterizedTest(name = "Should return requested media type \"{0}\"")
   @MethodSource("no.sikt.nva.pubchannels.handler.TestUtils#mediaTypeProvider")
   void shouldReturnContentNegotiatedContentWhenRequested(MediaType mediaType) throws IOException {
-    var input = constructRequest(year, identifier, mediaType);
+    var input = constructRequest(year, identifier, nvaChannelPath, mediaType);
 
     final var expectedMediaType =
         mediaType.equals(MediaType.ANY_TYPE)
@@ -168,7 +169,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
   @Test
   void shouldReturnChannelIdWithRequestedYearIfThirdPartyDoesNotProvideYear() throws IOException {
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     var expectedPublisher = mockPublisherFoundYearValueNull(year, identifier);
 
@@ -187,9 +188,9 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
   void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode()
       throws IOException {
     mockResponseWithHttpStatus(
-        "/findpublisher/", identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
+        channelRegistryPathElement, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-    var input = constructRequest(year, identifier, MediaType.ANY_TYPE);
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     var appender = LogUtils.getTestingAppenderForRootLogger();
     handlerUnderTest.handleRequest(input, output, context);
@@ -214,9 +215,11 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
         UriWrapper.fromHost(channelRegistryBaseUri)
             .addChild("/findpublisher/", newIdentifier, year)
             .toString();
-    mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, "/findpublisher/");
+    mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, nvaChannelPath);
     handlerUnderTest.handleRequest(
-        constructRequest(year, requestedIdentifier, MediaType.ANY_TYPE), output, context);
+        constructRequest(year, requestedIdentifier, "publisher", MediaType.ANY_TYPE),
+        output,
+        context);
     var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
     assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
     var expectedLocation =
@@ -232,11 +235,12 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     var channelRegistryClient = new ChannelRegistryClient(httpClient, channelRegistryBaseUri, null);
 
     var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
-    var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
+    var input =
+        constructRequest(randomYear(), publisherIdentifier, nvaChannelPath, MediaType.ANY_TYPE);
 
     super.loadAndEnableCache();
     this.handlerUnderTest =
-        new FetchPublisherByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment,
             channelRegistryClient,
             cacheService,
@@ -250,19 +254,20 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
     assertThat(
         appender.getMessages(),
-        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
+        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier.toLowerCase()));
   }
 
   @Test
   void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrue() throws IOException {
     var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
 
-    var input = constructRequest(randomYear(), publisherIdentifier, MediaType.ANY_TYPE);
+    var input =
+        constructRequest(randomYear(), publisherIdentifier, nvaChannelPath, MediaType.ANY_TYPE);
     when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
     super.loadAndEnableCache();
     this.handlerUnderTest =
-        new FetchPublisherByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
     var appender = LogUtils.getTestingAppenderForRootLogger();
 
@@ -274,17 +279,19 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
     assertThat(
         appender.getMessages(),
-        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
+        containsStringIgnoringCase("Fetching PUBLISHER from cache: " + publisherIdentifier));
   }
 
   @Test
   void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButPublisherIsNotCached()
       throws IOException {
-    var input = constructRequest(randomYear(), UUID.randomUUID().toString(), MediaType.ANY_TYPE);
+    var input =
+        constructRequest(
+            randomYear(), UUID.randomUUID().toString(), "publisher", MediaType.ANY_TYPE);
     when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
     super.loadAndEnableCache();
     this.handlerUnderTest =
-        new FetchPublisherByIdentifierAndYearHandler(
+        new FetchPublicationChannelHandler(
             environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
 
     handlerUnderTest.handleRequest(input, output, context);
@@ -292,6 +299,31 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
     assertThat(response.getStatusCode(), is(equalTo(HTTP_NOT_FOUND)));
+  }
+
+  @Test
+  void shouldReturnPublisherFromCacheWhenShouldUseCacheEnvironmentIsTrueWhenYearIsMissing()
+      throws IOException {
+    var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
+
+    var input = constructRequest(publisherIdentifier, nvaChannelPath, MediaType.ANY_TYPE);
+    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+
+    super.loadAndEnableCache();
+    this.handlerUnderTest =
+        new FetchPublicationChannelHandler(
+            environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
+    var appender = LogUtils.getTestingAppenderForRootLogger();
+
+    handlerUnderTest.handleRequest(input, output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
+
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+    assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
+    assertThat(
+        appender.getMessages(),
+        containsStringIgnoringCase("Fetching PUBLISHER from cache: " + publisherIdentifier));
   }
 
   private PublisherDto mockPublisherFound(String year, String identifier) {
