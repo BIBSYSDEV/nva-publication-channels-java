@@ -362,7 +362,7 @@ public abstract class SearchByQueryHandlerTest {
     var problem = response.getBodyObject(Problem.class);
 
     assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_REQUEST)));
-    assertThat(problem.getDetail(), is(containsString("Year")));
+    assertThat(problem.getDetail(), is(containsString("Invalid year")));
   }
 
   @Test

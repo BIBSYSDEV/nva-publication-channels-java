@@ -111,7 +111,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     var problem = response.getBodyObject(Problem.class);
 
-    assertThat(problem.getDetail(), is(containsString("Year")));
+    assertThat(problem.getDetail(), is(containsString("Invalid year")));
   }
 
   @ParameterizedTest(name = "identifier \"{0}\" is invalid")

@@ -99,8 +99,7 @@ public final class TestUtils {
   }
 
   public static Stream<String> invalidYearsProvider() {
-    String yearAfterNextYear = Integer.toString(LocalDate.now().getYear() + 2);
-    return Stream.of(" ", "abcd", yearAfterNextYear, "21000");
+    return Stream.of(" ", "abcd", "2101");
   }
 
   public static InputStream constructRequest(
