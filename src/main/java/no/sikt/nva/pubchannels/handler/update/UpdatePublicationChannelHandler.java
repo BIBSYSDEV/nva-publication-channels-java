@@ -22,12 +22,14 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
 
   protected static final String IDENTIFIER = "identifier";
   protected static final String IDENTIFIER_PARAMETER_IS_MISSING = "Identifier parameter is missing";
-  protected static final String INVALID_IDENTIFIER_MESSAGE = "Provided identifier is not valid UUID";
+  protected static final String INVALID_IDENTIFIER_MESSAGE =
+      "Provided identifier is not valid UUID";
+  protected static final String EMPTY_REQUEST_MESSAGE = "Request body is empty!";
   private final PublicationChannelUpdateClient client;
 
   @JacocoGenerated
   public UpdatePublicationChannelHandler() {
-    this(ChannelRegistryClient.defaultInstance());
+    this(ChannelRegistryClient.defaultAuthorizedInstance(new Environment()));
   }
 
   public UpdatePublicationChannelHandler(PublicationChannelUpdateClient client) {
@@ -39,18 +41,22 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
   protected void validateRequest(
       UpdateChannelRequest input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
-    if (!requestInfo.isGatewayAuthorized()) {
-      throw new UnauthorizedException();
-    }
-    if (!requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS)) {
-      throw new ForbiddenException();
-    }
     if (!requestInfo.getPathParameters().containsKey(IDENTIFIER)) {
       throw new BadRequestException(IDENTIFIER_PARAMETER_IS_MISSING);
     }
 
     attempt(() -> UUID.fromString(requestInfo.getPathParameter(IDENTIFIER)))
         .orElseThrow(failure -> new BadRequestException(INVALID_IDENTIFIER_MESSAGE));
+
+    if (input.isEmpty()) {
+      throw new BadRequestException(EMPTY_REQUEST_MESSAGE);
+    }
+    if (!requestInfo.isGatewayAuthorized()) {
+      throw new UnauthorizedException();
+    }
+    if (!requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS)) {
+      throw new ForbiddenException();
+    }
   }
 
   @Override

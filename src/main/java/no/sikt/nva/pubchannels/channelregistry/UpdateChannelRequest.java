@@ -15,4 +15,6 @@ public sealed interface UpdateChannelRequest extends JsonSerializable
     permits UpdatePublisherRequest, UpdateSerialPublicationRequest {
 
   ChannelRegistryUpdateChannelRequest toChannelRegistryUpdateRequest(UUID identifier);
+
+  boolean isEmpty();
 }

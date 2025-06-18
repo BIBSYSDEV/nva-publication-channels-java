@@ -26,6 +26,7 @@ import java.util.Set;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
+import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.ScientificValue;
@@ -40,6 +41,7 @@ import nva.commons.apigateway.exceptions.UnauthorizedException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
+import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   protected static final int ONE_HUNDREED = 100;
   protected static final int FOUR = 4;
   protected static final int FIVE = 5;
+  private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
   private final HttpClient httpClient;
   private final URI channelRegistryBaseUri;
   private final AuthClient authClient;
@@ -70,6 +73,18 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     var environment = new Environment();
     var baseUri = URI.create(environment.readEnv(ENV_CHANNEL_REGISTRY_BASE_URL));
     return new ChannelRegistryClient(HttpClient.newBuilder().build(), baseUri, null);
+  }
+
+  @JacocoGenerated // only used when running on AWS
+  public static PublicationChannelClient defaultAuthorizedInstance(Environment environment) {
+    var secretsReader = new SecretsReader();
+    var clientId = secretsReader.fetchSecret(SECRET_NAME, "clientId");
+    var clientSecret = secretsReader.fetchSecret(SECRET_NAME, "clientSecret");
+    var authBaseUri = URI.create(secretsReader.fetchSecret(SECRET_NAME, "authBaseUrl"));
+    var httpClient = HttpClient.newBuilder().build();
+    var authClient = new DataportenAuthClient(httpClient, authBaseUri, clientId, clientSecret);
+    var baseUri = URI.create(environment.readEnv(ENV_CHANNEL_REGISTRY_BASE_URL));
+    return new ChannelRegistryClient(httpClient, baseUri, authClient);
   }
 
   @Override

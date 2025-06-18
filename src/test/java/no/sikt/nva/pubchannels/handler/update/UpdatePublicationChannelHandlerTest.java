@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.UpdateChannelRequest;
+import no.sikt.nva.pubchannels.channelregistry.UpdatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.UpdateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelUpdateClient;
@@ -39,6 +40,7 @@ import org.zalando.problem.Problem;
 class UpdatePublicationChannelHandlerTest {
 
   protected static final FakeContext CONTEXT = new FakeContext();
+  protected static final String IDENTIFIER = "identifier";
   private UpdatePublicationChannelHandler handler;
   private PublicationChannelUpdateClient client;
   private ByteArrayOutputStream output;
@@ -63,7 +65,7 @@ class UpdatePublicationChannelHandlerTest {
 
   @Test
   void shouldReturnForbiddenWhenUserHasNoManageCustomersAccessRight() throws IOException {
-    var request = createAuthorizedRequest();
+    var request = createRequestForUserWithoutAccessRights();
 
     handler.handleRequest(request, output, CONTEXT);
 
@@ -85,7 +87,18 @@ class UpdatePublicationChannelHandlerTest {
 
   @Test
   void shouldReturnBadRequestWhenIdentifierInPathParamIsNotValidUUID() throws IOException {
-    var request = createRequest(randomString());
+    var request = createRequest(randomString(), validRequestBody());
+
+    handler.handleRequest(request, output, CONTEXT);
+
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+
+    assertEquals(HTTP_BAD_REQUEST, response.getStatusCode());
+  }
+
+  @Test
+  void shouldReturnBadRequestWhenRequestBodyIsMissingFieldsToUpdate() throws IOException {
+    var request = createRequest(randomString(), new UpdatePublisherRequest(null, null));
 
     handler.handleRequest(request, output, CONTEXT);
 
@@ -97,7 +110,7 @@ class UpdatePublicationChannelHandlerTest {
   @Test
   void shouldReturnNotFoundWhenAttemptingToUpdateNonExistingChannel()
       throws IOException, ApiGatewayException {
-    var request = createRequest(randomUUID().toString());
+    var request = createRequest(randomUUID().toString(), validRequestBody());
 
     doThrow(new NotFoundException(randomString())).when(client).updateChannel(any());
 
@@ -111,7 +124,7 @@ class UpdatePublicationChannelHandlerTest {
   @Test
   void shouldReturnBadGatewayWhenUnexpectedErrorFromChannelRegistry()
       throws IOException, ApiGatewayException {
-    var request = createRequest(randomUUID().toString());
+    var request = createRequest(randomUUID().toString(), validRequestBody());
 
     doThrow(new BadGatewayException(randomString())).when(client).updateChannel(any());
 
@@ -124,7 +137,7 @@ class UpdatePublicationChannelHandlerTest {
 
   @Test
   void shouldReturnAcceptedWhenSuccessfullyUpdatedChannel() throws IOException {
-    var request = createRequest(randomUUID().toString());
+    var request = createRequest(randomUUID().toString(), validRequestBody());
 
     handler.handleRequest(request, output, CONTEXT);
 
@@ -133,28 +146,38 @@ class UpdatePublicationChannelHandlerTest {
     assertEquals(HTTP_ACCEPTED, response.getStatusCode());
   }
 
+  private static UpdateSerialPublicationRequest validRequestBody() {
+    return new UpdateSerialPublicationRequest(randomString(), null, null);
+  }
+
   private InputStream createRequestWithoutPathParams() throws JsonProcessingException {
     return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
         .withAccessRights(randomUri(), MANAGE_CUSTOMERS)
-        .withBody(new UpdateSerialPublicationRequest(randomString(), null, null))
+        .withBody(validRequestBody())
         .build();
   }
 
-  private InputStream createRequest(String identifier) throws JsonProcessingException {
+  private InputStream createRequest(String identifier, UpdateChannelRequest body)
+      throws JsonProcessingException {
     return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
         .withAccessRights(randomUri(), AccessRight.MANAGE_CUSTOMERS)
-        .withBody(new UpdateSerialPublicationRequest(randomString(), null, null))
-        .withPathParameters(Map.of("identifier", identifier))
+        .withBody(body)
+        .withPathParameters(Map.of(IDENTIFIER, identifier))
         .build();
   }
 
-  private InputStream createAuthorizedRequest() throws JsonProcessingException {
+  private InputStream createRequestForUserWithoutAccessRights() throws JsonProcessingException {
     return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
+        .withBody(validRequestBody())
+        .withPathParameters(Map.of(IDENTIFIER, randomUUID().toString()))
         .withAccessRights(randomUri(), AccessRight.MANAGE_NVI)
         .build();
   }
 
   private InputStream createUnauthorizedRequest() throws JsonProcessingException {
-    return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper).build();
+    return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
+        .withBody(validRequestBody())
+        .withPathParameters(Map.of(IDENTIFIER, randomUUID().toString()))
+        .build();
   }
 }
