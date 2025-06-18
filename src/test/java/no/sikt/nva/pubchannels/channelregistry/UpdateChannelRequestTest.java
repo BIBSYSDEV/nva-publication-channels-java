@@ -6,6 +6,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.UUID;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryUpdateChannelRequest.Fields;
 import org.junit.jupiter.api.Test;
 
 class UpdateChannelRequestTest {
@@ -20,7 +21,8 @@ class UpdateChannelRequestTest {
     var channelRegistryRequest = request.toChannelRegistryUpdateRequest(identifier);
 
     var expected =
-        new ChannelRegistryUpdateChannelRequest(identifier, name, null, null, isbn, "publisher");
+        new ChannelRegistryUpdateChannelRequest(
+            new Fields(identifier, name, null, null, isbn), "publisher");
 
     assertEquals(expected, channelRegistryRequest);
   }
@@ -37,7 +39,7 @@ class UpdateChannelRequestTest {
 
     var expected =
         new ChannelRegistryUpdateChannelRequest(
-            identifier, name, printIssn, onlineIssn, null, "serial-publication");
+            new Fields(identifier, name, printIssn, onlineIssn, null), "serial-publication");
 
     assertEquals(expected, channelRegistryRequest);
   }

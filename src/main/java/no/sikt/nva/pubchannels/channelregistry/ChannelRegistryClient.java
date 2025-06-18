@@ -53,7 +53,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private static final Set<Integer> OK_STATUSES =
       Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
   private static final String SEARCH_PATH_ELEMENT = "channels";
-  protected static final int ONE_HUNDREED = 100;
+  protected static final int ONE_HUNDRED = 100;
   protected static final int FOUR = 4;
   protected static final int FIVE = 5;
   private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
@@ -145,10 +145,12 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     var channel =
         switch (request.type()) {
           case "publisher" ->
-              getChannel(new RequestObject(PUBLISHER, request.pid(), Year.now().toString()));
+              getChannel(
+                  new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
           case "serial-publication" ->
               getChannel(
-                  new RequestObject(SERIAL_PUBLICATION, request.pid(), Year.now().toString()));
+                  new RequestObject(
+                      SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
           default -> throw new BadRequestException("Unsupported channel type: " + request.type());
         };
 
@@ -161,11 +163,11 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     var response =
         attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
 
-    if (response.statusCode() / ONE_HUNDREED == FOUR) {
+    if (response.statusCode() / ONE_HUNDRED == FOUR) {
       LOGGER.error("Channel registry responded with: {}", response.body());
       throw new BadRequestException(response.body());
     }
-    if (response.statusCode() / ONE_HUNDREED == FIVE) {
+    if (response.statusCode() / ONE_HUNDRED == FIVE) {
       LOGGER.error("Channel registry responded with: {}", response.body());
       throw new BadGatewayException("Unexpected response from upstream!");
     }

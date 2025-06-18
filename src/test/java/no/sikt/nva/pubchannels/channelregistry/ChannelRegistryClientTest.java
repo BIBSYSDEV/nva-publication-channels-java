@@ -29,6 +29,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryUpdateChannelRequest.Fields;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.dataporten.DataportenAuthClient;
@@ -143,7 +144,8 @@ class ChannelRegistryClientTest {
 
   private static ChannelRegistryUpdateChannelRequest createRequest(
       UUID channelIdentifier, String type) {
-    return new ChannelRegistryUpdateChannelRequest(channelIdentifier, null, null, null, null, type);
+    return new ChannelRegistryUpdateChannelRequest(
+        new Fields(channelIdentifier, null, null, null, null), type);
   }
 
   private static ChannelRegistryLevel randomLevel(String level) {
