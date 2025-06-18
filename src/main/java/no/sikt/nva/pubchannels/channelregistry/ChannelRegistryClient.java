@@ -162,9 +162,11 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
 
     if (response.statusCode() / ONE_HUNDREED == FOUR) {
+      LOGGER.error("Channel registry responded with: {}", response.body());
       throw new BadRequestException(response.body());
     }
     if (response.statusCode() / ONE_HUNDREED == FIVE) {
+      LOGGER.error("Channel registry responded with: {}", response.body());
       throw new BadGatewayException("Unexpected response from upstream!");
     }
   }
