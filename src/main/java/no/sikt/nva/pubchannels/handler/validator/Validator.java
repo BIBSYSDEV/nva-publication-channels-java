@@ -17,6 +17,7 @@ public class Validator {
   public static final int MAX_LENGTH_ISBN_PREFIX = 13;
   private static final String IS_REQUIRED_STRING = "%s is required.";
   protected static final Year MIN_ACCEPTABLE_YEAR = Year.of(1900);
+  protected static final Year MAX_ACCEPTABLE_YEAR = Year.of(2100);
 
   public static void validateString(String value, int minLength, int maxLength, String name) {
     Objects.requireNonNull(value, format(IS_REQUIRED_STRING, name));
@@ -58,13 +59,12 @@ public class Validator {
           attempt(() -> Year.parse(value))
               .orElseThrow(
                   failure ->
-                      new ValidationException(format("%s field is not a valid year.", "Year")));
-      var now = Year.now();
-      if (year.isBefore(MIN_ACCEPTABLE_YEAR) || year.isAfter(now.plusYears(1))) {
+                      new ValidationException("Invalid year: Failed to parse year parameter"));
+      if (year.isBefore(MIN_ACCEPTABLE_YEAR) || year.isAfter(MAX_ACCEPTABLE_YEAR)) {
         throw new ValidationException(
             format(
-                "%s is not between the year %d and %d",
-                "Year", MIN_ACCEPTABLE_YEAR.getValue(), now.getValue()));
+                "Invalid year: Must be in range %d to %d",
+                MIN_ACCEPTABLE_YEAR.getValue(), MAX_ACCEPTABLE_YEAR.getValue()));
       }
     }
   }
