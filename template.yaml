@@ -422,6 +422,27 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: 'apigateway.amazonaws.com'
 
+  UpdatePublicationChannelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.update.UpdatePublicationChannelHandler::handleRequest
+      Policies:
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+      Events:
+        CreateSeriesEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /{type}/{identifier}
+            Method: put
+
+  UpdatePublicationChannelFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UpdatePublicationChannelFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'apigateway.amazonaws.com'
+
   DataportenChannelRegistryHealthCheck:
     Type: AWS::Route53::HealthCheck
     Properties:

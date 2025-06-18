@@ -7,6 +7,8 @@ import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.PUBLISHER;
+import static no.sikt.nva.pubchannels.channelregistry.ChannelType.SERIAL_PUBLICATION;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 
@@ -15,8 +17,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Year;
 import java.util.Map;
 import java.util.Set;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
@@ -24,6 +28,7 @@ import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreat
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
 import no.sikt.nva.pubchannels.handler.AuthClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
 import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.sikt.nva.pubchannels.handler.search.ThirdPartySearchResponse;
@@ -31,6 +36,7 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.apigateway.exceptions.NotFoundException;
+import nva.commons.apigateway.exceptions.UnauthorizedException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
@@ -45,6 +51,9 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private static final Set<Integer> OK_STATUSES =
       Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
   private static final String SEARCH_PATH_ELEMENT = "channels";
+  protected static final int ONE_HUNDREED = 100;
+  protected static final int FOUR = 4;
+  protected static final int FIVE = 5;
   private final HttpClient httpClient;
   private final URI channelRegistryBaseUri;
   private final AuthClient authClient;
@@ -111,6 +120,49 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     return attempt(() -> executeRequest(request, CreateChannelResponse.class))
         .orElseThrow(
             failure -> logAndCreateBadGatewayException(request.uri(), failure.getException()));
+  }
+
+  @Override
+  public void updateChannel(ChannelRegistryUpdateChannelRequest request)
+      throws ApiGatewayException {
+    var token = attempt(authClient::getToken).orElseThrow(failure -> new UnauthorizedException());
+
+    var channel =
+        switch (request.type()) {
+          case "publisher" ->
+              getChannel(new RequestObject(PUBLISHER, request.pid(), Year.now().toString()));
+          case "serial-publication" ->
+              getChannel(
+                  new RequestObject(SERIAL_PUBLICATION, request.pid(), Year.now().toString()));
+          default -> throw new BadRequestException("Unsupported channel type: " + request.type());
+        };
+
+    if (!channel.getScientificValue().equals(ScientificValue.UNASSIGNED)) {
+      throw new BadRequestException(
+          "Only channel with unassigned scientific value can be updated!");
+    }
+
+    var httpRequest = createChangeChannelRequest(request, token);
+    var response =
+        attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
+
+    if (response.statusCode() / ONE_HUNDREED == FOUR) {
+      throw new BadRequestException(response.body());
+    }
+    if (response.statusCode() / ONE_HUNDREED == FIVE) {
+      throw new BadGatewayException("Unexpected response from upstream!");
+    }
+  }
+
+  private HttpRequest createChangeChannelRequest(
+      ChannelRegistryUpdateChannelRequest request, String token) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
+        .header(AUTHORIZATION, "Bearer " + token)
+        .uri(constructUri("admin", "change"))
+        .method("PATCH", BodyPublishers.ofString(request.toJsonString()))
+        .build();
   }
 
   private <T> T executeRequest(HttpRequest request, Class<T> clazz)
@@ -203,7 +255,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
         .header(AUTHORIZATION, "Bearer " + token)
         .uri(constructUri(path, "createpid"))
-        .POST(HttpRequest.BodyPublishers.ofString(journalRequestBodyAsString))
+        .POST(BodyPublishers.ofString(journalRequestBodyAsString))
         .build();
   }
 

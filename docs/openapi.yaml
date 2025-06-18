@@ -356,6 +356,47 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
+  /publisher/{identifier}:
+    put:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'https://api.nva.unit.no/scopes/frontend' ]
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UpdatePublisherRequest'
+      tags:
+        - Publisher
+      summary: Update publisher handler
+      description: Updates publisher
+      operationId: UpdatePublisher
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of publication channel to update
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+      responses:
+        201:
+          description: Accepted
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        403:
+          $ref: '#/components/responses/403'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
   /series:
     get:
       x-amazon-apigateway-integration:
@@ -552,11 +593,64 @@ paths:
           $ref: '#/components/responses/400'
         502:
           $ref: '#/components/responses/502'
+  /serial-publication/{identifier}:
+    put:
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}/invocations
+        httpMethod: POST
+        type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'https://api.nva.unit.no/scopes/frontend' ]
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UpdateSerialPublicationRequest'
+      tags:
+        - SerialPublication
+      summary: Update serial publication
+      description: Updates serial publication
+      operationId: UpdateSerialPublication
+      parameters:
+        - name: identifier
+          in: path
+          description: identifier of publication channel to update
+          required: true
+          schema:
+            type: string
+          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+      responses:
+        201:
+          description: Accepted
+        400:
+          $ref: '#/components/responses/400'
+        401:
+          $ref: '#/components/responses/401'
+        403:
+          $ref: '#/components/responses/403'
+        404:
+          $ref: '#/components/responses/404'
+        502:
+          $ref: '#/components/responses/502'
 
 components:
   responses:
     400:
       description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    401:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    403:
+      description: Forbidden
       content:
         application/problem+json:
           schema:
@@ -692,6 +786,46 @@ components:
           format: uri
           nullable: true
           description: The url to the publisher
+    UpdatePublisherRequest:
+      type: object
+      description: "Request to update a publisher channel."
+      properties:
+        type:
+          type: string
+          example: "UpdatePublisherRequest"
+        name:
+          type: string
+          description: "The name of the publisher."
+        isbn:
+          type: string
+          description: "The ISBN associated with the publisher."
+      required:
+        - type
+        - identifier
+        - name
+        - isbn
+    UpdateSerialPublicationRequest:
+      type: object
+      description: "Request to update a serial publication channel."
+      properties:
+        type:
+          type: string
+          example: "UpdateSerialPublicationRequest"
+        name:
+          type: string
+          description: "The name of the serial publication."
+        printIssn:
+          type: string
+          description: "The print ISSN associated with the serial publication."
+        onlineIssn:
+          type: string
+          description: "The online ISSN associated with the serial publication."
+      required:
+        - type
+        - identifier
+        - name
+        - printIssn
+        - onlineIssn
     SerialPublication:
       type: object
       properties:
@@ -916,3 +1050,13 @@ components:
         printIssn: '4321-4321'
         homepage: 'https://series-of-eternal.fury.no'
       summary: A sample create series
+  securitySchemes:
+    CognitoUserPool:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: cognito_user_pools
+      x-amazon-apigateway-authorizer:
+        type: cognito_user_pools
+        providerARNs:
+          - Ref: CognitoAuthorizerArn
