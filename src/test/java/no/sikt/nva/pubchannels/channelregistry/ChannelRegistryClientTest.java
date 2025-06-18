@@ -62,6 +62,8 @@ class ChannelRegistryClientTest {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
+    stubFetchChannelResponse(
+        channelIdentifier, HTTP_OK, channelWithScientValue(null), "findpublisher");
     stubTokenResponse(HTTP_UNAUTHORIZED);
 
     assertThrows(UnauthorizedException.class, () -> client.updateChannel(request));

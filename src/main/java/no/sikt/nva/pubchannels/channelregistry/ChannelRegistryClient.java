@@ -140,25 +140,13 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   @Override
   public void updateChannel(ChannelRegistryUpdateChannelRequest request)
       throws ApiGatewayException {
-    var token = attempt(authClient::getToken).orElseThrow(failure -> new UnauthorizedException());
-
-    var channel =
-        switch (request.type()) {
-          case "publisher" ->
-              getChannel(
-                  new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
-          case "serial-publication" ->
-              getChannel(
-                  new RequestObject(
-                      SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
-          default -> throw new BadRequestException("Unsupported channel type: " + request.type());
-        };
-
+    var channel = getChannel(request);
     if (!channel.getScientificValue().equals(ScientificValue.UNASSIGNED)) {
       throw new BadRequestException(
           "Only channel with unassigned scientific value can be updated!");
     }
 
+    var token = attempt(authClient::getToken).orElseThrow(failure -> new UnauthorizedException());
     var httpRequest = createChangeChannelRequest(request, token);
     var response =
         attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
@@ -171,6 +159,18 @@ public class ChannelRegistryClient implements PublicationChannelClient {
       LOGGER.error("Channel registry responded with: {}", response.body());
       throw new BadGatewayException("Unexpected response from upstream!");
     }
+  }
+
+  private ThirdPartyPublicationChannel getChannel(ChannelRegistryUpdateChannelRequest request)
+      throws ApiGatewayException {
+    return switch (request.type()) {
+      case "publisher" -> getChannel(
+          new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
+      case "serial-publication" -> getChannel(
+          new RequestObject(
+              SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
+      default -> throw new BadRequestException("Unsupported channel type: " + request.type());
+    };
   }
 
   private HttpRequest createChangeChannelRequest(
