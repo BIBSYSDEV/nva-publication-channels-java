@@ -14,4 +14,5 @@ test {
     environment("APPLICATION_CONFIG_PROFILE_NAME", "someProfile")
     environment("APPLICATION_CONFIG_ENVIRONMENT_NAME", "someEnvironment")
     environment("APPLICATION_ID", "someId")
+    environment("COGNITO_AUTHORIZER_URLS", "url")
 }
