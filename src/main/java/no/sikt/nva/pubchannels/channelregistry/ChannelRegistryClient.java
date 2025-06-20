@@ -164,11 +164,11 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private ThirdPartyPublicationChannel getChannel(ChannelRegistryUpdateChannelRequest request)
       throws ApiGatewayException {
     return switch (request.type()) {
-      case "publisher" -> getChannel(
-          new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
-      case "serial-publication" -> getChannel(
-          new RequestObject(
-              SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
+      case "publisher" ->
+          getChannel(new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
+      case "serial-publication" ->
+          getChannel(
+              new RequestObject(SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
       default -> throw new BadRequestException("Unsupported channel type: " + request.type());
     };
   }

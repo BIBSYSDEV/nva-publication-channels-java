@@ -41,6 +41,12 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
   protected void validateRequest(
       UpdateChannelRequest input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
+    if (!requestInfo.isGatewayAuthorized()) {
+      throw new UnauthorizedException();
+    }
+    if (!requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS)) {
+      throw new ForbiddenException();
+    }
     if (!requestInfo.getPathParameters().containsKey(IDENTIFIER)) {
       throw new BadRequestException(IDENTIFIER_PARAMETER_IS_MISSING);
     }
@@ -50,12 +56,6 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
 
     if (input.isEmpty()) {
       throw new BadRequestException(EMPTY_REQUEST_MESSAGE);
-    }
-    if (!requestInfo.isGatewayAuthorized()) {
-      throw new UnauthorizedException();
-    }
-    if (!requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS)) {
-      throw new ForbiddenException();
     }
   }
 

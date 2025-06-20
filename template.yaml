@@ -429,7 +429,7 @@ Resources:
       Policies:
         - !GetAtt ReadSecretsPolicy.PolicyArn
       Events:
-        CreateSeriesEvent:
+        UpdateChannelEvent:
           Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi

@@ -19,9 +19,9 @@ import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static nva.commons.core.StringUtils.EMPTY_STRING;
+import static nva.commons.core.attempt.Try.attempt;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -58,7 +58,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowUnauthorizedWhenAuthorizingFails() throws JsonProcessingException {
+  void shouldThrowUnauthorizedWhenAuthorizingFails() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
@@ -70,8 +70,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowBadRequestWhenAttemptingToUpdateChannelWithUnsupportedType()
-      throws JsonProcessingException {
+  void shouldThrowBadRequestWhenAttemptingToUpdateChannelWithUnsupportedType() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, randomString());
 
@@ -81,8 +80,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowNotFoundWhenUpdatingPublisherRespondsWith404WhenFetchingChannel()
-      throws JsonProcessingException {
+  void shouldThrowNotFoundWhenUpdatingPublisherRespondsWith404WhenFetchingChannel() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
@@ -93,8 +91,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowNotFoundWhenUpdatingSerialPublicationRespondsWith404WhenFetchingChannel()
-      throws JsonProcessingException {
+  void shouldThrowNotFoundWhenUpdatingSerialPublicationRespondsWith404WhenFetchingChannel() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "serial-publication");
 
@@ -105,7 +102,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowBadRequestWhenUpdatingNotUnassignedChannel() throws JsonProcessingException {
+  void shouldThrowBadRequestWhenUpdatingNotUnassignedChannel() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
@@ -117,8 +114,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowBadRequestWhenChannelRegistryRespondsWith4XXStatusCodeOnUpdate()
-      throws JsonProcessingException {
+  void shouldThrowBadRequestWhenChannelRegistryRespondsWith4XXStatusCodeOnUpdate() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
@@ -131,8 +127,7 @@ class ChannelRegistryClientTest {
   }
 
   @Test
-  void shouldThrowBadGatewayWhenChannelRegistryRespondsWith5XXOnUpdate()
-      throws JsonProcessingException {
+  void shouldThrowBadGatewayWhenChannelRegistryRespondsWith5XXOnUpdate() {
     var channelIdentifier = randomUUID();
     var request = createRequest(channelIdentifier, "publisher");
 
@@ -167,7 +162,7 @@ class ChannelRegistryClientTest {
                     .withBody(body)));
   }
 
-  private static void stubTokenResponse(int statusCode) throws JsonProcessingException {
+  private static void stubTokenResponse(int statusCode) {
     stubFor(
         post("/oauth/token")
             .withBasicAuth(EMPTY_STRING, EMPTY_STRING)
@@ -178,14 +173,26 @@ class ChannelRegistryClientTest {
                 aResponse()
                     .withStatus(statusCode)
                     .withBody(
-                        dtoObjectMapper.writeValueAsString(
-                            new TokenBodyResponse("token1", "Bearer")))));
+                        attempt(
+                                () ->
+                                    dtoObjectMapper.writeValueAsString(
+                                        new TokenBodyResponse("token1", "Bearer")))
+                            .orElseThrow())));
   }
 
-  private String channelWithScientValue(String level) throws JsonProcessingException {
-    return JsonUtils.dtoObjectMapper.writeValueAsString(
-        new ChannelRegistryPublisher(
-            randomUUID().toString(), randomLevel(level), null, null, null, null, "publisher"));
+  private String channelWithScientValue(String level) {
+    return attempt(
+            () ->
+                JsonUtils.dtoObjectMapper.writeValueAsString(
+                    new ChannelRegistryPublisher(
+                        randomUUID().toString(),
+                        randomLevel(level),
+                        null,
+                        null,
+                        null,
+                        null,
+                        "publisher")))
+        .orElseThrow();
   }
 
   private void stubUpdateChannelResponse(int statusCode) {
