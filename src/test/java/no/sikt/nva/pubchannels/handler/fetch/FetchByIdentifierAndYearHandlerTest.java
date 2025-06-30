@@ -70,7 +70,7 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
   protected ChannelRegistryClient channelRegistryClient;
   protected FetchPublicationChannelHandler handlerUnderTest;
   protected static String year = randomYear();
-  protected static String identifier = UUID.randomUUID().toString();
+  protected static String identifier = UUID.randomUUID().toString().toUpperCase();
 
   @BeforeAll
   public static void commonBeforeAll() {
@@ -197,8 +197,8 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
   @Test
   void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-    var requestedIdentifier = UUID.randomUUID().toString();
-    var newIdentifier = UUID.randomUUID().toString();
+    var requestedIdentifier = UUID.randomUUID().toString().toUpperCase();
+    var newIdentifier = UUID.randomUUID().toString().toUpperCase();
     var newChannelRegistryLocation =
         UriWrapper.fromHost(channelRegistryBaseUri)
             .addChild(channelRegistryPathElement, newIdentifier, year)

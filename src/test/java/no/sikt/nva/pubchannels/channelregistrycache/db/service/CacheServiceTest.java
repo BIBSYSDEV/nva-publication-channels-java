@@ -50,7 +50,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     cacheService.save(channel);
 
     var year = randomYear();
-    var requestObject = new RequestObject(ChannelType.JOURNAL, channel.getPid(), year);
+    var requestObject = new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), year);
     var persistedChannel = cacheService.getChannel(requestObject);
 
     assertEquals(
@@ -63,8 +63,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     cacheService.loadCache(s3Client);
 
     var requestObject =
-        new RequestObject(
-            ChannelType.JOURNAL, UUID.fromString("50561B90-6679-4FCD-BCB0-99E521B18962"), "2008");
+        new RequestObject(ChannelType.JOURNAL, "50561B90-6679-4FCD-BCB0-99E521B18962", "2008");
     var loadedEntry = cacheService.getChannel(requestObject);
 
     assertNotNull(loadedEntry);
@@ -77,8 +76,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
     var year = "2008";
 
-    var requestObject =
-        new RequestObject(ChannelType.JOURNAL, UUID.fromString(channelIdentifier), year);
+    var requestObject = new RequestObject(ChannelType.JOURNAL, channelIdentifier, year);
     var journal = cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedJournal(channelIdentifier, year);
 
@@ -92,8 +90,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
     var year = "2008";
 
-    var requestObject =
-        new RequestObject(ChannelType.SERIES, UUID.fromString(channelIdentifier), year);
+    var requestObject = new RequestObject(ChannelType.SERIES, channelIdentifier, year);
     var journal = cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedSeries(channelIdentifier, year);
 
@@ -107,8 +104,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     var channelIdentifier = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
     var year = "2024";
 
-    var requestObject =
-        new RequestObject(ChannelType.PUBLISHER, UUID.fromString(channelIdentifier), year);
+    var requestObject = new RequestObject(ChannelType.PUBLISHER, channelIdentifier, year);
     var journal = (ChannelRegistryPublisher) cacheService.getChannel(requestObject);
     var expectedJournal = createExpectedPublisher(channelIdentifier, year);
 

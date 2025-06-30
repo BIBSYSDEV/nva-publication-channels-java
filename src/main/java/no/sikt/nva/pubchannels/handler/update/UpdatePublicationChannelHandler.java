@@ -62,7 +62,7 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
   @Override
   protected Void processInput(UpdateChannelRequest input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
-    var identifier = UUID.fromString(requestInfo.getPathParameter(IDENTIFIER));
+    var identifier = requestInfo.getPathParameter(IDENTIFIER);
     client.updateChannel(input.toChannelRegistryUpdateRequest(identifier));
     return null;
   }

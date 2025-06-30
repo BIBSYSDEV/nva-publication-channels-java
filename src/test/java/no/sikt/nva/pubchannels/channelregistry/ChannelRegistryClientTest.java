@@ -27,7 +27,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.net.URI;
 import java.time.Year;
-import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryUpdateChannelRequest.Fields;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -59,7 +58,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowUnauthorizedWhenAuthorizingFails() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "publisher");
 
     stubFetchChannelResponse(
@@ -69,9 +68,13 @@ class ChannelRegistryClientTest {
     assertThrows(UnauthorizedException.class, () -> client.updateChannel(request));
   }
 
+  private static String randomPublicationChannelIdentifier() {
+    return randomUUID().toString().toUpperCase();
+  }
+
   @Test
   void shouldThrowBadRequestWhenAttemptingToUpdateChannelWithUnsupportedType() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, randomString());
 
     stubTokenResponse(HTTP_OK);
@@ -81,7 +84,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowNotFoundWhenUpdatingPublisherRespondsWith404WhenFetchingChannel() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "publisher");
 
     stubTokenResponse(HTTP_OK);
@@ -92,7 +95,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowNotFoundWhenUpdatingSerialPublicationRespondsWith404WhenFetchingChannel() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "serial-publication");
 
     stubTokenResponse(HTTP_OK);
@@ -103,7 +106,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowBadRequestWhenUpdatingNotUnassignedChannel() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "publisher");
 
     stubTokenResponse(HTTP_OK);
@@ -115,7 +118,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowBadRequestWhenChannelRegistryRespondsWith4XXStatusCodeOnUpdate() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "publisher");
 
     stubTokenResponse(HTTP_OK);
@@ -128,7 +131,7 @@ class ChannelRegistryClientTest {
 
   @Test
   void shouldThrowBadGatewayWhenChannelRegistryRespondsWith5XXOnUpdate() {
-    var channelIdentifier = randomUUID();
+    var channelIdentifier = randomPublicationChannelIdentifier();
     var request = createRequest(channelIdentifier, "publisher");
 
     stubTokenResponse(HTTP_OK);
@@ -140,7 +143,7 @@ class ChannelRegistryClientTest {
   }
 
   private static ChannelRegistryUpdateChannelRequest createRequest(
-      UUID channelIdentifier, String type) {
+      String channelIdentifier, String type) {
     return new ChannelRegistryUpdateChannelRequest(
         new Fields(channelIdentifier, null, null, null, null), type);
   }
@@ -151,7 +154,7 @@ class ChannelRegistryClientTest {
   }
 
   private static void stubFetchChannelResponse(
-      UUID channelIdentifier, int statusCode, String body, String path) {
+      String channelIdentifier, int statusCode, String body, String path) {
     stubFor(
         get(urlPathEqualTo(("/%s/%s/%s").formatted(path, channelIdentifier, Year.now().toString())))
             .withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
@@ -185,7 +188,7 @@ class ChannelRegistryClientTest {
             () ->
                 JsonUtils.dtoObjectMapper.writeValueAsString(
                     new ChannelRegistryPublisher(
-                        randomUUID().toString(),
+                        randomPublicationChannelIdentifier().toString(),
                         randomLevel(level),
                         null,
                         null,
