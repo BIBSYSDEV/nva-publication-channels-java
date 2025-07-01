@@ -7,7 +7,6 @@ import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.Map;
-import java.util.UUID;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
@@ -50,7 +49,7 @@ public class CreatePublisherHandler
     var response = publicationChannelClient.createPublisher(getClientRequest(input));
     var createdUri = constructIdUri(PUBLISHER_PATH_ELEMENT, response.pid());
     addAdditionalHeaders(() -> Map.of(HttpHeaders.LOCATION, createdUri.toString()));
-    var requestObject = new RequestObject(PUBLISHER, UUID.fromString(response.pid()), getYear());
+    var requestObject = new RequestObject(PUBLISHER, response.pid(), getYear());
     var publisher = (ThirdPartyPublisher) publicationChannelClient.getChannel(requestObject);
     return CreatePublisherResponse.create(createdUri, publisher);
   }

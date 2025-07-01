@@ -15,7 +15,7 @@ class UpdateChannelRequestTest {
   void shouldConvertUpdatePublisherRequestToChannelRegistryRequestCorrectly() {
     var isbn = randomIsbn10();
     var name = randomString();
-    var identifier = UUID.randomUUID();
+    var identifier = UUID.randomUUID().toString().toUpperCase();
     var request = new UpdatePublisherRequest(name, isbn);
 
     var channelRegistryRequest = request.toChannelRegistryUpdateRequest(identifier);
@@ -32,7 +32,7 @@ class UpdateChannelRequestTest {
     var printIssn = randomIssn();
     var onlineIssn = randomIssn();
     var name = randomString();
-    var identifier = UUID.randomUUID();
+    var identifier = UUID.randomUUID().toString().toUpperCase();
     var request = new UpdateSerialPublicationRequest(name, printIssn, onlineIssn);
 
     var channelRegistryRequest = request.toChannelRegistryUpdateRequest(identifier);

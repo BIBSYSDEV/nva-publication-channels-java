@@ -90,7 +90,7 @@ public class CacheService implements PublicationChannelFetchClient {
         .toList();
   }
 
-  private static ChannelRegistryCacheDao entryWithIdentifier(UUID uuid) {
-    return ChannelRegistryCacheDao.builder().identifier(uuid).build();
+  private static ChannelRegistryCacheDao entryWithIdentifier(String identifier) {
+    return ChannelRegistryCacheDao.builder().identifier(UUID.fromString(identifier)).build();
   }
 }

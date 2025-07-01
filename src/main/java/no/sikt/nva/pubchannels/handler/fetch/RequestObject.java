@@ -9,7 +9,7 @@ import no.sikt.nva.pubchannels.handler.validator.Validator;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadRequestException;
 
-public record RequestObject(ChannelType channelType, UUID identifier, String year) {
+public record RequestObject(ChannelType channelType, String identifier, String year) {
 
   public static RequestObject fromRequestInfo(RequestInfo requestInfo) throws BadRequestException {
     var identifier = getIdentifier(requestInfo);
@@ -42,9 +42,11 @@ public record RequestObject(ChannelType channelType, UUID identifier, String yea
         .orElse(failure -> null);
   }
 
-  private static UUID getIdentifier(RequestInfo requestInfo) throws BadRequestException {
+  private static String getIdentifier(RequestInfo requestInfo) throws BadRequestException {
     return attempt(() -> requestInfo.getPathParameter("identifier").trim())
         .map(UUID::fromString)
+        .map(UUID::toString)
+        .map(String::toUpperCase)
         .orElseThrow(failure -> new BadRequestException("Invalid identifier"));
   }
 }

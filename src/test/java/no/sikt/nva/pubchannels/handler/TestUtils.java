@@ -174,7 +174,7 @@ public final class TestUtils {
   public static void mockResponseWithHttpStatus(
       String pathParameter, String identifier, String year, int httpStatus) {
     stubFor(
-        get(pathParameter + UUID.fromString(identifier) + "/" + year)
+        get(pathParameter + identifier + "/" + year)
             .withHeader("Accept", equalTo("application/json"))
             .willReturn(aResponse().withStatus(httpStatus)));
   }

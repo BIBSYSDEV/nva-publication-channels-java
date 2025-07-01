@@ -209,8 +209,8 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
   @Test
   void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-    var requestedIdentifier = UUID.randomUUID().toString();
-    var newIdentifier = UUID.randomUUID().toString();
+    var requestedIdentifier = UUID.randomUUID().toString().toUpperCase();
+    var newIdentifier = UUID.randomUUID().toString().toUpperCase();
     var newChannelRegistryLocation =
         UriWrapper.fromHost(channelRegistryBaseUri)
             .addChild("/findpublisher/", newIdentifier, year)
@@ -254,7 +254,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
     assertThat(
         appender.getMessages(),
-        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier.toLowerCase()));
+        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
   }
 
   @Test

@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
@@ -31,8 +30,7 @@ class LoadCacheHandlerTest extends CacheServiceTestSetup {
     var handler = getLoadCacheHandler(cacheService, s3Client);
 
     handler.handleRequest(null, null, new FakeContext());
-    var requestObject =
-        new RequestObject(ChannelType.JOURNAL, UUID.fromString(CHANNEL_ID_FROM_CSV), randomYear());
+    var requestObject = new RequestObject(ChannelType.JOURNAL, CHANNEL_ID_FROM_CSV, randomYear());
     assertDoesNotThrow(() -> cacheService.getChannel(requestObject));
   }
 

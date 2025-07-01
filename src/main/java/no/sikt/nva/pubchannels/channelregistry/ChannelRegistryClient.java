@@ -21,6 +21,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Year;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
@@ -163,12 +164,12 @@ public class ChannelRegistryClient implements PublicationChannelClient {
 
   private ThirdPartyPublicationChannel getChannel(ChannelRegistryUpdateChannelRequest request)
       throws ApiGatewayException {
+    var identifier = request.fields().pid().toUpperCase(Locale.getDefault());
     return switch (request.type()) {
       case "publisher" ->
-          getChannel(new RequestObject(PUBLISHER, request.fields().pid(), Year.now().toString()));
+          getChannel(new RequestObject(PUBLISHER, identifier, Year.now().toString()));
       case "serial-publication" ->
-          getChannel(
-              new RequestObject(SERIAL_PUBLICATION, request.fields().pid(), Year.now().toString()));
+          getChannel(new RequestObject(SERIAL_PUBLICATION, identifier, Year.now().toString()));
       default -> throw new BadRequestException("Unsupported channel type: " + request.type());
     };
   }
@@ -286,7 +287,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     var uriWrapper =
         UriWrapper.fromUri(channelRegistryBaseUri)
             .addChild(requestObject.channelType().getChannelRegistryPathElement())
-            .addChild(requestObject.identifier().toString());
+            .addChild(requestObject.identifier());
 
     if (requestObject.getYear().isPresent()) {
       return uriWrapper.addChild(requestObject.getYear().get()).getUri();
