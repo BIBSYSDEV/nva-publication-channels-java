@@ -8,13 +8,8 @@ repositories {
     gradlePluginPortal()
 }
 
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = "8.7"
-}
-
 dependencies {
-    implementation group: 'nebula.lint', name: 'nebula.lint.gradle.plugin', version: '17.2.3'
+    implementation group: 'nebula.lint', name: 'nebula.lint.gradle.plugin', version: '20.6.2'
     implementation group: 'org.jacoco', name: 'org.jacoco.core', version: '0.8.7'
     implementation group: 'org.jacoco', name: 'org.jacoco.report', version: '0.8.7'
     implementation group: 'com.diffplug.spotless', name: 'spotless-plugin-gradle', version: '7.0.1'

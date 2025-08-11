@@ -16,7 +16,7 @@ public class Validator {
   public static final String ISBN_PREFIX_PATTERN = "^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$";
   public static final int MAX_LENGTH_ISBN_PREFIX = 13;
   private static final String IS_REQUIRED_STRING = "%s is required.";
-  protected static final Year MIN_ACCEPTABLE_YEAR = Year.of(1900);
+  protected static final Year MIN_ACCEPTABLE_YEAR = Year.of(1800);
   protected static final Year MAX_ACCEPTABLE_YEAR = Year.of(2100);
 
   public static void validateString(String value, int minLength, int maxLength, String name) {
