@@ -99,7 +99,7 @@ public final class TestUtils {
   }
 
   public static Stream<String> invalidYearsProvider() {
-    return Stream.of(" ", "abcd", "2101");
+    return Stream.of(" ", "abcd", "2101", "1799");
   }
 
   public static InputStream constructRequest(
