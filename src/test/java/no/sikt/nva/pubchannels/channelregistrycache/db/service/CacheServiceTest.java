@@ -63,7 +63,7 @@ class CacheServiceTest extends CacheServiceTestSetup {
     cacheService.loadCache(s3Client);
 
     var requestObject =
-        new RequestObject(ChannelType.JOURNAL, "50561B90-6679-4FCD-BCB0-99E521B18962", "2008");
+        new RequestObject(ChannelType.JOURNAL, "2C455B64-F2AC-49CF-9A2A-0D161581970F", "2025");
     var loadedEntry = cacheService.getChannel(requestObject);
 
     assertNotNull(loadedEntry);
@@ -73,8 +73,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
   void shouldLoadCachedPublicationChannelWhenJournal() throws ApiGatewayException {
     var s3Client = s3ClientWithCsvFileInCacheBucket();
     cacheService.loadCache(s3Client);
-    var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
-    var year = "2008";
+    var channelIdentifier = "2C455B64-F2AC-49CF-9A2A-0D161581970F";
+    var year = "2025";
 
     var requestObject = new RequestObject(ChannelType.JOURNAL, channelIdentifier, year);
     var journal = cacheService.getChannel(requestObject);
@@ -87,8 +87,8 @@ class CacheServiceTest extends CacheServiceTestSetup {
   void shouldLoadCachedPublicationChannelWhenSeries() throws ApiGatewayException {
     var s3Client = s3ClientWithCsvFileInCacheBucket();
     cacheService.loadCache(s3Client);
-    var channelIdentifier = "50561B90-6679-4FCD-BCB0-99E521B18962";
-    var year = "2008";
+    var channelIdentifier = "2C455B64-F2AC-49CF-9A2A-0D161581970F";
+    var year = "2025";
 
     var requestObject = new RequestObject(ChannelType.SERIES, channelIdentifier, year);
     var journal = cacheService.getChannel(requestObject);
@@ -101,14 +101,14 @@ class CacheServiceTest extends CacheServiceTestSetup {
   void shouldLoadCachedPublicationChannelWhenPublisher() throws ApiGatewayException {
     var s3Client = s3ClientWithCsvFileInCacheBucket();
     cacheService.loadCache(s3Client);
-    var channelIdentifier = "09D6F92E-B0F6-4B62-90AB-1B9E767E9E11";
-    var year = "2024";
+    var channelIdentifier = "75C2551B-995B-4764-A8AB-C9AEBDED0692";
+    var year = "2025";
 
     var requestObject = new RequestObject(ChannelType.PUBLISHER, channelIdentifier, year);
-    var journal = (ChannelRegistryPublisher) cacheService.getChannel(requestObject);
-    var expectedJournal = createExpectedPublisher(channelIdentifier, year);
+    var publisher = (ChannelRegistryPublisher) cacheService.getChannel(requestObject);
+    var expectedPublisher = createExpectedPublisher(channelIdentifier, year);
 
-    assertEquals(expectedJournal, journal);
+    assertEquals(expectedPublisher, publisher);
   }
 
   private static ChannelRegistrySerialPublication createExpectedJournal(
@@ -116,13 +116,13 @@ class CacheServiceTest extends CacheServiceTestSetup {
     return new ChannelRegistrySerialPublication(
         channelIdentifier,
         HARDCODED_CACHED_TITLE,
-        "0807-7096",
-        "0029-2001",
-        new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
+        "2998-3665",
+        null,
+        new ChannelRegistryLevel(Integer.parseInt(year), null, null, null, null),
         URI.create(
             "https://kanalregister.hkdir"
-                + ".no/publiseringskanaler/KanalTidsskriftInfo"
-                + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
+                + ".no/publiseringskanaler/info/tidsskrift"
+                + "?pid=2C455B64-F2AC-49CF-9A2A-0D161581970F"),
         null,
         "Tidsskrift");
   }
@@ -144,25 +144,22 @@ class CacheServiceTest extends CacheServiceTestSetup {
     return new ChannelRegistrySerialPublication(
         channelIdentifier,
         HARDCODED_CACHED_TITLE,
-        "0807-7096",
-        "0029-2001",
-        new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
+        "2998-3665",
+        null,
+        new ChannelRegistryLevel(Integer.parseInt(year), null, null, null, null),
         URI.create(
-            "https://kanalregister.hkdir"
-                + ".no/publiseringskanaler/KanalTidsskriftInfo"
-                + "?pid=50561B90-6679-4FCD-BCB0-99E521B18962"),
+            "https://kanalregister.hkdir.no/publiseringskanaler/info/tidsskrift?pid=2C455B64-F2AC-49CF-9A2A-0D161581970F"),
         null,
         "Tidsskrift");
   }
 
   private ChannelRegistryPublisher createExpectedPublisher(String channelIdentifier, String year) {
     var homepage =
-        "https://kanalregister.hkdir.no/publiseringskanaler/KanalForslagInfo?pid=09D6F92E-B0F6-4B62"
-            + "-90AB-1B9E767E9E11";
+        "https://kanalregister.hkdir.no/publiseringskanaler/info/forlag?pid=75C2551B-995B-4764-A8AB-C9AEBDED0692";
     return new ChannelRegistryPublisher(
         channelIdentifier,
-        new ChannelRegistryLevel(Integer.parseInt(year), null, null, null, null),
-        "978-1-9996187",
+        new ChannelRegistryLevel(Integer.parseInt(year), "1", null, null, null),
+        "978-1-911116,978-1-7882",
         "Agenda Publishing",
         URI.create(homepage),
         null,

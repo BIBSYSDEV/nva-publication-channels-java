@@ -51,6 +51,12 @@ public class ChannelRegistryCacheEntry {
   @CsvBindByName(column = "KURL")
   private String uri;
 
+  @CsvBindByName(column = "Teknisk nivå")
+  private String technicalLevel;
+
+  @CsvBindByName(column = "Visningsnivå")
+  private String visibilityLevel;
+
   public static Builder builder() {
     return new Builder();
   }
@@ -114,6 +120,16 @@ public class ChannelRegistryCacheEntry {
 
   public List<LevelForYear> getLevelHistory() {
     return nonNull(levelHistory) ? parseLevels() : List.of();
+  }
+
+  @JacocoGenerated
+  public String getVisibilityLevel() {
+    return visibilityLevel;
+  }
+
+  @JacocoGenerated
+  public String getTechnicalLevel() {
+    return technicalLevel;
   }
 
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(

@@ -50,7 +50,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     extends FetchByIdentifierAndYearHandlerTest {
 
   private static final String JOURNAL_IDENTIFIER_FROM_CACHE =
-      "50561B90-6679-4FCD-BCB0-99E521B18962";
+      "2C455B64-F2AC-49CF-9A2A-0D161581970F";
   private static final String JOURNAL_YEAR_FROM_CACHE = "2024";
   protected String type;
   protected URI selfBaseUri;
