@@ -23,7 +23,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
 
 import com.google.common.net.MediaType;
 import java.io.IOException;
@@ -263,7 +262,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     var input =
         constructRequest(randomYear(), publisherIdentifier, nvaChannelPath, MediaType.ANY_TYPE);
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
     super.loadAndEnableCache();
     this.handlerUnderTest =
@@ -288,7 +286,7 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     var input =
         constructRequest(
             randomYear(), UUID.randomUUID().toString(), "publisher", MediaType.ANY_TYPE);
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+
     super.loadAndEnableCache();
     this.handlerUnderTest =
         new FetchPublicationChannelHandler(
@@ -307,7 +305,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     var publisherIdentifier = PUBLISHER_IDENTIFIER_FROM_CACHE;
 
     var input = constructRequest(publisherIdentifier, nvaChannelPath, MediaType.ANY_TYPE);
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
 
     super.loadAndEnableCache();
     this.handlerUnderTest =

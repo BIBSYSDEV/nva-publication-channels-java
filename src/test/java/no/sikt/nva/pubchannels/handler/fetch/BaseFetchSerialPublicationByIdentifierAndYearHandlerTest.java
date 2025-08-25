@@ -19,7 +19,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.net.MediaType;
@@ -216,8 +215,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     var input =
         constructRequest(
             JOURNAL_YEAR_FROM_CACHE, JOURNAL_IDENTIFIER_FROM_CACHE, type, MediaType.ANY_TYPE);
-
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
     super.loadAndEnableCache();
     this.handlerUnderTest =
         createHandler(
@@ -239,7 +236,7 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
   @Test
   void shouldReturnNotFoundWhenShouldUseCacheEnvironmentVariableIsTrueButChannelIsNotCached()
       throws IOException {
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+
     super.loadAndEnableCache();
     this.handlerUnderTest =
         createHandler(
@@ -283,7 +280,6 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
     var input = constructRequest(JOURNAL_IDENTIFIER_FROM_CACHE, type, MediaType.ANY_TYPE);
 
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
     super.loadAndEnableCache();
     this.handlerUnderTest =
         createHandler(
@@ -304,9 +300,8 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
   @Test
   void
-      shouldReturnPublicationChannelFromChannelRegistryWhenWhenShouldUseCacheButChannelIsNotPresentInCache()
+      shouldReturnPublicationChannelFromChannelRegistryApiWhenCacheIsActiveButChannelIsNotPresentInCache()
           throws IOException {
-    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
     super.loadAndEnableCache();
     var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
     mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
