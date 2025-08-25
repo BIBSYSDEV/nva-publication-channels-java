@@ -302,6 +302,29 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
     assertThat(statusCode, is(equalTo(HTTP_OK)));
   }
 
+  @Test
+  void
+      shouldReturnPublicationChannelFromChannelRegistryWhenWhenShouldUseCacheButChannelIsNotPresentInCache()
+          throws IOException {
+    when(environment.readEnv("SHOULD_USE_CACHE")).thenReturn("true");
+    super.loadAndEnableCache();
+    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
+    mockChannelFoundAndReturnExpectedResponse(year, identifier, type);
+
+    this.handlerUnderTest =
+        createHandler(
+            environment,
+            channelRegistryClient,
+            cacheService,
+            super.getAppConfigWithCacheEnabled(true));
+
+    handlerUnderTest.handleRequest(input, output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, Void.class);
+
+    assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
+  }
+
   protected void mockChannelWithoutYearFoundAndReturnExpectedResponse(
       String identifier, String type) {
     var testChannel = new TestChannel(String.valueOf(LocalDate.now().getYear()), identifier, type);

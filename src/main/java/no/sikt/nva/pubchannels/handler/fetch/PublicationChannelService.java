@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.function.Function;
 import no.sikt.nva.pubchannels.channelregistry.PublicationChannelMovedException;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
+import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
 import no.sikt.nva.pubchannels.handler.ThirdPartyPublicationChannel;
@@ -57,11 +58,16 @@ public class PublicationChannelService {
     return appConfig.shouldUseCache();
   }
 
-  public ThirdPartyPublicationChannel fetchChannelFromCache(RequestObject requestObject)
-      throws ApiGatewayException {
+  public ThirdPartyPublicationChannel fetchChannelFromCacheWithApiFallback(
+      RequestObject requestObject) throws ApiGatewayException {
     LOGGER.info(
         FETCHING_FROM_CACHE_MESSAGE, requestObject.channelType(), requestObject.identifier());
-    return cacheService.getChannel(requestObject);
+    try {
+      return cacheService.getChannel(requestObject);
+    } catch (CachedPublicationChannelNotFoundException notFoundException) {
+      return attempt(() -> publicationChannelClient.getChannel(requestObject))
+          .orElseThrow(failure -> notFoundException);
+    }
   }
 
   public PublicationChannelDto fetch(RequestObject requestObject) throws ApiGatewayException {
@@ -79,8 +85,8 @@ public class PublicationChannelService {
     };
   }
 
-  public ThirdPartyPublicationChannel fetchChannelOrFetchFromCache(RequestObject requestObject)
-      throws ApiGatewayException {
+  public ThirdPartyPublicationChannel fetchChannelFromApiWithCacheFallback(
+      RequestObject requestObject) throws ApiGatewayException {
     try {
       return fetchChannelFromChannelRegister(requestObject);
     } catch (ApiGatewayException e) {
@@ -100,14 +106,14 @@ public class PublicationChannelService {
   private ThirdPartyPublicationChannel fetchChannel(RequestObject requestObject)
       throws ApiGatewayException {
     return shouldUseCache()
-        ? fetchChannelFromCache(requestObject)
-        : fetchChannelOrFetchFromCache(requestObject);
+        ? fetchChannelFromCacheWithApiFallback(requestObject)
+        : fetchChannelFromApiWithCacheFallback(requestObject);
   }
 
   private ThirdPartyPublicationChannel fetchFromCacheWhenServerError(
       RequestObject requestObject, ApiGatewayException e) throws ApiGatewayException {
     if (isServerError(e)) {
-      return attempt(() -> fetchChannelFromCache(requestObject))
+      return attempt(() -> fetchChannelFromCacheWithApiFallback(requestObject))
           .orElseThrow(throwOriginalException(e));
     } else {
       throw e;
