@@ -52,6 +52,7 @@ public class CacheService implements PublicationChannelFetchClient {
     var batchCounter = new AtomicInteger(0);
     var batch = new ArrayList<ChannelRegistryCacheDao>(BATCH_SIZE);
     var seenPids = new ConcurrentHashMap<UUID, Boolean>();
+    var batchLock = new Object();
 
     result
         .entries()
@@ -60,14 +61,16 @@ public class CacheService implements PublicationChannelFetchClient {
         .forEach(
             dao -> {
               counter.incrementAndGet();
-              batch.add(dao);
-              if (batch.size() == BATCH_SIZE) {
-                writeBatch(batch);
-                int totalProcessed = batchCounter.addAndGet(BATCH_SIZE);
-                if (totalProcessed % 2000 == 0) {
-                  LOGGER.info("Loaded {} entries", totalProcessed);
+              synchronized (batchLock) {
+                batch.add(dao);
+                if (batch.size() == BATCH_SIZE) {
+                  writeBatch(batch);
+                  int totalProcessed = batchCounter.addAndGet(BATCH_SIZE);
+                  if (totalProcessed % 2000 == 0) {
+                    LOGGER.info("Loaded {} entries", totalProcessed);
+                  }
+                  batch.clear();
                 }
-                batch.clear();
               }
             });
 
