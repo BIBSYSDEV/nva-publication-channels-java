@@ -2,10 +2,13 @@ package no.sikt.nva.pubchannels.channelregistrycache.db.service;
 
 import static nva.commons.core.attempt.Try.attempt;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
@@ -44,21 +47,38 @@ public class CacheService implements PublicationChannelFetchClient {
   }
 
   public void loadCache(S3Client s3Client) {
-    var entries = ChannelRegistryCsvLoader.load(s3Client).getCacheEntries();
-    var uniqueEntries = filterDuplicatesBasedOnPid(entries);
-    int start = 0;
-    while (start < uniqueEntries.size()) {
-      var writeBatchBuilder =
-          WriteBatch.builder(ChannelRegistryCacheDao.class).mappedTableResource(table);
-      uniqueEntries.subList(start, Math.min(start + BATCH_SIZE, uniqueEntries.size())).stream()
-          .map(ChannelRegistryCacheEntry::toDao)
-          .forEach(writeBatchBuilder::addPutItem);
-      var writeBatch = writeBatchBuilder.build();
-      client.batchWriteItem(r -> r.addWriteBatch(writeBatch));
-      start += BATCH_SIZE;
-      LOGGER.info("Loaded {} entries", start);
+    var loader = new ChannelRegistryCsvLoader(s3Client);
+    var entriesStream = loader.getEntries();
+
+    var counter = new AtomicInteger(0);
+    var batchCounter = new AtomicInteger(0);
+    var batch = new ArrayList<ChannelRegistryCacheDao>(BATCH_SIZE);
+
+    filterDuplicatesBasedOnPid(entriesStream)
+        .map(ChannelRegistryCacheEntry::toDao)
+        .forEach(
+            dao -> {
+              batch.add(dao);
+              if (batch.size() == BATCH_SIZE) {
+                writeBatch(batch);
+                LOGGER.info("Loaded {} entries", batchCounter.addAndGet(BATCH_SIZE));
+                batch.clear();
+              }
+            });
+
+    if (!batch.isEmpty()) {
+      writeBatch(batch);
+      LOGGER.info("Loaded {} entries", batchCounter.addAndGet(batch.size()));
     }
-    LOGGER.info("Cache loaded with {} entries", uniqueEntries.size());
+
+    LOGGER.info("Cache loaded with {} entries", counter.get());
+    LOGGER.info(loader.getReport());
+  }
+
+  private void writeBatch(List<ChannelRegistryCacheDao> batch) {
+    var writeBatch = WriteBatch.builder(ChannelRegistryCacheDao.class).mappedTableResource(table);
+    batch.forEach(writeBatch::addPutItem);
+    client.batchWriteItem(r -> r.addWriteBatch(writeBatch.build()));
   }
 
   public void save(ChannelRegistryCacheEntry entry) {
@@ -77,17 +97,16 @@ public class CacheService implements PublicationChannelFetchClient {
             failure -> new CachedPublicationChannelNotFoundException(requestObject.identifier()));
   }
 
-  private static List<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(
-      List<ChannelRegistryCacheEntry> entries) {
-    return entries.stream()
+  private static Stream<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(
+      Stream<ChannelRegistryCacheEntry> entries) {
+    return entries
         .collect(
             Collectors.toMap(
                 ChannelRegistryCacheEntry::getPid,
                 Function.identity(),
                 (existing, replacement) -> existing))
         .values()
-        .stream()
-        .toList();
+        .stream();
   }
 
   private static ChannelRegistryCacheDao entryWithIdentifier(String identifier) {
