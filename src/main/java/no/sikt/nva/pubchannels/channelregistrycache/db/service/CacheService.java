@@ -5,10 +5,8 @@ import static nva.commons.core.attempt.Try.attempt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
@@ -53,8 +51,11 @@ public class CacheService implements PublicationChannelFetchClient {
     var counter = new AtomicInteger(0);
     var batchCounter = new AtomicInteger(0);
     var batch = new ArrayList<ChannelRegistryCacheDao>(BATCH_SIZE);
+    var seenPids = new ConcurrentHashMap<UUID, Boolean>();
 
-    filterDuplicatesBasedOnPid(result.entries())
+    result
+        .entries()
+        .filter(entry -> seenPids.putIfAbsent(entry.getPid(), Boolean.TRUE) == null)
         .map(ChannelRegistryCacheEntry::toDao)
         .forEach(
             dao -> {
@@ -76,7 +77,6 @@ public class CacheService implements PublicationChannelFetchClient {
     }
 
     LOGGER.info("Cache loaded with {} entries", counter.get());
-    // Get report AFTER stream is consumed
     LOGGER.info(result.report().get());
   }
 
@@ -100,18 +100,6 @@ public class CacheService implements PublicationChannelFetchClient {
         .map(entry -> entry.toThirdPartyPublicationChannel(requestObject))
         .orElseThrow(
             failure -> new CachedPublicationChannelNotFoundException(requestObject.identifier()));
-  }
-
-  private static Stream<ChannelRegistryCacheEntry> filterDuplicatesBasedOnPid(
-      Stream<ChannelRegistryCacheEntry> entries) {
-    return entries
-        .collect(
-            Collectors.toMap(
-                ChannelRegistryCacheEntry::getPid,
-                Function.identity(),
-                (existing, replacement) -> existing))
-        .values()
-        .stream();
   }
 
   private static ChannelRegistryCacheDao entryWithIdentifier(String identifier) {
