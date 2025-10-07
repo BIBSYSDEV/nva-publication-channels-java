@@ -83,8 +83,8 @@ public class CacheService implements PublicationChannelFetchClient {
       LOGGER.info("Loaded {} entries", batchCounter.addAndGet(batch.size()));
     }
 
-    LOGGER.info("Cache loaded with {} entries", counter.get());
     LOGGER.info(result.report().get());
+    LOGGER.info("Cache loaded with {} entries", counter.get());
   }
 
   private void writeBatch(List<ChannelRegistryCacheDao> batch) {

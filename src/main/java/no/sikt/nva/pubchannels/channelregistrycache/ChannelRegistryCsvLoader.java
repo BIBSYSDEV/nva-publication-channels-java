@@ -93,7 +93,7 @@ public final class ChannelRegistryCsvLoader {
           .collect(
               Collectors.joining(
                   "%n".formatted(),
-                  "", // prefix
+                  "",
                   "%n%nFailed to parse %d out of %d CSV lines"
                       .formatted(failures.size(), totalLines)
                   ));
