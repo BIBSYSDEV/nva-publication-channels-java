@@ -1,15 +1,16 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
+import static java.util.Objects.nonNull;
+
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 public final class ChannelRegistryCsvLoader {
 
   private static final Logger logger = LoggerFactory.getLogger(ChannelRegistryCsvLoader.class);
+  private static final int HEADER_POSITION = 1;
   private final List<ChannelRegistryCacheEntry> cacheEntries;
 
   private ChannelRegistryCsvLoader(List<ChannelRegistryCacheEntry> cacheEntries) {
@@ -42,28 +44,31 @@ public final class ChannelRegistryCsvLoader {
   }
 
   private static List<ChannelRegistryCacheEntry> getChannelRegistryCacheFromString(String value) {
-    var lines = value.split("\n");
-    if (lines.length == 0) {
+    var lines = value.lines().toList();
+    if (lines.isEmpty()) {
       return List.of();
     }
 
-    var header = lines[0];
-    Map<Integer, FailureInfo> failures = new LinkedHashMap<>();
+    var header = lines.getFirst();
+    var failures = new LinkedHashMap<Integer, FailureInfo>();
 
-    var result =
-        IntStream.range(1, lines.length)
-            .mapToObj(i -> Map.entry(i + 1, lines[i].trim()))
-            .filter(entry -> !entry.getValue().isEmpty())
-            .map(entry -> extractEntity(entry, header, failures))
-            .filter(Objects::nonNull)
-            .toList();
+    var result = new ArrayList<ChannelRegistryCacheEntry>();
+
+    for (var counter = 1; counter < lines.size(); counter++) {
+      var line = lines.get(counter);
+      var entry = extractEntity(Map.entry(counter, line.trim()), header, failures);
+
+      if (nonNull(entry)) {
+        result.add(entry);
+      }
+    }
 
     if (!failures.isEmpty()) {
       if (logger.isWarnEnabled()) {
-        logger.warn(createReport(failures, lines.length - 1));
+        logger.warn(createReport(failures, lines.size() - HEADER_POSITION));
       }
     } else {
-      logger.info("Successfully parsed all {} CSV lines", lines.length - 1);
+      logger.info("Successfully parsed all {} CSV lines", lines.size() - HEADER_POSITION);
     }
 
     return result;
