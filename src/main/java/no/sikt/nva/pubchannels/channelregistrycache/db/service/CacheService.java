@@ -48,16 +48,17 @@ public class CacheService implements PublicationChannelFetchClient {
 
   public void loadCache(S3Client s3Client) {
     var loader = new ChannelRegistryCsvLoader(s3Client);
-    var entriesStream = loader.getEntries();
+    var result = loader.getEntries();
 
     var counter = new AtomicInteger(0);
     var batchCounter = new AtomicInteger(0);
     var batch = new ArrayList<ChannelRegistryCacheDao>(BATCH_SIZE);
 
-    filterDuplicatesBasedOnPid(entriesStream)
+    filterDuplicatesBasedOnPid(result.entries())
         .map(ChannelRegistryCacheEntry::toDao)
         .forEach(
             dao -> {
+              counter.incrementAndGet();
               batch.add(dao);
               if (batch.size() == BATCH_SIZE) {
                 writeBatch(batch);
@@ -72,7 +73,8 @@ public class CacheService implements PublicationChannelFetchClient {
     }
 
     LOGGER.info("Cache loaded with {} entries", counter.get());
-    LOGGER.info(loader.getReport());
+    // Get report AFTER stream is consumed
+    LOGGER.info(result.report().get());
   }
 
   private void writeBatch(List<ChannelRegistryCacheDao> batch) {

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class ChannelRegistryCsvLoaderTest {
 
+  private static final String EMPTY_STRING = "";
   private ChannelRegistryCsvLoader csvLoader;
   private S3Driver s3Driver;
 
@@ -24,24 +25,44 @@ class ChannelRegistryCsvLoaderTest {
   void setUp() {
     var s3Client = new FakeS3Client();
     this.s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-    loadCsv("cache.csv");
     csvLoader = new ChannelRegistryCsvLoader(s3Client);
   }
 
   @Test
   void shouldThrowExceptionWhenCannotFindPublicationChannel() {
-    var cacheEntries = csvLoader.getEntries().toList();
+    loadCsv("cache.csv");
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
 
     assertFalse(cacheEntries.isEmpty());
+    // Report is available after stream consumption
+    var report = result.report().get();
+    assertFalse(report.isEmpty());
   }
 
   @Test
   void ignoreAndReportBadCsv() {
     loadCsv("bad_cache.csv");
-    var cacheEntries = csvLoader.getEntries();
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
 
-    assertThat(cacheEntries.toList().size(), is(equalTo(1)));
-    assertThat(csvLoader.getReport(), containsString("Failed to parse 4 out of 5 CSV lines"));
+    assertThat(cacheEntries.size(), is(equalTo(1)));
+    assertThat(result.report().get(), containsString("Failed to parse 4 out of 5 CSV lines"));
+  }
+
+  @Test
+  void emptyCsv() {
+    attempt(
+            () ->
+                s3Driver.insertFile(
+                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
+                    EMPTY_STRING))
+        .orElseThrow();
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
+
+    assertThat(cacheEntries.size(), is(equalTo(0)));
+    assertThat(result.report().get(), containsString("No data"));
   }
 
   private void loadCsv(String csvFile) {

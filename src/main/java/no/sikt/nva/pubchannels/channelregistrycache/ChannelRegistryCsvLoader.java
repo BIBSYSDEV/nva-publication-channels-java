@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -16,21 +17,18 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 public final class ChannelRegistryCsvLoader {
 
   private static final int HEADER_POSITION = 1;
-  private String report;
   private final S3Client s3Client;
 
   public ChannelRegistryCsvLoader(S3Client s3Client) {
     this.s3Client = s3Client;
   }
 
-  public Stream<ChannelRegistryCacheEntry> getEntries() {
+  public LoadResult getEntries() {
     var value = s3Client.getObject(getCacheRequest(), ResponseTransformer.toBytes()).asUtf8String();
     return parseCsv(value);
   }
 
-  public String getReport() {
-    return report;
-  }
+  public record LoadResult(Stream<ChannelRegistryCacheEntry> entries, Supplier<String> report) {}
 
   private static GetObjectRequest getCacheRequest() {
     return GetObjectRequest.builder()
@@ -39,26 +37,25 @@ public final class ChannelRegistryCsvLoader {
         .build();
   }
 
-  private Stream<ChannelRegistryCacheEntry> parseCsv(String value) {
+  private LoadResult parseCsv(String value) {
     var lines = value.lines().toList();
     if (lines.isEmpty()) {
-      return Stream.of();
+      return new LoadResult(Stream.of(), () -> "No data");
     }
 
     var header = lines.getFirst();
     var failures = new ConcurrentHashMap<Integer, FailureInfo>();
+    var totalLines = lines.size() - HEADER_POSITION;
 
-    return IntStream.range(1, lines.size())
-        .parallel()
-        .mapToObj(i -> processLine(Map.entry(i, lines.get(i).trim()), header, failures))
-        .filter(java.util.Objects::nonNull)
-        .collect(
-            Collectors.collectingAndThen(
-                Collectors.toList(),
-                list -> {
-                  this.report = generateReport(failures, lines.size() - HEADER_POSITION);
-                  return list.stream(); // Re-stream for downstream
-                }));
+    var stream =
+        IntStream.range(1, lines.size())
+            .parallel()
+            .mapToObj(i -> processLine(Map.entry(i, lines.get(i).trim()), header, failures))
+            .filter(java.util.Objects::nonNull);
+
+    Supplier<String> reportSupplier = () -> generateReport(failures, totalLines);
+
+    return new LoadResult(stream, reportSupplier);
   }
 
   private static ChannelRegistryCacheEntry processLine(
