@@ -17,6 +17,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 public final class ChannelRegistryCsvLoader {
 
   private static final int HEADER_POSITION = 1;
+  private static final int MAX_LOG_LENGTH = 150;
   private final S3Client s3Client;
 
   public ChannelRegistryCsvLoader(S3Client s3Client) {
@@ -84,9 +85,11 @@ public final class ChannelRegistryCsvLoader {
       return failures.entrySet().stream()
           .map(
               entry ->
-                  "  Line %d: %s | Content: %s"
+                  "Line %d: %s | Content: %s"
                       .formatted(
-                          entry.getKey(), entry.getValue().errorMessage(), entry.getValue().line()))
+                          entry.getKey(),
+                          entry.getValue().errorMessage(),
+                          truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
           .collect(
               Collectors.joining(
                   "%n".formatted(),
@@ -97,6 +100,13 @@ public final class ChannelRegistryCsvLoader {
     } else {
       return "Successfully parsed all %s CSV lines".formatted(totalLines);
     }
+  }
+
+  public static String truncate(String content, int maxLength) {
+    if (content == null || content.length() <= maxLength) {
+      return content;
+    }
+    return content.substring(0, maxLength) + "...";
   }
 
   private record FailureInfo(String errorMessage, String line) {}

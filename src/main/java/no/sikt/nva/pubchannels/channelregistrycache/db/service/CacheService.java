@@ -62,7 +62,10 @@ public class CacheService implements PublicationChannelFetchClient {
               batch.add(dao);
               if (batch.size() == BATCH_SIZE) {
                 writeBatch(batch);
-                LOGGER.info("Loaded {} entries", batchCounter.addAndGet(BATCH_SIZE));
+                int totalProcessed = batchCounter.addAndGet(BATCH_SIZE);
+                if (totalProcessed % 2000 == 0) {
+                  LOGGER.info("Loaded {} entries", totalProcessed);
+                }
                 batch.clear();
               }
             });
