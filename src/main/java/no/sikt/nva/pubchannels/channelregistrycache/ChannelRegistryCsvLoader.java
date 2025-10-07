@@ -1,15 +1,13 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static java.util.Objects.nonNull;
-
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,18 +48,17 @@ public final class ChannelRegistryCsvLoader {
     }
 
     var header = lines.getFirst();
-    var failures = new LinkedHashMap<Integer, FailureInfo>();
+    var failures = new ConcurrentHashMap<Integer, FailureInfo>();
 
-    var result = new ArrayList<ChannelRegistryCacheEntry>();
-
-    for (var counter = 1; counter < lines.size(); counter++) {
-      var line = lines.get(counter);
-      var entry = extractEntity(Map.entry(counter, line.trim()), header, failures);
-
-      if (nonNull(entry)) {
-        result.add(entry);
-      }
-    }
+    // Process lines in parallel
+    var result =
+        java.util.stream.IntStream.range(1, lines.size())
+            .parallel()
+            .mapToObj(
+                counter ->
+                    extractEntity(Map.entry(counter, lines.get(counter).trim()), header, failures))
+            .filter(java.util.Objects::nonNull)
+            .collect(Collectors.toCollection(ArrayList::new));
 
     if (!failures.isEmpty()) {
       if (logger.isWarnEnabled()) {
