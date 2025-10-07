@@ -85,7 +85,7 @@ public final class ChannelRegistryCsvLoader {
       return failures.entrySet().stream()
           .map(
               entry ->
-                  "Line %d: %s | Content: %s"
+                  "Line %d: %s | Content: %s%n"
                       .formatted(
                           entry.getKey(),
                           entry.getValue().errorMessage(),
