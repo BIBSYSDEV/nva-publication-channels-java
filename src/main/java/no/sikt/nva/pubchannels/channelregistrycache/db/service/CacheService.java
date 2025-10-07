@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import no.sikt.nva.pubchannels.channelregistrycache.CachedPublicationChannelNotFoundException;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCsvLoader;
@@ -52,7 +53,7 @@ public class CacheService implements PublicationChannelFetchClient {
     var batchCounter = new AtomicInteger(0);
     var batch = new ArrayList<ChannelRegistryCacheDao>(BATCH_SIZE);
     var seenPids = new ConcurrentHashMap<UUID, Boolean>();
-    var batchLock = new Object();
+    var batchLock = new ReentrantLock();
 
     result
         .entries()
@@ -61,7 +62,8 @@ public class CacheService implements PublicationChannelFetchClient {
         .forEach(
             dao -> {
               counter.incrementAndGet();
-              synchronized (batchLock) {
+              batchLock.lock();
+              try {
                 batch.add(dao);
                 if (batch.size() == BATCH_SIZE) {
                   writeBatch(batch);
@@ -71,6 +73,8 @@ public class CacheService implements PublicationChannelFetchClient {
                   }
                   batch.clear();
                 }
+              } finally {
+                batchLock.unlock();
               }
             });
 
