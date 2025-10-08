@@ -1,40 +1,35 @@
 package no.sikt.nva.pubchannels.channelregistrycache;
 
-import static java.util.Objects.nonNull;
-
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 public final class ChannelRegistryCsvLoader {
 
-  private static final Logger logger = LoggerFactory.getLogger(ChannelRegistryCsvLoader.class);
   private static final int HEADER_POSITION = 1;
-  private final List<ChannelRegistryCacheEntry> cacheEntries;
+  private static final int MAX_LOG_LENGTH = 150;
+  private final S3Client s3Client;
 
-  private ChannelRegistryCsvLoader(List<ChannelRegistryCacheEntry> cacheEntries) {
-    this.cacheEntries = cacheEntries;
+  public ChannelRegistryCsvLoader(S3Client s3Client) {
+    this.s3Client = s3Client;
   }
 
-  public static ChannelRegistryCsvLoader load(S3Client s3Client) {
+  public LoadResult getEntries() {
     var value = s3Client.getObject(getCacheRequest(), ResponseTransformer.toBytes()).asUtf8String();
-    return new ChannelRegistryCsvLoader(getChannelRegistryCacheFromString(value));
+    return parseCsv(value);
   }
 
-  public List<ChannelRegistryCacheEntry> getCacheEntries() {
-    return cacheEntries;
-  }
+  public record LoadResult(Stream<ChannelRegistryCacheEntry> entries, Supplier<String> report) {}
 
   private static GetObjectRequest getCacheRequest() {
     return GetObjectRequest.builder()
@@ -43,57 +38,31 @@ public final class ChannelRegistryCsvLoader {
         .build();
   }
 
-  private static List<ChannelRegistryCacheEntry> getChannelRegistryCacheFromString(String value) {
+  private LoadResult parseCsv(String value) {
     var lines = value.lines().toList();
     if (lines.isEmpty()) {
-      return List.of();
+      return new LoadResult(Stream.of(), () -> "No data");
     }
 
     var header = lines.getFirst();
-    var failures = new LinkedHashMap<Integer, FailureInfo>();
+    var failures = new ConcurrentHashMap<Integer, FailureInfo>();
+    var totalLines = lines.size() - HEADER_POSITION;
 
-    var result = new ArrayList<ChannelRegistryCacheEntry>();
+    var stream =
+        IntStream.range(1, lines.size())
+            .parallel()
+            .mapToObj(i -> processLine(Map.entry(i, lines.get(i).trim()), header, failures))
+            .filter(java.util.Objects::nonNull);
 
-    for (var counter = 1; counter < lines.size(); counter++) {
-      var line = lines.get(counter);
-      var entry = extractEntity(Map.entry(counter, line.trim()), header, failures);
+    Supplier<String> reportSupplier = () -> generateReport(failures, totalLines);
 
-      if (nonNull(entry)) {
-        result.add(entry);
-      }
-    }
-
-    if (!failures.isEmpty()) {
-      if (logger.isWarnEnabled()) {
-        logger.warn(createReport(failures, lines.size() - HEADER_POSITION));
-      }
-    } else {
-      logger.info("Successfully parsed all {} CSV lines", lines.size() - HEADER_POSITION);
-    }
-
-    return result;
+    return new LoadResult(stream, reportSupplier);
   }
 
-  private static String createReport(Map<Integer, FailureInfo> failures, int totalLines) {
-    return failures.entrySet().stream()
-        .map(
-            entry ->
-                String.format(
-                    "  Line %d: %s | Content: %s%n",
-                    entry.getKey(), entry.getValue().errorMessage(), entry.getValue().line()))
-        .collect(
-            Collectors.joining(
-                "",
-                String.format(
-                    "Failed to parse %d out of %d CSV lines:%n", failures.size(), totalLines),
-                ""));
-  }
-
-  private static ChannelRegistryCacheEntry extractEntity(
+  private static ChannelRegistryCacheEntry processLine(
       Entry<Integer, String> entry, String header, Map<Integer, FailureInfo> failures) {
     try {
       var csvData = header + "\n" + entry.getValue();
-
       var entries =
           new CsvToBeanBuilder<ChannelRegistryCacheEntry>(new StringReader(csvData))
               .withType(ChannelRegistryCacheEntry.class)
@@ -102,7 +71,6 @@ public final class ChannelRegistryCsvLoader {
               .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH)
               .build()
               .parse();
-
       return entries.isEmpty() ? null : entries.getFirst();
     } catch (Exception e) {
       var rootCause = (Exception) e.getCause();
@@ -110,6 +78,35 @@ public final class ChannelRegistryCsvLoader {
       failures.put(entry.getKey(), new FailureInfo(errorMessage, entry.getValue()));
       return null;
     }
+  }
+
+  private static String generateReport(Map<Integer, FailureInfo> failures, int totalLines) {
+    if (!failures.isEmpty()) {
+      return failures.entrySet().stream()
+          .map(
+              entry ->
+                  "Line %d: %s | Content: %s%n"
+                      .formatted(
+                          entry.getKey(),
+                          entry.getValue().errorMessage(),
+                          truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
+          .collect(
+              Collectors.joining(
+                  "%n".formatted(),
+                  "",
+                  "%n%nFailed to parse %d out of %d CSV lines"
+                      .formatted(failures.size(), totalLines)
+                  ));
+    } else {
+      return "Successfully parsed all %s CSV lines".formatted(totalLines);
+    }
+  }
+
+  public static String truncate(String content, int maxLength) {
+    if (content == null || content.length() <= maxLength) {
+      return content;
+    }
+    return content.substring(0, maxLength) + "...";
   }
 
   private record FailureInfo(String errorMessage, String line) {}

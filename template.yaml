@@ -211,6 +211,7 @@ Resources:
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.cache.LoadCacheHandler::handleRequest
       Timeout: 900
+      MemorySize: 10240
       Policies:
         - !GetAtt BatchWriteItemDynamoDbCacheTableManagedPolicy.PolicyArn
         - !GetAtt S3GetObjectCacheBucketPolicy.PolicyArn

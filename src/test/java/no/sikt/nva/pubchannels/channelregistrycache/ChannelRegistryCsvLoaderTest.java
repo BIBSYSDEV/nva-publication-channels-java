@@ -12,50 +12,65 @@ import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UnixPath;
-import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ChannelRegistryCsvLoaderTest {
 
+  private static final String EMPTY_STRING = "";
   private ChannelRegistryCsvLoader csvLoader;
+  private S3Driver s3Driver;
 
   @BeforeEach
   void setUp() {
-    var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
     var s3Client = new FakeS3Client();
-    var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-    attempt(
-            () ->
-                s3Driver.insertFile(
-                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
-        .orElseThrow();
-    csvLoader = ChannelRegistryCsvLoader.load(s3Client);
+    this.s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
+    csvLoader = new ChannelRegistryCsvLoader(s3Client);
   }
 
   @Test
   void shouldThrowExceptionWhenCannotFindPublicationChannel() {
-    var cacheEntries = csvLoader.getCacheEntries();
+    loadCsv("cache.csv");
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
 
     assertFalse(cacheEntries.isEmpty());
+    // Report is available after stream consumption
+    var report = result.report().get();
+    assertFalse(report.isEmpty());
   }
 
   @Test
   void ignoreAndReportBadCsv() {
-    var csv = IoUtils.stringFromResources(Path.of("bad_cache.csv"));
-    var s3Client = new FakeS3Client();
-    var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    loadCsv("bad_cache.csv");
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
 
+    assertThat(cacheEntries.size(), is(equalTo(1)));
+    assertThat(result.report().get(), containsString("Failed to parse 4 out of 5 CSV lines"));
+  }
+
+  @Test
+  void emptyCsv() {
+    attempt(
+            () ->
+                s3Driver.insertFile(
+                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
+                    EMPTY_STRING))
+        .orElseThrow();
+    var result = csvLoader.getEntries();
+    var cacheEntries = result.entries().toList();
+
+    assertThat(cacheEntries.size(), is(equalTo(0)));
+    assertThat(result.report().get(), containsString("No data"));
+  }
+
+  private void loadCsv(String csvFile) {
+    var csv = IoUtils.stringFromResources(Path.of(csvFile));
     attempt(
             () ->
                 s3Driver.insertFile(
                     UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
         .orElseThrow();
-    csvLoader = ChannelRegistryCsvLoader.load(s3Client);
-    var cacheEntries = csvLoader.getCacheEntries();
-
-    assertThat(cacheEntries.size(), is(equalTo(1)));
-    assertThat(appender.getMessages(), containsString("Failed to parse 4 out of 5 CSV lines"));
   }
 }
