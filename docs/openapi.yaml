@@ -58,7 +58,7 @@ paths:
           schema:
             type: integer
             description: can maximum be set to next year
-          example: '1910'
+          example: 1910
         - name: type
           in: path
           description: type of channel to return
@@ -71,7 +71,7 @@ paths:
               - publisher
               - serial-publication
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -86,18 +86,18 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalExample'
-        301:
+        '301':
           description: Moved permanently
           headers:
             Location:
               schema:
                 type: string
               description: A URI to the new resource
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /{type}/{identifier}:
     get:
@@ -136,7 +136,7 @@ paths:
               - publisher
               - serial-publication
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -151,18 +151,18 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/JournalExample'
-        301:
+        '301':
           description: Moved permanently
           headers:
             Location:
               schema:
                 type: string
               description: A URI to the new resource
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /journal:
     get:
@@ -202,7 +202,7 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -217,13 +217,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedJournalsExample'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        502:
+        '502':
           $ref: '#/components/responses/502'
     post:
       x-amazon-apigateway-integration:
@@ -245,7 +245,7 @@ paths:
               objectExample:
                 $ref: '#/components/examples/CreateJournalExample'
       responses:
-        201:
+        '201':
           description: successful operation
           headers:
             Location:
@@ -256,9 +256,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SerialPublication'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /publisher:
     get:
@@ -298,7 +298,7 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -313,13 +313,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedPublishersExample'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        502:
+        '502':
           $ref: '#/components/responses/502'
     post:
       x-amazon-apigateway-integration:
@@ -341,7 +341,7 @@ paths:
               objectExample:
                 $ref: '#/components/examples/CreatePublisherExample'
       responses:
-        201:
+        '201':
           headers:
             Location:
               schema:
@@ -352,9 +352,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublisherResponse'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /publisher/{identifier}:
     put:
@@ -385,17 +385,17 @@ paths:
             type: string
           example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       responses:
-        202:
+        '202':
           description: Accepted
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        403:
+        '403':
           $ref: '#/components/responses/403'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /series:
     get:
@@ -435,7 +435,7 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -450,13 +450,13 @@ paths:
               examples:
                 objectExample:
                   $ref: '#/components/examples/PaginatedSeriesExample'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        502:
+        '502':
           $ref: '#/components/responses/502'
     post:
       x-amazon-apigateway-integration:
@@ -478,7 +478,7 @@ paths:
               objectExample:
                 $ref: '#/components/examples/CreateSeriesExample'
       responses:
-        201:
+        '201':
           description: successful operation
           headers:
             Location:
@@ -489,9 +489,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SerialPublication'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /serial-publication:
     get:
@@ -531,7 +531,7 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -550,13 +550,13 @@ paths:
                   $ref: '#/components/examples/PaginatedJournalsExample'
                 series:
                   $ref: '#/components/examples/PaginatedSeriesExample'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        422:
+        '422':
           $ref: '#/components/responses/422'
-        502:
+        '502':
           $ref: '#/components/responses/502'
     post:
       x-amazon-apigateway-integration:
@@ -578,7 +578,7 @@ paths:
               objectExample:
                 $ref: '#/components/examples/CreateSerialPublicationExample'
       responses:
-        201:
+        '201':
           description: successful operation
           headers:
             Location:
@@ -589,9 +589,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SerialPublication'
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        502:
+        '502':
           $ref: '#/components/responses/502'
   /serial-publication/{identifier}:
     put:
@@ -622,58 +622,58 @@ paths:
             type: string
           example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
       responses:
-        202:
+        '202':
           description: Accepted
-        400:
+        '400':
           $ref: '#/components/responses/400'
-        401:
+        '401':
           $ref: '#/components/responses/401'
-        403:
+        '403':
           $ref: '#/components/responses/403'
-        404:
+        '404':
           $ref: '#/components/responses/404'
-        502:
+        '502':
           $ref: '#/components/responses/502'
 
 components:
   responses:
-    400:
+    '400':
       description: Bad Request
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    401:
+    '401':
       description: Unauthorized
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    403:
+    '403':
       description: Forbidden
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    404:
+    '404':
       description: Not found
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    422:
+    '422':
       description: Unprocessable Content
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    500:
+    '500':
       description: Internal Server Error
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-    502:
+    '502':
       description: Bad Gateway
       content:
         application/problem+json:
