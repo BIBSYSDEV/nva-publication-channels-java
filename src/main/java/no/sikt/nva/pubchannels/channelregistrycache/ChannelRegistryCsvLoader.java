@@ -95,8 +95,7 @@ public final class ChannelRegistryCsvLoader {
                   "%n".formatted(),
                   "",
                   "%n%nFailed to parse %d out of %d CSV lines"
-                      .formatted(failures.size(), totalLines)
-                  ));
+                      .formatted(failures.size(), totalLines)));
     } else {
       return "Successfully parsed all %s CSV lines".formatted(totalLines);
     }
