@@ -18,15 +18,23 @@ import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE_APPLICATION_JSON_UTF8;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.StringUtils.EMPTY_STRING;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpTimeoutException;
 import java.time.Year;
+import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryUpdateChannelRequest.Fields;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -140,6 +148,20 @@ class ChannelRegistryClientTest {
     stubUpdateChannelResponse(HTTP_BAD_GATEWAY);
 
     assertThrows(BadGatewayException.class, () -> client.updateChannel(request));
+  }
+
+  @Test
+  void shouldThrowBadGatewayWithTimeoutMessageWhenHttpRequestTimesOut() throws Exception {
+    var mockHttpClient = mock(HttpClient.class);
+    when(mockHttpClient.send(any(), any())).thenThrow(new HttpTimeoutException("timed out"));
+    var timeoutClient = new ChannelRegistryClient(mockHttpClient, randomUri(), null);
+
+    var exception =
+        assertThrows(
+            BadGatewayException.class,
+            () -> timeoutClient.searchChannel(ChannelType.JOURNAL, Map.of("name", "test")));
+
+    assertTrue(exception.getMessage().contains("Request to upstream timed out"));
   }
 
   private static ChannelRegistryUpdateChannelRequest createRequest(

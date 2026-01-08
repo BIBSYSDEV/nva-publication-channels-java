@@ -1,8 +1,10 @@
 package no.sikt.nva.pubchannels.channelregistry;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.ACCEPT;
 import static no.sikt.nva.pubchannels.HttpHeaders.AUTHORIZATION;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
@@ -13,17 +15,17 @@ import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.time.Year;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.ChannelRegistryCreateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.channelregistry.model.create.CreateChannelResponse;
@@ -51,13 +53,13 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryClient.class);
   private static final String ENV_CHANNEL_REGISTRY_BASE_URL =
       "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
-  private static final Set<Integer> OK_STATUSES =
-      Set.of(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
   private static final String SEARCH_PATH_ELEMENT = "channels";
-  protected static final int ONE_HUNDRED = 100;
-  protected static final int FOUR = 4;
-  protected static final int FIVE = 5;
+  private static final int ONE_HUNDRED = 100;
+  private static final int FOUR = 4;
+  private static final int FIVE = 5;
   private static final String SECRET_NAME = "DataportenChannelRegistryClientCredentials";
+  // Must be lower than Lambda timeout to allow graceful error handling and logging
+  private static final Duration HTTP_REQUEST_TIMEOUT = Duration.ofSeconds(20);
   private final HttpClient httpClient;
   private final URI channelRegistryBaseUri;
   private final AuthClient authClient;
@@ -181,6 +183,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
         .header(AUTHORIZATION, "Bearer " + token)
         .uri(constructUri("admin", "change"))
+        .timeout(HTTP_REQUEST_TIMEOUT)
         .method("PATCH", BodyPublishers.ofString(request.toJsonString()))
         .build();
   }
@@ -189,11 +192,15 @@ public class ChannelRegistryClient implements PublicationChannelClient {
       throws ApiGatewayException, IOException, InterruptedException {
     var response = httpClient.send(request, BodyHandlers.ofString());
 
-    if (!OK_STATUSES.contains(response.statusCode())) {
+    if (!isSuccessStatus(response.statusCode())) {
       handleError(request.uri(), response);
     }
 
     return attempt(() -> dtoObjectMapper.readValue(response.body(), clazz)).orElseThrow();
+  }
+
+  private static boolean isSuccessStatus(int statusCode) {
+    return statusCode == HTTP_OK || statusCode == HTTP_CREATED;
   }
 
   private void handleError(URI requestedUri, HttpResponse<String> response)
@@ -222,6 +229,13 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     if (e instanceof InterruptedException) {
       LOGGER.error("Thread interrupted when fetching: {}", uri, e);
       Thread.currentThread().interrupt();
+    } else if (e instanceof HttpTimeoutException) {
+      LOGGER.error(
+          "Request to upstream timed out after {} seconds: {}",
+          HTTP_REQUEST_TIMEOUT.toSeconds(),
+          uri,
+          e);
+      return new BadGatewayException("Request to upstream timed out!");
     } else if (e instanceof ApiGatewayException apiGatewayException) {
       return apiGatewayException;
     }
@@ -233,6 +247,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     return HttpRequest.newBuilder()
         .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
         .uri(constructUri(requestObject))
+        .timeout(HTTP_REQUEST_TIMEOUT)
         .GET()
         .build();
   }
@@ -242,6 +257,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     return HttpRequest.newBuilder()
         .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
         .uri(addQueryParameters(constructUri(pathElement, SEARCH_PATH_ELEMENT), queryParams))
+        .timeout(HTTP_REQUEST_TIMEOUT)
         .GET()
         .build();
   }
@@ -275,6 +291,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
         .header(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON)
         .header(AUTHORIZATION, "Bearer " + token)
         .uri(constructUri(path, "createpid"))
+        .timeout(HTTP_REQUEST_TIMEOUT)
         .POST(BodyPublishers.ofString(journalRequestBodyAsString))
         .build();
   }
