@@ -89,28 +89,32 @@ Resources:
       MethodSettings:
         - HttpMethod: 'GET'
           ResourcePath: '/~1journal~1{identifier}~1{year}'
-          CacheTtlInSeconds: 3600
+          CacheTtlInSeconds: 300
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1series~1{identifier}~1{year}'
-          CacheTtlInSeconds: 3600
+          CacheTtlInSeconds: 300
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1publisher~1{identifier}~1{year}'
-          CacheTtlInSeconds: 3600
+          CacheTtlInSeconds: 300
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1journal'
           CacheTtlInSeconds: 300
-          CachingEnabled: false
+          CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1series'
           CacheTtlInSeconds: 300
-          CachingEnabled: false
+          CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1publisher'
           CacheTtlInSeconds: 300
-          CachingEnabled: false
+          CachingEnabled: true
+        - HttpMethod: 'GET'
+          ResourcePath: '/~1serial-publication'
+          CacheTtlInSeconds: 300
+          CachingEnabled: true
       DefinitionBody:
         'Fn::Transform':
           Name: AWS::Include

@@ -170,6 +170,16 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.querystring.query: 'method.request.querystring.query'
+          integration.request.querystring.year: 'method.request.querystring.year'
+          integration.request.querystring.offset: 'method.request.querystring.offset'
+          integration.request.querystring.size: 'method.request.querystring.size'
+        cacheKeyParameters:
+          - 'method.request.querystring.query'
+          - 'method.request.querystring.year'
+          - 'method.request.querystring.offset'
+          - 'method.request.querystring.size'
         type: "AWS_PROXY"
       tags:
         - Journal
@@ -266,6 +276,16 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.querystring.query: 'method.request.querystring.query'
+          integration.request.querystring.year: 'method.request.querystring.year'
+          integration.request.querystring.offset: 'method.request.querystring.offset'
+          integration.request.querystring.size: 'method.request.querystring.size'
+        cacheKeyParameters:
+          - 'method.request.querystring.query'
+          - 'method.request.querystring.year'
+          - 'method.request.querystring.offset'
+          - 'method.request.querystring.size'
         type: "AWS_PROXY"
       tags:
         - Publisher
@@ -403,6 +423,16 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.querystring.query: 'method.request.querystring.query'
+          integration.request.querystring.year: 'method.request.querystring.year'
+          integration.request.querystring.offset: 'method.request.querystring.offset'
+          integration.request.querystring.size: 'method.request.querystring.size'
+        cacheKeyParameters:
+          - 'method.request.querystring.query'
+          - 'method.request.querystring.year'
+          - 'method.request.querystring.offset'
+          - 'method.request.querystring.size'
         type: "AWS_PROXY"
       tags:
         - Series
@@ -499,6 +529,16 @@ paths:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSerialPublicationByQueryFunction.Arn}/invocations
         httpMethod: POST
+        requestParameters:
+          integration.request.querystring.query: 'method.request.querystring.query'
+          integration.request.querystring.year: 'method.request.querystring.year'
+          integration.request.querystring.offset: 'method.request.querystring.offset'
+          integration.request.querystring.size: 'method.request.querystring.size'
+        cacheKeyParameters:
+          - 'method.request.querystring.query'
+          - 'method.request.querystring.year'
+          - 'method.request.querystring.offset'
+          - 'method.request.querystring.size'
         type: "AWS_PROXY"
       tags:
         - SerialPublication
