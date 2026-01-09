@@ -30,11 +30,11 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.path.identifier:
-            'method.request.path.identifier'
-          integration.request.path.year:
-            'method.request.path.year'
+          integration.request.path.type: 'method.request.path.type'
+          integration.request.path.identifier: 'method.request.path.identifier'
+          integration.request.path.year: 'method.request.path.year'
         cacheKeyParameters:
+          - 'method.request.path.type'
           - 'method.request.path.identifier'
           - 'method.request.path.year'
         type: "AWS_PROXY"
@@ -106,10 +106,11 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.path.identifier:
-          - 'method.request.path.identifier'
+          integration.request.path.type: 'method.request.path.type'
+          integration.request.path.identifier: 'method.request.path.identifier'
         cacheKeyParameters:
-        - 'method.request.path.identifier'
+          - 'method.request.path.type'
+          - 'method.request.path.identifier'
         type: "AWS_PROXY"
       tags:
         - PublicationChannel
