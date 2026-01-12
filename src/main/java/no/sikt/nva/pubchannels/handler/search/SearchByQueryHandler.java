@@ -1,8 +1,21 @@
 package no.sikt.nva.pubchannels.handler.search;
 
+import static com.google.common.net.MediaType.JSON_UTF_8;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validatePagination;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
+import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
+import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
+import static nva.commons.core.attempt.Try.attempt;
+import static nva.commons.core.paths.UriWrapper.HTTPS;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
@@ -16,20 +29,6 @@ import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.apache.commons.validator.routines.ISSNValidator;
-
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.net.MediaType.JSON_UTF_8;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validatePagination;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateString;
-import static no.sikt.nva.pubchannels.handler.validator.Validator.validateYear;
-import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
-import static nva.commons.core.attempt.Try.attempt;
-import static nva.commons.core.paths.UriWrapper.HTTPS;
 
 public abstract class SearchByQueryHandler<T>
     extends ApiGatewayHandler<Void, PaginatedSearchResult<T>> {
@@ -91,7 +90,7 @@ public abstract class SearchByQueryHandler<T>
     }
 
     addAdditionalHeaders(
-      () -> Map.of(HttpHeaders.CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
+        () -> Map.of(HttpHeaders.CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
 
     return PaginatedSearchResult.create(
         constructBaseUri(),
