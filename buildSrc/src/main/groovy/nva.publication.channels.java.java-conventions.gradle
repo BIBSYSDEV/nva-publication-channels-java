@@ -22,6 +22,7 @@ dependencies {
     implementation libs.aws.sdk2.dynamodb.enhanced
     implementation libs.aws.appconfig
     implementation libs.aws.appconfigdata
+    implementation libs.aws.sdk2.apigateway
     implementation libs.guava
 
     testImplementation libs.dynamodDbLocal

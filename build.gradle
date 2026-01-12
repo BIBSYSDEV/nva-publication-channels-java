@@ -15,4 +15,6 @@ test {
     environment("APPLICATION_CONFIG_ENVIRONMENT_NAME", "someEnvironment")
     environment("APPLICATION_ID", "someId")
     environment("COGNITO_AUTHORIZER_URLS", "url")
+    environment("REST_API_ID", "test-api-id")
+    environment("API_STAGE_NAME", "test")
 }

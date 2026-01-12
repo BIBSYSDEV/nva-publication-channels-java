@@ -8,6 +8,7 @@ import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistry.UpdateChannelRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelUpdateClient;
+import no.sikt.nva.pubchannels.utils.CacheInvalidator;
 import nva.commons.apigateway.AccessRight;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -26,15 +27,19 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
       "Provided identifier is not valid UUID";
   protected static final String EMPTY_REQUEST_MESSAGE = "Request body is empty!";
   private final PublicationChannelUpdateClient client;
+  private final CacheInvalidator cacheInvalidator;
 
   @JacocoGenerated
   public UpdatePublicationChannelHandler() {
-    this(ChannelRegistryClient.defaultAuthorizedInstance(new Environment()));
+    this(
+        ChannelRegistryClient.defaultAuthorizedInstance(new Environment()), new CacheInvalidator());
   }
 
-  public UpdatePublicationChannelHandler(PublicationChannelUpdateClient client) {
+  public UpdatePublicationChannelHandler(
+      PublicationChannelUpdateClient client, CacheInvalidator cacheInvalidator) {
     super(UpdateChannelRequest.class, new Environment());
     this.client = client;
+    this.cacheInvalidator = cacheInvalidator;
   }
 
   @Override
@@ -64,6 +69,7 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
       throws ApiGatewayException {
     var identifier = requestInfo.getPathParameter(IDENTIFIER);
     client.updateChannel(input.toChannelRegistryUpdateRequest(identifier));
+    cacheInvalidator.invalidateCache();
     return null;
   }
 

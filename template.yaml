@@ -206,6 +206,18 @@ Resources:
               - !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/${ApplicationIdName}
               - !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/${ApplicationIdName}/*
 
+  FlushApiGatewayCachePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - apigateway:DELETE
+            Resource:
+              - !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${PublicationChannelsApi}/stages/Prod/cache/data
+
   LoadCacheButtonHandler:
     Type: AWS::Serverless::Function
     Properties:
@@ -427,8 +439,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: no.sikt.nva.pubchannels.handler.update.UpdatePublicationChannelHandler::handleRequest
+      Environment:
+        Variables:
+          REST_API_ID: !Ref PublicationChannelsApi
+          API_STAGE_NAME: Prod
       Policies:
         - !GetAtt ReadSecretsPolicy.PolicyArn
+        - !GetAtt FlushApiGatewayCachePolicy.PolicyArn
       Events:
         UpdateChannelEvent:
           Type: Api

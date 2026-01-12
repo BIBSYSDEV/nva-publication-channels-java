@@ -26,6 +26,7 @@ import no.sikt.nva.pubchannels.channelregistry.UpdatePublisherRequest;
 import no.sikt.nva.pubchannels.channelregistry.UpdateSerialPublicationRequest;
 import no.sikt.nva.pubchannels.handler.PublicationChannelClient;
 import no.sikt.nva.pubchannels.handler.PublicationChannelUpdateClient;
+import no.sikt.nva.pubchannels.utils.CacheInvalidator;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.AccessRight;
@@ -43,13 +44,15 @@ class UpdatePublicationChannelHandlerTest {
   protected static final String IDENTIFIER = "identifier";
   private UpdatePublicationChannelHandler handler;
   private PublicationChannelUpdateClient client;
+  private CacheInvalidator cacheInvalidator;
   private ByteArrayOutputStream output;
 
   @BeforeEach
   void setUp() {
     this.output = new ByteArrayOutputStream();
     this.client = mock(PublicationChannelClient.class);
-    this.handler = new UpdatePublicationChannelHandler(client);
+    this.cacheInvalidator = mock(CacheInvalidator.class);
+    this.handler = new UpdatePublicationChannelHandler(client, cacheInvalidator);
   }
 
   @Test
