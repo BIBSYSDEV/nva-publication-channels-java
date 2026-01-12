@@ -5,8 +5,10 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 import java.util.List;
+import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
 import no.sikt.nva.pubchannels.channelregistrycache.db.service.CacheService;
 import no.sikt.nva.pubchannels.handler.PublicationChannelFetchClient;
@@ -21,6 +23,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, PublicationChannelDto> {
 
+  private static final int CACHE_MAX_AGE_SECONDS = 300;
   private final PublicationChannelService publicationChannelService;
 
   @JacocoGenerated
@@ -57,6 +60,8 @@ public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, Publ
   @Override
   protected PublicationChannelDto processInput(Void input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
+    addAdditionalHeaders(
+        () -> Map.of(HttpHeaders.CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
     return publicationChannelService.fetch(RequestObject.fromRequestInfo(requestInfo));
   }
 
