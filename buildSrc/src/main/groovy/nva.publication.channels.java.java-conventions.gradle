@@ -6,7 +6,7 @@ plugins {
     id 'com.diffplug.spotless'
 }
 
-group 'no.sikt.nva'
+group = 'no.sikt.nva'
 
 dependencies {
     testImplementation libs.bundles.testing
@@ -19,20 +19,18 @@ dependencies {
     implementation libs.commons.validator
     implementation libs.open.csv
     implementation libs.aws.sdk2.s3
+    implementation libs.aws.sdk2.dynamodb
     implementation libs.aws.sdk2.dynamodb.enhanced
     implementation libs.aws.appconfig
     implementation libs.aws.appconfigdata
     implementation libs.guava
-
+    implementation libs.aws.sdk2.sdk.core
     testImplementation libs.dynamodDbLocal
 }
 
-sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility
-targetCompatibility = JavaVersion.VERSION_21 // bytecode target version
-
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
 }
 
 tasks.named('test') {
@@ -44,7 +42,7 @@ tasks.named('test') {
 }
 
 pmd {
-    toolVersion = '7.11.0'
+    toolVersion = '7.20.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
@@ -59,7 +57,7 @@ tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required
         html.required
-        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
+        html.stylesheet = rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
     }
 }
 

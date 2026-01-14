@@ -17,7 +17,7 @@ public class LevelForYearConverter extends AbstractBeanField<List<LevelForYear>,
       throws CsvDataTypeMismatchException, CsvConstraintViolationException {
     try {
       return nonNull(value) ? convertStringToList(value) : List.of();
-    } catch (Exception e) {
+    } catch (JsonProcessingException e) {
       throw new CsvDataTypeMismatchException(e.getMessage());
     }
   }

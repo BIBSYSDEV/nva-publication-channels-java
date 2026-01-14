@@ -13,3 +13,9 @@ allprojects {
 tasks.named('check') {
     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}

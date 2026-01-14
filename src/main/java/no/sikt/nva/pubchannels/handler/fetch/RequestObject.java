@@ -5,6 +5,7 @@ import static nva.commons.core.attempt.Try.attempt;
 import java.util.Optional;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
+import no.sikt.nva.pubchannels.handler.validator.ValidationException;
 import no.sikt.nva.pubchannels.handler.validator.Validator;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadRequestException;
@@ -23,7 +24,7 @@ public record RequestObject(ChannelType channelType, String identifier, String y
   public void validate(Validator validator) throws BadRequestException {
     try {
       validator.validate(this);
-    } catch (Exception e) {
+    } catch (ValidationException e) {
       throw new BadRequestException(e.getMessage());
     }
   }
