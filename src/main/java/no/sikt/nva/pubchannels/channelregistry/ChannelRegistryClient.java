@@ -144,7 +144,7 @@ public class ChannelRegistryClient implements PublicationChannelClient {
   public void updateChannel(ChannelRegistryUpdateChannelRequest request)
       throws ApiGatewayException {
     var channel = getChannel(request);
-    if (!channel.getScientificValue().equals(ScientificValue.UNASSIGNED)) {
+    if (channel.getScientificValue() != ScientificValue.UNASSIGNED) {
       throw new BadRequestException(
           "Only channel with unassigned scientific value can be updated!");
     }

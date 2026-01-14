@@ -46,12 +46,13 @@ aws-lambda-log4j2 = { group = 'com.amazonaws', name = 'aws-lambda-java-log4j2', 
 aws-sdk2-dynamodb-enhanced = { group = 'software.amazon.awssdk', name = 'dynamodb-enhanced', version.ref = 'awsSdk2' }
 aws-appconfig = { group = 'software.amazon.awssdk', name = 'appconfig', version.ref = 'awsSdk2' }
 aws-appconfigdata = { group = 'software.amazon.awssdk', name = 'appconfigdata', version.ref = 'awsSdk2' }
-
+aws-sdk2-sdk-core = { group = 'software.amazon.awssdk', name = 'sdk-core', version.ref = 'awsSdk2' }
+aws-sdk2-dynamodb = { group = 'software.amazon.awssdk', name = 'dynamodb', version.ref = 'awsSdk2' }
 log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
 log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
 slf4j-api = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
 
-wiremock = { group = 'org.wiremock', name = 'wiremock-jetty12', version.ref = 'wiremock' }
+wiremock-jetty = { group = 'org.wiremock', name = 'wiremock-jetty12', version.ref = 'wiremock' }
 
 dynamodDbLocal = { group = 'com.amazonaws', name = 'DynamoDBLocal', version.ref = 'awsDynamoDbLocal' }
 
@@ -62,6 +63,6 @@ open-csv = { group = 'com.opencsv', name = 'opencsv', version = '5.9' }
 [bundles]
 nva = ['nva-commons-core', 'nva-commons-apigateway', 'nva-json', 'nva-commons-pagination', 'nva-commons-secrets']
 logging = ['log4j-core', 'log4j-api', 'slf4j-api', 'aws-lambda-log4j2']
-testing = ['junit-jupiter-api', 'junit-jupiter-params', 'junit-jupiter-engine', 'mockito-core', 'hamcrest', 'nva-testutils', 'nva-logutils', 'zalando', 'wiremock']
+testing = ['junit-jupiter-api', 'junit-jupiter-params', 'junit-jupiter-engine', 'mockito-core', 'hamcrest', 'nva-testutils', 'nva-logutils', 'zalando', 'wiremock-jetty']
 jackson = ['jackson-core', 'jackson-databind', 'jackson-annotations', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310']
 others = ['slf4j-api', 'log4j-api', 'aws-lambda-java-core']
