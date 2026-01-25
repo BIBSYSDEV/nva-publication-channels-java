@@ -6,13 +6,14 @@ awslog4j2 = { strictly = '1.6.0' }
 commons-validator-version = { strictly = '1.9.0'}
 guava = { strictly = '33.4.8-jre' }
 hamcrest = { strictly = '3.0' }
-jackson = { strictly = '2.19.1' }
+jackson = { strictly = '2.21.0' }
+jackson-annotations = { strictly = '2.21' }
 junit = { strictly = '5.13.3' }
 log4j = { strictly = '2.25.0' }
 mockito = { strictly = '5.18.0' }
-nva-commons = {strictly = '2.2.9'}
+nva-commons = {strictly = '2.4.9'}
 slf4j = { strictly = '2.0.17' }
-wiremock = { strictly = '3.13.1' }
+wiremock = { strictly = '4.0.0-beta.25' }
 zalando = { strictly = '0.27.1' }
 
 [libraries]
@@ -36,7 +37,7 @@ nva-commons-secrets = { group = 'com.github.bibsysdev', name = 'secrets', versio
 
 jackson-core = { group = 'com.fasterxml.jackson.core', name = 'jackson-core', version.ref = 'jackson' }
 jackson-databind = { group = 'com.fasterxml.jackson.core', name = 'jackson-databind', version.ref = 'jackson' }
-jackson-annotations = { group = 'com.fasterxml.jackson.core', name = 'jackson-annotations', version.ref = 'jackson' }
+jackson-annotations = { group = 'com.fasterxml.jackson.core', name = 'jackson-annotations', version.ref = 'jackson-annotations' }
 jackson-datatype-jdk8 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jdk8', version.ref = 'jackson' }
 jackson-datatype-jsr310 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jsr310', version.ref = 'jackson' }
 
@@ -52,7 +53,8 @@ log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.
 log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
 slf4j-api = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
 
-wiremock-jetty = { group = 'org.wiremock', name = 'wiremock-jetty12', version.ref = 'wiremock' }
+wiremock = { group = 'org.wiremock', name = 'wiremock', version.ref = 'wiremock' }
+wiremock-junit5 = { group = 'org.wiremock', name = 'wiremock-junit5', version.ref = 'wiremock' }
 
 dynamodDbLocal = { group = 'com.amazonaws', name = 'DynamoDBLocal', version.ref = 'awsDynamoDbLocal' }
 
@@ -63,6 +65,6 @@ open-csv = { group = 'com.opencsv', name = 'opencsv', version = '5.9' }
 [bundles]
 nva = ['nva-commons-core', 'nva-commons-apigateway', 'nva-json', 'nva-commons-pagination', 'nva-commons-secrets']
 logging = ['log4j-core', 'log4j-api', 'slf4j-api', 'aws-lambda-log4j2']
-testing = ['junit-jupiter-api', 'junit-jupiter-params', 'junit-jupiter-engine', 'mockito-core', 'hamcrest', 'nva-testutils', 'nva-logutils', 'zalando', 'wiremock-jetty']
+testing = ['junit-jupiter-api', 'junit-jupiter-params', 'junit-jupiter-engine', 'mockito-core', 'hamcrest', 'nva-testutils', 'nva-logutils', 'zalando', 'wiremock', 'wiremock-junit5']
 jackson = ['jackson-core', 'jackson-databind', 'jackson-annotations', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310']
 others = ['slf4j-api', 'log4j-api', 'aws-lambda-java-core']
