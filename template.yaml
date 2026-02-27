@@ -641,6 +641,70 @@ Resources:
                   action: '${!getMetadata("opensearch_action")}'
                   document_version: '${!getMetadata("document_version")}'
                   document_version_type: "external"
+                  index_template:
+                    settings:
+                      analysis:
+                        analyzer:
+                          title_analyzer:
+                            type: custom
+                            tokenizer: standard
+                            filter:
+                              - lowercase
+                              - norwegian_stop
+                              - norwegian_stemmer
+                              - edge_ngram_filter
+                          title_search_analyzer:
+                            type: custom
+                            tokenizer: standard
+                            filter:
+                              - lowercase
+                              - norwegian_stop
+                              - norwegian_stemmer
+                        filter:
+                          norwegian_stop:
+                            type: stop
+                            stopwords: _norwegian_
+                          norwegian_stemmer:
+                            type: stemmer
+                            language: norwegian
+                          edge_ngram_filter:
+                            type: edge_ngram
+                            min_gram: 2
+                            max_gram: 20
+                    mappings:
+                      properties:
+                        PK0:
+                          type: keyword
+                        SK0:
+                          type: keyword
+                        identifier:
+                          type: wildcard
+                        onlineIssn:
+                          type: wildcard
+                        printIssn:
+                          type: wildcard
+                        isbn:
+                          type: wildcard
+                        uri:
+                          type: wildcard
+                        type:
+                          type: wildcard
+                        ceased:
+                          type: integer
+                        title:
+                          type: text
+                          analyzer: title_analyzer
+                          search_analyzer: title_search_analyzer
+                          fields:
+                            keyword:
+                              type: keyword
+                        levelHistory:
+                          type: nested
+                          properties:
+                            level:
+                              type: keyword
+                            year:
+                              type: integer
                   aws:
                     sts_role_arn: "${PipelineRoleArn}"
                     region: "${AWS::Region}"
