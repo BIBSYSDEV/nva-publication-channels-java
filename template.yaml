@@ -142,6 +142,10 @@ Resources:
           KeyType: HASH
         - AttributeName: SK0
           KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 
   ReadSecretsPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -480,4 +484,232 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
+
+  # --- OpenSearch Serverless + DynamoDB zero-ETL integration ---
+
+  OpenSearchIngestionExportBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "osis-export-ch-reg-${AWS::AccountId}"
+
+  ChannelRegisterEncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: ch-reg-encryption
+      Type: encryption
+      Policy: >-
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/channel-register"]}],"AWSOwnedKey":true}
+
+  ChannelRegisterNetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: ch-reg-network
+      Type: network
+      Policy: >-
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/channel-register"]},{"ResourceType":"dashboard","Resource":["collection/channel-register"]}],"AllowFromPublic":true}]
+
+  ChannelRegisterCollection:
+    Type: AWS::OpenSearchServerless::Collection
+    DependsOn: ChannelRegisterEncryptionPolicy
+    Properties:
+      Name: channel-register
+      Type: SEARCH
+      Description: OpenSearch Serverless collection for channel register cache
+
+  OpenSearchIngestionPipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "OsisPipelineRole-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: osis-pipelines.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDbAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:ExportTableToPointInTime
+                Resource: !GetAtt ChannelRegisterCacheTable.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeExport
+                Resource: !Sub "${ChannelRegisterCacheTable.Arn}/export/*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                Resource: !Sub "${ChannelRegisterCacheTable.Arn}/stream/*"
+        - PolicyName: S3ExportAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:AbortMultipartUpload
+                  - s3:PutObjectAcl
+                Resource: !Sub "arn:aws:s3:::${OpenSearchIngestionExportBucket}/*"
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource: !Sub "arn:aws:s3:::${OpenSearchIngestionExportBucket}"
+        - PolicyName: OpenSearchServerlessAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - aoss:BatchGetCollection
+                Resource: !GetAtt ChannelRegisterCollection.Arn
+              - Effect: Allow
+                Action:
+                  - aoss:GetSecurityPolicy
+                  - aoss:CreateSecurityPolicy
+                  - aoss:UpdateSecurityPolicy
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:ResourceAccount: !Ref AWS::AccountId
+
+  ChannelRegisterDataAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: ch-reg-data-access
+      Type: data
+      Policy: !Sub
+        - >-
+          [{"Rules":[{"ResourceType":"index","Resource":["index/channel-register/*"],"Permission":["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex","aoss:DescribeIndex","aoss:WriteDocument","aoss:ReadDocument"]},{"ResourceType":"collection","Resource":["collection/channel-register"],"Permission":["aoss:CreateCollectionItems","aoss:DescribeCollectionItems","aoss:UpdateCollectionItems"]}],"Principal":["${PipelineRoleArn}","arn:aws:iam::${AWS::AccountId}:root"]}]
+        - PipelineRoleArn: !GetAtt OpenSearchIngestionPipelineRole.Arn
+
+  OpenSearchIngestionPipelineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/vendedlogs/OpenSearchIntegration/channel-register-pipeline
+      RetentionInDays: 30
+
+  OpenSearchIngestionPipeline:
+    Type: AWS::OSIS::Pipeline
+    DependsOn:
+      - ChannelRegisterDataAccessPolicy
+      - ChannelRegisterNetworkPolicy
+    Properties:
+      PipelineName: ch-reg-pipeline
+      MinUnits: 1
+      MaxUnits: 4
+      LogPublishingOptions:
+        CloudWatchLogDestination:
+          LogGroup: !Ref OpenSearchIngestionPipelineLogGroup
+        IsLoggingEnabled: true
+      PipelineConfigurationBody: !Sub
+        - |
+          version: "2"
+          dynamodb-pipeline:
+            source:
+              dynamodb:
+                acknowledgments: true
+                tables:
+                  - table_arn: "${TableArn}"
+                    stream:
+                      start_position: "LATEST"
+                    export:
+                      s3_bucket: "${ExportBucket}"
+                      s3_region: "${AWS::Region}"
+                      s3_prefix: "channel-register-export/"
+                aws:
+                  sts_role_arn: "${PipelineRoleArn}"
+                  region: "${AWS::Region}"
+            sink:
+              - opensearch:
+                  hosts:
+                    - "${CollectionEndpoint}"
+                  serverless: true
+                  index: "channel-register"
+                  index_type: custom
+                  document_id: '${!getMetadata("primary_key")}'
+                  action: '${!getMetadata("opensearch_action")}'
+                  document_version: '${!getMetadata("document_version")}'
+                  document_version_type: "external"
+                  index_template:
+                    settings:
+                      analysis:
+                        analyzer:
+                          title_analyzer:
+                            type: custom
+                            tokenizer: standard
+                            filter:
+                              - lowercase
+                              - norwegian_stop
+                              - norwegian_stemmer
+                              - edge_ngram_filter
+                          title_search_analyzer:
+                            type: custom
+                            tokenizer: standard
+                            filter:
+                              - lowercase
+                              - norwegian_stop
+                              - norwegian_stemmer
+                        filter:
+                          norwegian_stop:
+                            type: stop
+                            stopwords: _norwegian_
+                          norwegian_stemmer:
+                            type: stemmer
+                            language: norwegian
+                          edge_ngram_filter:
+                            type: edge_ngram
+                            min_gram: 2
+                            max_gram: 20
+                    mappings:
+                      properties:
+                        PK0:
+                          type: keyword
+                        SK0:
+                          type: keyword
+                        identifier:
+                          type: wildcard
+                        onlineIssn:
+                          type: wildcard
+                        printIssn:
+                          type: wildcard
+                        isbn:
+                          type: wildcard
+                        uri:
+                          type: wildcard
+                        type:
+                          type: wildcard
+                        ceased:
+                          type: integer
+                        title:
+                          type: text
+                          analyzer: title_analyzer
+                          search_analyzer: title_search_analyzer
+                          fields:
+                            keyword:
+                              type: keyword
+                        levelHistory:
+                          type: nested
+                          properties:
+                            level:
+                              type: keyword
+                            year:
+                              type: integer
+                  aws:
+                    sts_role_arn: "${PipelineRoleArn}"
+                    region: "${AWS::Region}"
+        - TableArn: !GetAtt ChannelRegisterCacheTable.Arn
+          ExportBucket: !Ref OpenSearchIngestionExportBucket
+          PipelineRoleArn: !GetAtt OpenSearchIngestionPipelineRole.Arn
+          CollectionEndpoint: !GetAtt ChannelRegisterCollection.CollectionEndpoint
 
