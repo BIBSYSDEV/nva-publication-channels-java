@@ -572,7 +572,16 @@ Resources:
               - Effect: Allow
                 Action:
                   - aoss:BatchGetCollection
+                Resource: !GetAtt ChannelRegisterCollection.Arn
+              - Effect: Allow
+                Action:
+                  - aoss:GetSecurityPolicy
+                  - aoss:CreateSecurityPolicy
+                  - aoss:UpdateSecurityPolicy
                 Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:ResourceAccount: !Ref AWS::AccountId
 
   ChannelRegisterDataAccessPolicy:
     Type: AWS::OpenSearchServerless::AccessPolicy
@@ -581,7 +590,7 @@ Resources:
       Type: data
       Policy: !Sub
         - >-
-          [{"Rules":[{"ResourceType":"index","Resource":["index/channel-register/*"],"Permission":["aoss:CreateIndex","aoss:UpdateIndex","aoss:DescribeIndex","aoss:WriteDocument","aoss:ReadDocument"]},{"ResourceType":"collection","Resource":["collection/channel-register"],"Permission":["aoss:CreateCollectionItems","aoss:DescribeCollectionItems","aoss:UpdateCollectionItems"]}],"Principal":["${PipelineRoleArn}","arn:aws:iam::${AWS::AccountId}:root"]}]
+          [{"Rules":[{"ResourceType":"index","Resource":["index/channel-register/*"],"Permission":["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex","aoss:DescribeIndex","aoss:WriteDocument","aoss:ReadDocument"]},{"ResourceType":"collection","Resource":["collection/channel-register"],"Permission":["aoss:CreateCollectionItems","aoss:DescribeCollectionItems","aoss:UpdateCollectionItems"]}],"Principal":["${PipelineRoleArn}","arn:aws:iam::${AWS::AccountId}:root"]}]
         - PipelineRoleArn: !GetAtt OpenSearchIngestionPipelineRole.Arn
 
   OpenSearchIngestionPipelineLogGroup:
