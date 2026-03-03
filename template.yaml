@@ -55,6 +55,10 @@ Parameters:
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/NVA/Monitoring/SlackSnsArn'
+  CacheTtlInSeconds:
+    Type: Number
+    Default: 3600
+    Description: TTL in seconds for API Gateway cache (max 3600)
   ChannelRegisterCacheBucketName:
     Type: 'String'
     Default: "channel-register-cache"
@@ -89,27 +93,27 @@ Resources:
       MethodSettings:
         - HttpMethod: 'GET'
           ResourcePath: '/~1{type}~1{identifier}~1{year}'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1{type}~1{identifier}'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1journal'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1series'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1publisher'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
         - HttpMethod: 'GET'
           ResourcePath: '/~1serial-publication'
-          CacheTtlInSeconds: 300
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
           CachingEnabled: true
       DefinitionBody:
         'Fn::Transform':
