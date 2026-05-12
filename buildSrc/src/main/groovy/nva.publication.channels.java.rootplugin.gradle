@@ -2,7 +2,6 @@ plugins {
     id 'jacoco-report-aggregation'
     id 'base'
     id 'java-library'
-    id 'nva.publication.channels.java.gradlelint'
 }
 
 allprojects {
