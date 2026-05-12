@@ -1,8 +1,36 @@
 plugins {
     id 'nva.publication.channels.java.rootplugin'
+    id("com.autonomousapps.dependency-analysis") version "3.11.0"
 }
 
 dependencies {
+    implementation libs.aws.appconfigdata
+    implementation libs.aws.lambda.java.core
+    implementation libs.aws.sdk2.dynamodb.enhanced
+    implementation libs.aws.sdk2.s3
+    implementation libs.commons.validator
+    implementation libs.guava
+    implementation libs.jackson.annotations
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.nva.commons.apigateway
+    implementation libs.nva.commons.core
+    implementation libs.nva.commons.pagination
+    implementation libs.nva.commons.secrets
+    implementation libs.nva.json
+    implementation libs.open.csv
+    implementation libs.slf4j.api
+    testImplementation libs.aws.appconfig
+    testImplementation libs.dynamodDbLocal
+    testImplementation libs.hamcrest
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
+    testImplementation libs.mockito.core
+    testImplementation libs.nva.logutils
+    testImplementation libs.nva.s3
+    testImplementation libs.nva.testutils
+    testImplementation libs.wiremock
+    testImplementation libs.zalando
 }
 
 test {
