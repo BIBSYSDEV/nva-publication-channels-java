@@ -19,19 +19,19 @@ In these cases, follow these steps:
    _channel-register-cache-{stackName}_
 3. Trigger `LoadCacheButtonHandler` lambda function
 4. Configure the `ApplicationConfigurationProfile`:
-    - Navigate to _AWS Systems Manager_ → _AppConfig_.
-    - Choose _ApplicationConfig_ → _ApplicationConfigurationProfile_.
-    - If there is no existing version with the value you want to deploy → navigate to Systems
-      Manager, Parameter Store and update the SSM parameter
-      named `ApplicationConfigurationParameter`.
-      Update `publicationChannelCacheEnabled` value to `true` or `false`.
-    - Return to _ApplicationConfig_ → _ApplicationConfigurationProfile_ and choose version of Config
-      you
-      want to deploy.
-    - During deployment, select the environment you want to use. Currently, there is a single
-      environment named _Live_. Choose the deployment strategy _AllAtOnce_.
-    - Press _Start deployment_.
-    - Please note that deployment may take some time.
+   - Navigate to _AWS Systems Manager_ → _AppConfig_.
+   - Choose _ApplicationConfig_ → _ApplicationConfigurationProfile_.
+   - If there is no existing version with the value you want to deploy → navigate to Systems
+     Manager, Parameter Store and update the SSM parameter
+     named `ApplicationConfigurationParameter`.
+     Update `publicationChannelCacheEnabled` value to `true` or `false`.
+   - Return to _ApplicationConfig_ → _ApplicationConfigurationProfile_ and choose version of Config
+     you
+     want to deploy.
+   - During deployment, select the environment you want to use. Currently, there is a single
+     environment named _Live_. Choose the deployment strategy _AllAtOnce_.
+   - Press _Start deployment_.
+   - Please note that deployment may take some time.
 
 ```json
 {
@@ -40,4 +40,4 @@ In these cases, follow these steps:
 ```
 
 _!Important_: Caching is only supported for fetching publication channels by `id` and `year`, not
-search. 
+search.

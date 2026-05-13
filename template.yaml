@@ -1,8 +1,7 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   This template creates lambdas and apis for publication channels
-
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -39,10 +38,10 @@ Parameters:
     Description: Base path mapping in CustomDomain
     Default: publication-channels-v2
   CognitoAuthorizationUri:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/NVA/CognitoUri'
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/NVA/CognitoUri"
   CognitoAuthorizerArn:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: Reference to Cognito UserPool for the stage
     Default: CognitoAuthorizerArn
   CognitoAuthorizerUrls:
@@ -51,33 +50,32 @@ Parameters:
   AllowedOrigins:
     Type: String
     Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
-    Default: '*'
+    Default: "*"
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: '/NVA/Monitoring/SlackSnsArn'
+    Default: "/NVA/Monitoring/SlackSnsArn"
   ChannelRegisterCacheBucketName:
-    Type: 'String'
+    Type: "String"
     Default: "channel-register-cache"
     Description: Name of bucket for channel register cache csv
   ApplicationConfigName:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: The name of the AppConfig Application
-    Default: '/NVA/AppConfig/ApplicationConfigName'
+    Default: "/NVA/AppConfig/ApplicationConfigName"
   ConfigurationProfileName:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: The name of the AppConfig Configuration Profile
-    Default: '/NVA/AppConfig/ApplicationConfigProfileName'
+    Default: "/NVA/AppConfig/ApplicationConfigProfileName"
   EnvironmentName:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: The name of the AppConfig Environment
-    Default: '/NVA/AppConfig/ApplicationEnvironmentName'
+    Default: "/NVA/AppConfig/ApplicationEnvironmentName"
   ApplicationIdName:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: The name of the AppConfig Id
-    Default: '/NVA/AppConfig/ApplicationConfigId'
+    Default: "/NVA/AppConfig/ApplicationConfigId"
 
 Resources:
-
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
 
@@ -87,32 +85,32 @@ Resources:
       CacheClusterEnabled: true
       CacheClusterSize: "0.5"
       MethodSettings:
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1{type}~1{identifier}~1{year}'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1{type}~1{identifier}~1{year}"
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1{type}~1{identifier}'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1{type}~1{identifier}"
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1journal'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1journal"
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1series'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1series"
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1publisher'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1publisher"
           CacheTtlInSeconds: 300
           CachingEnabled: true
-        - HttpMethod: 'GET'
-          ResourcePath: '/~1serial-publication'
+        - HttpMethod: "GET"
+          ResourcePath: "/~1serial-publication"
           CacheTtlInSeconds: 300
           CachingEnabled: true
       DefinitionBody:
-        'Fn::Transform':
+        "Fn::Transform":
           Name: AWS::Include
           Parameters:
             Location: ./docs/openapi.yaml
@@ -126,11 +124,11 @@ Resources:
         Type: REGIONAL
 
   ChannelRegisterCacheTable:
-    Type: 'AWS::DynamoDB::Table'
+    Type: "AWS::DynamoDB::Table"
     UpdateReplacePolicy: Retain
     DeletionPolicy: Delete
     Properties:
-      TableName: !Sub 'channel-register-cache-${AWS::StackName}'
+      TableName: !Sub "channel-register-cache-${AWS::StackName}"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK0
@@ -153,13 +151,13 @@ Resources:
             Action:
               - secretsmanager:GetSecretValue
             Resource:
-              - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DataportenChannelRegistryClientCredentials-*'
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:DataportenChannelRegistryClientCredentials-*"
 
   S3GetObjectCacheBucketPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -171,7 +169,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -183,7 +181,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -195,7 +193,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -249,7 +247,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt FetchPublicationChannelByIdentifierAndYearFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   SearchJournalByQueryFunction:
     Type: AWS::Serverless::Function
@@ -268,7 +266,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   PublicationChannelsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -298,7 +296,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt CreateJournalFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   CreateSerialPublicationFunction:
     Type: AWS::Serverless::Function
@@ -320,7 +318,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt CreateSerialPublicationFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   SearchSerialPublicationByQueryFunction:
     Type: AWS::Serverless::Function
@@ -339,7 +337,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt SearchSerialPublicationByQueryFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   SearchPublisherByQueryFunction:
     Type: AWS::Serverless::Function
@@ -358,7 +356,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt SearchPublisherByQueryFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   CreatePublisherFunction:
     Type: AWS::Serverless::Function
@@ -380,7 +378,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt CreatePublisherFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   SearchSeriesByQueryFunction:
     Type: AWS::Serverless::Function
@@ -399,7 +397,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt SearchSeriesByQueryFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   CreateSeriesFunction:
     Type: AWS::Serverless::Function
@@ -421,7 +419,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt CreateSeriesFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   UpdatePublicationChannelFunction:
     Type: AWS::Serverless::Function
@@ -442,7 +440,7 @@ Resources:
     Properties:
       FunctionName: !GetAtt UpdatePublicationChannelFunction.Arn
       Action: lambda:InvokeFunction
-      Principal: 'apigateway.amazonaws.com'
+      Principal: "apigateway.amazonaws.com"
 
   DataportenChannelRegistryHealthCheck:
     Type: AWS::Route53::HealthCheck
@@ -451,7 +449,7 @@ Resources:
         Port: 443
         Type: HTTPS
         ResourcePath: /health
-        FullyQualifiedDomainName: !Select [ 2, !Split [ "/", !Ref DataportenChannelRegistryBaseUrl ] ] # Extracts the domain name from the URL
+        FullyQualifiedDomainName: !Select [2, !Split ["/", !Ref DataportenChannelRegistryBaseUrl]] # Extracts the domain name from the URL
         RequestInterval: 30
         FailureThreshold: 2
         EnableSNI: true
@@ -480,4 +478,3 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${ChannelRegisterCacheBucketName}-${AWS::AccountId}"
-

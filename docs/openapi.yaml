@@ -30,13 +30,13 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.path.type: 'method.request.path.type'
-          integration.request.path.identifier: 'method.request.path.identifier'
-          integration.request.path.year: 'method.request.path.year'
+          integration.request.path.type: "method.request.path.type"
+          integration.request.path.identifier: "method.request.path.identifier"
+          integration.request.path.year: "method.request.path.year"
         cacheKeyParameters:
-          - 'method.request.path.type'
-          - 'method.request.path.identifier'
-          - 'method.request.path.year'
+          - "method.request.path.type"
+          - "method.request.path.identifier"
+          - "method.request.path.year"
         type: "AWS_PROXY"
       tags:
         - PublicationChannel
@@ -50,7 +50,7 @@ paths:
           required: true
           schema:
             type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          example: "151f411d-68cd-4c7a-9cbb-daf00e0326ce"
         - name: year
           in: path
           description: year for publication channel data
@@ -71,34 +71,34 @@ paths:
               - publisher
               - serial-publication
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
+                $ref: "#/components/schemas/SerialPublication"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/JournalExample'
+                  $ref: "#/components/examples/JournalExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
+                $ref: "#/components/schemas/SerialPublication"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/JournalExample'
-        '301':
+                  $ref: "#/components/examples/JournalExample"
+        "301":
           description: Moved permanently
           headers:
             Location:
               schema:
                 type: string
               description: A URI to the new resource
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '502':
-          $ref: '#/components/responses/502'
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "502":
+          $ref: "#/components/responses/502"
   /{type}/{identifier}:
     get:
       x-amazon-apigateway-integration:
@@ -106,11 +106,11 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.path.type: 'method.request.path.type'
-          integration.request.path.identifier: 'method.request.path.identifier'
+          integration.request.path.type: "method.request.path.type"
+          integration.request.path.identifier: "method.request.path.identifier"
         cacheKeyParameters:
-          - 'method.request.path.type'
-          - 'method.request.path.identifier'
+          - "method.request.path.type"
+          - "method.request.path.identifier"
         type: "AWS_PROXY"
       tags:
         - PublicationChannel
@@ -124,7 +124,7 @@ paths:
           required: true
           schema:
             type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          example: "151f411d-68cd-4c7a-9cbb-daf00e0326ce"
         - name: type
           in: path
           description: type of channel to return
@@ -137,34 +137,34 @@ paths:
               - publisher
               - serial-publication
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
+                $ref: "#/components/schemas/SerialPublication"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/JournalExample'
+                  $ref: "#/components/examples/JournalExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
+                $ref: "#/components/schemas/SerialPublication"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/JournalExample'
-        '301':
+                  $ref: "#/components/examples/JournalExample"
+        "301":
           description: Moved permanently
           headers:
             Location:
               schema:
                 type: string
               description: A URI to the new resource
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '502':
-          $ref: '#/components/responses/502'
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "502":
+          $ref: "#/components/responses/502"
   /journal:
     get:
       x-amazon-apigateway-integration:
@@ -172,15 +172,15 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.querystring.query: 'method.request.querystring.query'
-          integration.request.querystring.year: 'method.request.querystring.year'
-          integration.request.querystring.offset: 'method.request.querystring.offset'
-          integration.request.querystring.size: 'method.request.querystring.size'
+          integration.request.querystring.query: "method.request.querystring.query"
+          integration.request.querystring.year: "method.request.querystring.year"
+          integration.request.querystring.offset: "method.request.querystring.offset"
+          integration.request.querystring.size: "method.request.querystring.size"
         cacheKeyParameters:
-          - 'method.request.querystring.query'
-          - 'method.request.querystring.year'
-          - 'method.request.querystring.offset'
-          - 'method.request.querystring.size'
+          - "method.request.querystring.query"
+          - "method.request.querystring.year"
+          - "method.request.querystring.offset"
+          - "method.request.querystring.size"
         type: "AWS_PROXY"
       tags:
         - Journal
@@ -213,29 +213,29 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedJournalsExample'
+                  $ref: "#/components/examples/PaginatedJournalsExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedJournalsExample'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '422':
-          $ref: '#/components/responses/422'
-        '502':
-          $ref: '#/components/responses/502'
+                  $ref: "#/components/examples/PaginatedJournalsExample"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "422":
+          $ref: "#/components/responses/422"
+        "502":
+          $ref: "#/components/responses/502"
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -249,14 +249,14 @@ paths:
       operationId: CreateJournal
       requestBody:
         content:
-          'application/ld+json':
+          "application/ld+json":
             schema:
-              $ref: '#/components/schemas/CreateJournal'
+              $ref: "#/components/schemas/CreateJournal"
             examples:
               objectExample:
-                $ref: '#/components/examples/CreateJournalExample'
+                $ref: "#/components/examples/CreateJournalExample"
       responses:
-        '201':
+        "201":
           description: successful operation
           headers:
             Location:
@@ -266,11 +266,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
-        '400':
-          $ref: '#/components/responses/400'
-        '502':
-          $ref: '#/components/responses/502'
+                $ref: "#/components/schemas/SerialPublication"
+        "400":
+          $ref: "#/components/responses/400"
+        "502":
+          $ref: "#/components/responses/502"
   /publisher:
     get:
       x-amazon-apigateway-integration:
@@ -278,15 +278,15 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.querystring.query: 'method.request.querystring.query'
-          integration.request.querystring.year: 'method.request.querystring.year'
-          integration.request.querystring.offset: 'method.request.querystring.offset'
-          integration.request.querystring.size: 'method.request.querystring.size'
+          integration.request.querystring.query: "method.request.querystring.query"
+          integration.request.querystring.year: "method.request.querystring.year"
+          integration.request.querystring.offset: "method.request.querystring.offset"
+          integration.request.querystring.size: "method.request.querystring.size"
         cacheKeyParameters:
-          - 'method.request.querystring.query'
-          - 'method.request.querystring.year'
-          - 'method.request.querystring.offset'
-          - 'method.request.querystring.size'
+          - "method.request.querystring.query"
+          - "method.request.querystring.year"
+          - "method.request.querystring.offset"
+          - "method.request.querystring.size"
         type: "AWS_PROXY"
       tags:
         - Publisher
@@ -319,29 +319,29 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPublishers'
+                $ref: "#/components/schemas/PaginatedPublishers"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedPublishersExample'
+                  $ref: "#/components/examples/PaginatedPublishersExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedPublishers'
+                $ref: "#/components/schemas/PaginatedPublishers"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedPublishersExample'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '422':
-          $ref: '#/components/responses/422'
-        '502':
-          $ref: '#/components/responses/502'
+                  $ref: "#/components/examples/PaginatedPublishersExample"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "422":
+          $ref: "#/components/responses/422"
+        "502":
+          $ref: "#/components/responses/502"
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -355,14 +355,14 @@ paths:
       operationId: CreatePublisher
       requestBody:
         content:
-          'application/ld+json':
+          "application/ld+json":
             schema:
-              $ref: '#/components/schemas/CreatePublisher'
+              $ref: "#/components/schemas/CreatePublisher"
             examples:
               objectExample:
-                $ref: '#/components/examples/CreatePublisherExample'
+                $ref: "#/components/examples/CreatePublisherExample"
       responses:
-        '201':
+        "201":
           headers:
             Location:
               schema:
@@ -372,11 +372,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublisherResponse'
-        '400':
-          $ref: '#/components/responses/400'
-        '502':
-          $ref: '#/components/responses/502'
+                $ref: "#/components/schemas/PublisherResponse"
+        "400":
+          $ref: "#/components/responses/400"
+        "502":
+          $ref: "#/components/responses/502"
   /publisher/{identifier}:
     put:
       x-amazon-apigateway-integration:
@@ -385,13 +385,13 @@ paths:
         httpMethod: POST
         type: "AWS_PROXY"
       security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'https://api.nva.unit.no/scopes/frontend' ]
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       requestBody:
         required: true
         content:
-          'application/json':
+          "application/json":
             schema:
-              $ref: '#/components/schemas/UpdatePublisherRequest'
+              $ref: "#/components/schemas/UpdatePublisherRequest"
       tags:
         - Publisher
       summary: Update publisher handler
@@ -404,20 +404,20 @@ paths:
           required: true
           schema:
             type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          example: "151f411d-68cd-4c7a-9cbb-daf00e0326ce"
       responses:
-        '202':
+        "202":
           description: Accepted
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '502':
-          $ref: '#/components/responses/502'
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "502":
+          $ref: "#/components/responses/502"
   /series:
     get:
       x-amazon-apigateway-integration:
@@ -425,15 +425,15 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.querystring.query: 'method.request.querystring.query'
-          integration.request.querystring.year: 'method.request.querystring.year'
-          integration.request.querystring.offset: 'method.request.querystring.offset'
-          integration.request.querystring.size: 'method.request.querystring.size'
+          integration.request.querystring.query: "method.request.querystring.query"
+          integration.request.querystring.year: "method.request.querystring.year"
+          integration.request.querystring.offset: "method.request.querystring.offset"
+          integration.request.querystring.size: "method.request.querystring.size"
         cacheKeyParameters:
-          - 'method.request.querystring.query'
-          - 'method.request.querystring.year'
-          - 'method.request.querystring.offset'
-          - 'method.request.querystring.size'
+          - "method.request.querystring.query"
+          - "method.request.querystring.year"
+          - "method.request.querystring.offset"
+          - "method.request.querystring.size"
         type: "AWS_PROXY"
       tags:
         - Series
@@ -466,29 +466,29 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedSeriesExample'
+                  $ref: "#/components/examples/PaginatedSeriesExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 objectExample:
-                  $ref: '#/components/examples/PaginatedSeriesExample'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '422':
-          $ref: '#/components/responses/422'
-        '502':
-          $ref: '#/components/responses/502'
+                  $ref: "#/components/examples/PaginatedSeriesExample"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "422":
+          $ref: "#/components/responses/422"
+        "502":
+          $ref: "#/components/responses/502"
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -502,14 +502,14 @@ paths:
       operationId: CreateSeries
       requestBody:
         content:
-          'application/ld+json':
+          "application/ld+json":
             schema:
-              $ref: '#/components/schemas/CreateSeries'
+              $ref: "#/components/schemas/CreateSeries"
             examples:
               objectExample:
-                $ref: '#/components/examples/CreateSeriesExample'
+                $ref: "#/components/examples/CreateSeriesExample"
       responses:
-        '201':
+        "201":
           description: successful operation
           headers:
             Location:
@@ -519,11 +519,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
-        '400':
-          $ref: '#/components/responses/400'
-        '502':
-          $ref: '#/components/responses/502'
+                $ref: "#/components/schemas/SerialPublication"
+        "400":
+          $ref: "#/components/responses/400"
+        "502":
+          $ref: "#/components/responses/502"
   /serial-publication:
     get:
       x-amazon-apigateway-integration:
@@ -531,15 +531,15 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSerialPublicationByQueryFunction.Arn}/invocations
         httpMethod: POST
         requestParameters:
-          integration.request.querystring.query: 'method.request.querystring.query'
-          integration.request.querystring.year: 'method.request.querystring.year'
-          integration.request.querystring.offset: 'method.request.querystring.offset'
-          integration.request.querystring.size: 'method.request.querystring.size'
+          integration.request.querystring.query: "method.request.querystring.query"
+          integration.request.querystring.year: "method.request.querystring.year"
+          integration.request.querystring.offset: "method.request.querystring.offset"
+          integration.request.querystring.size: "method.request.querystring.size"
         cacheKeyParameters:
-          - 'method.request.querystring.query'
-          - 'method.request.querystring.year'
-          - 'method.request.querystring.offset'
-          - 'method.request.querystring.size'
+          - "method.request.querystring.query"
+          - "method.request.querystring.year"
+          - "method.request.querystring.offset"
+          - "method.request.querystring.size"
         type: "AWS_PROXY"
       tags:
         - SerialPublication
@@ -572,33 +572,33 @@ paths:
             default: 10
           description: The size of each page of the search for use in pagination. Default is 10.
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 journal:
-                  $ref: '#/components/examples/PaginatedJournalsExample'
+                  $ref: "#/components/examples/PaginatedJournalsExample"
                 series:
-                  $ref: '#/components/examples/PaginatedSeriesExample'
+                  $ref: "#/components/examples/PaginatedSeriesExample"
             application/ld+json:
               schema:
-                $ref: '#/components/schemas/PaginatedSerialPublications'
+                $ref: "#/components/schemas/PaginatedSerialPublications"
               examples:
                 journal:
-                  $ref: '#/components/examples/PaginatedJournalsExample'
+                  $ref: "#/components/examples/PaginatedJournalsExample"
                 series:
-                  $ref: '#/components/examples/PaginatedSeriesExample'
-        '400':
-          $ref: '#/components/responses/400'
-        '404':
-          $ref: '#/components/responses/404'
-        '422':
-          $ref: '#/components/responses/422'
-        '502':
-          $ref: '#/components/responses/502'
+                  $ref: "#/components/examples/PaginatedSeriesExample"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "422":
+          $ref: "#/components/responses/422"
+        "502":
+          $ref: "#/components/responses/502"
     post:
       x-amazon-apigateway-integration:
         uri:
@@ -612,14 +612,14 @@ paths:
       operationId: CreateSerialPublication
       requestBody:
         content:
-          'application/ld+json':
+          "application/ld+json":
             schema:
-              $ref: '#/components/schemas/CreateSerialPublication'
+              $ref: "#/components/schemas/CreateSerialPublication"
             examples:
               objectExample:
-                $ref: '#/components/examples/CreateSerialPublicationExample'
+                $ref: "#/components/examples/CreateSerialPublicationExample"
       responses:
-        '201':
+        "201":
           description: successful operation
           headers:
             Location:
@@ -629,11 +629,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SerialPublication'
-        '400':
-          $ref: '#/components/responses/400'
-        '502':
-          $ref: '#/components/responses/502'
+                $ref: "#/components/schemas/SerialPublication"
+        "400":
+          $ref: "#/components/responses/400"
+        "502":
+          $ref: "#/components/responses/502"
   /serial-publication/{identifier}:
     put:
       x-amazon-apigateway-integration:
@@ -642,13 +642,13 @@ paths:
         httpMethod: POST
         type: "AWS_PROXY"
       security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'https://api.nva.unit.no/scopes/frontend' ]
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       requestBody:
         required: true
         content:
-          'application/json':
+          "application/json":
             schema:
-              $ref: '#/components/schemas/UpdateSerialPublicationRequest'
+              $ref: "#/components/schemas/UpdateSerialPublicationRequest"
       tags:
         - SerialPublication
       summary: Update serial publication
@@ -661,72 +661,72 @@ paths:
           required: true
           schema:
             type: string
-          example: '151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          example: "151f411d-68cd-4c7a-9cbb-daf00e0326ce"
       responses:
-        '202':
+        "202":
           description: Accepted
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '502':
-          $ref: '#/components/responses/502'
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "502":
+          $ref: "#/components/responses/502"
 
 components:
   responses:
-    '400':
+    "400":
       description: Bad Request
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '401':
+            $ref: "#/components/schemas/Problem"
+    "401":
       description: Unauthorized
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '403':
+            $ref: "#/components/schemas/Problem"
+    "403":
       description: Forbidden
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '404':
+            $ref: "#/components/schemas/Problem"
+    "404":
       description: Not found
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '422':
+            $ref: "#/components/schemas/Problem"
+    "422":
       description: Unprocessable Content
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '500':
+            $ref: "#/components/schemas/Problem"
+    "500":
       description: Internal Server Error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-    '502':
+            $ref: "#/components/schemas/Problem"
+    "502":
       description: Bad Gateway
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
 
   schemas:
     PaginatedSerialPublications:
       type: object
       properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
+        "@context":
+          $ref: "#/components/schemas/Context"
         id:
           type: string
           description: The url to the journal/series search result
@@ -743,7 +743,7 @@ components:
         hits:
           type: array
           items:
-            $ref: '#/components/schemas/SerialPublication'
+            $ref: "#/components/schemas/SerialPublication"
     CreateJournal:
       type: object
       properties:
@@ -764,12 +764,12 @@ components:
           type: string
           format: uri
           nullable: true
-      required: [ 'name' ]
+      required: ["name"]
     PaginatedPublishers:
       type: object
       properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
+        "@context":
+          $ref: "#/components/schemas/Context"
         id:
           type: string
           description: The url to the publisher search result
@@ -786,25 +786,25 @@ components:
         hits:
           type: array
           items:
-            $ref: '#/components/schemas/PublisherResponse'
+            $ref: "#/components/schemas/PublisherResponse"
     PublisherResponse:
       type: object
       properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
+        "@context":
+          $ref: "#/components/schemas/Context"
         type:
           type: string
-          pattern: 'Publisher'
+          pattern: "Publisher"
           description: The type of the returned object, always Publisher
         name:
-          $ref: '#/components/schemas/Name'
+          $ref: "#/components/schemas/Name"
         isbnPrefix:
           type: string
           nullable: true
           description: The isbnPrefix of the publsher
           pattern: ^(?:97(8|9)-)?[0-9]{1,5}-[0-9]{1,7}$
         scientificValue:
-          $ref: '#/components/schemas/ScientificValue'
+          $ref: "#/components/schemas/ScientificValue"
         year:
           type: string
           nullable: true
@@ -863,25 +863,25 @@ components:
     SerialPublication:
       type: object
       properties:
-        '@context':
-          $ref: '#/components/schemas/Context'
+        "@context":
+          $ref: "#/components/schemas/Context"
         type:
           type: string
-          enum: [ 'Series', 'Journal' ]
+          enum: ["Series", "Journal"]
           description: The type of the returned object, either Series or Journal
         name:
-          $ref: '#/components/schemas/Name'
+          $ref: "#/components/schemas/Name"
         onlineIssn:
           type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
+          pattern: "^[0-9]{4}-[0-9]{4}$"
           description: The ISSN of the online edition of the series/journal
         printIssn:
           type: string
-          pattern: '^[0-9]{4}-[0-9]{4}$'
+          pattern: "^[0-9]{4}-[0-9]{4}$"
           nullable: true
           description: The ISSN of the print edition of the series/journal
         scientificValue:
-          $ref: '#/components/schemas/ScientificValue'
+          $ref: "#/components/schemas/ScientificValue"
         year:
           type: string
           nullable: true
@@ -896,7 +896,7 @@ components:
           description: Name of the series
         type:
           type: string
-          enum: [ 'Series', 'Journal' ]
+          enum: ["Series", "Journal"]
           description: The type of serial publication, either Series or Journal
         printIssn:
           type: string
@@ -913,7 +913,7 @@ components:
           format: uri
           nullable: true
           description: The url to the series
-      required: [ 'name', 'type' ]
+      required: ["name", "type"]
     CreateSeries:
       type: object
       properties:
@@ -935,7 +935,7 @@ components:
           format: uri
           nullable: true
           description: The url to the series
-      required: [ 'name' ]
+      required: ["name"]
     Context:
       type: string
       pattern: 'https:\/\/.*$'
@@ -945,7 +945,7 @@ components:
       description: The name of the publication channel
     ScientificValue:
       type: string
-      enum: [ 'Unassigned', 'LevelZero', 'LevelOne', 'LevelTwo' ]
+      enum: ["Unassigned", "LevelZero", "LevelOne", "LevelTwo"]
       description: The scientific value of the publication channel. Used in NVI score setting.
     Problem:
       type: object
@@ -977,112 +977,112 @@ components:
   examples:
     PaginatedJournalsExample:
       value:
-        '@context': 'https://example.org/context.json'
-        id: 'https://example.org/journal?year=2023&query=nature&offset=10&size=1'
+        "@context": "https://example.org/context.json"
+        id: "https://example.org/journal?year=2023&query=nature&offset=10&size=1"
         totalHits: 22
-        nextResults: 'https://example.org/journal?year=2023&query=nature&offset=11&size=1'
-        previousResults: 'https://example.org/journal?year=2023&query=nature&offset=9&size=1'
+        nextResults: "https://example.org/journal?year=2023&query=nature&offset=11&size=1"
+        previousResults: "https://example.org/journal?year=2023&query=nature&offset=9&size=1"
         hits:
-          - '@context': 'https://example.org/context.json'
-            id: 'https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-            type: 'Journal'
-            name: 'The journal of eternal fury'
-            onlineIssn: '1234-1234'
-            printIssn: '4321-4321'
-            scientificValue: 'LevelOne'
-            sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          - "@context": "https://example.org/context.json"
+            id: "https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+            type: "Journal"
+            name: "The journal of eternal fury"
+            onlineIssn: "1234-1234"
+            printIssn: "4321-4321"
+            scientificValue: "LevelOne"
+            sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
     JournalExample:
       value:
-        '@context': 'https://example.org/context.json'
-        id: 'https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-        type: 'Journal'
-        name: 'The journal of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
-        scientificValue: 'LevelOne'
-        year: '1900'
-        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        "@context": "https://example.org/context.json"
+        id: "https://example.org/journal/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+        type: "Journal"
+        name: "The journal of eternal fury"
+        onlineIssn: "1234-1234"
+        printIssn: "4321-4321"
+        scientificValue: "LevelOne"
+        year: "1900"
+        sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
       summary: A sample journal
     CreateJournalExample:
       value:
-        name: 'The journal of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
-        homepage: 'https://journal-of-eternal.fury.no'
+        name: "The journal of eternal fury"
+        onlineIssn: "1234-1234"
+        printIssn: "4321-4321"
+        homepage: "https://journal-of-eternal.fury.no"
       summary: A sample create journal
     PaginatedPublishersExample:
       value:
-        '@context': 'https://example.org/context.json'
-        id: 'https://example.org/publisher?year=2023&query=nature&offset=10&size=1'
+        "@context": "https://example.org/context.json"
+        id: "https://example.org/publisher?year=2023&query=nature&offset=10&size=1"
         totalHits: 22
-        nextResults: 'https://example.org/publisher?year=2023&query=nature&offset=11&size=1'
-        previousResults: 'https://example.org/publisher?year=2023&query=nature&offset=9&size=1'
+        nextResults: "https://example.org/publisher?year=2023&query=nature&offset=11&size=1"
+        previousResults: "https://example.org/publisher?year=2023&query=nature&offset=9&size=1"
         hits:
-          - '@context': 'https://example.org/context.json'
-            id: 'https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-            type: 'Publisher'
-            name: 'The publisher of eternal fury'
-            onlineIssn: '1234-1234'
-            printIssn: '4321-4321'
-            scientificValue: 'LevelOne'
-            sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          - "@context": "https://example.org/context.json"
+            id: "https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+            type: "Publisher"
+            name: "The publisher of eternal fury"
+            onlineIssn: "1234-1234"
+            printIssn: "4321-4321"
+            scientificValue: "LevelOne"
+            sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
     CreatePublisherExample:
       value:
-        name: 'The publisher of eternal fury'
-        isbnPrefix: '12345-1234567'
-        homepage: 'https://publisher-of-eternal.fury.no'
+        name: "The publisher of eternal fury"
+        isbnPrefix: "12345-1234567"
+        homepage: "https://publisher-of-eternal.fury.no"
       summary: A sample create publisher
     PublisherResponseExample:
       value:
-        id: 'https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-        type: 'Publisher'
-        name: 'The publisher of eternal fury'
-        isbnPrefix: '12345-1234567'
-        scientificValue: 'LevelOne'
-        year: '1900'
-        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        id: "https://example.org/publisher/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+        type: "Publisher"
+        name: "The publisher of eternal fury"
+        isbnPrefix: "12345-1234567"
+        scientificValue: "LevelOne"
+        year: "1900"
+        sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
       summary: A sample publisher
     PaginatedSeriesExample:
       value:
-        '@context': 'https://example.org/context.json'
-        id: 'https://example.org/series?year=2023&query=nature&offset=10&size=1'
+        "@context": "https://example.org/context.json"
+        id: "https://example.org/series?year=2023&query=nature&offset=10&size=1"
         totalHits: 22
-        nextResults: 'https://example.org/series?year=2023&query=nature&offset=11&size=1'
-        previousResults: 'https://example.org/series?year=2023&query=nature&offset=9&size=1'
+        nextResults: "https://example.org/series?year=2023&query=nature&offset=11&size=1"
+        previousResults: "https://example.org/series?year=2023&query=nature&offset=9&size=1"
         hits:
-          - '@context': 'https://example.org/context.json'
-            id: 'https://example.org/series/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-            type: 'Series'
-            name: 'The series of eternal fury'
-            onlineIssn: '1234-1234'
-            printIssn: '4321-4321'
-            scientificValue: 'LevelOne'
-            sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+          - "@context": "https://example.org/context.json"
+            id: "https://example.org/series/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+            type: "Series"
+            name: "The series of eternal fury"
+            onlineIssn: "1234-1234"
+            printIssn: "4321-4321"
+            scientificValue: "LevelOne"
+            sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
     SeriesExample:
       value:
-        id: 'https://example.org/series/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010'
-        type: 'Series'
-        name: 'The series of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
-        scientificValue: 'LevelOne'
-        year: '1900'
-        sameAs: 'https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce'
+        id: "https://example.org/series/151f411d-68cd-4c7a-9cbb-daf00e0326ce/2010"
+        type: "Series"
+        name: "The series of eternal fury"
+        onlineIssn: "1234-1234"
+        printIssn: "4321-4321"
+        scientificValue: "LevelOne"
+        year: "1900"
+        sameAs: "https://kanalregister.hkdir.no/publiseringskanaler/KanalTidsskriftInfo?pid=151f411d-68cd-4c7a-9cbb-daf00e0326ce"
       summary: A sample series
     CreateSeriesExample:
       value:
-        name: 'The series of eternal fury'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
-        homepage: 'https://series-of-eternal.fury.no'
+        name: "The series of eternal fury"
+        onlineIssn: "1234-1234"
+        printIssn: "4321-4321"
+        homepage: "https://series-of-eternal.fury.no"
       summary: A sample create series
     CreateSerialPublicationExample:
       value:
-        name: 'The series of eternal fury'
-        type: 'Series'
-        onlineIssn: '1234-1234'
-        printIssn: '4321-4321'
-        homepage: 'https://series-of-eternal.fury.no'
+        name: "The series of eternal fury"
+        type: "Series"
+        onlineIssn: "1234-1234"
+        printIssn: "4321-4321"
+        homepage: "https://series-of-eternal.fury.no"
       summary: A sample create series
   securitySchemes:
     CognitoUserPool:
