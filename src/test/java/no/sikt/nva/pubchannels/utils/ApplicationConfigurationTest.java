@@ -50,10 +50,10 @@ class ApplicationConfigurationTest {
 
   private static String configContent() {
     return """
-           {
-               "publicationChannelCacheEnabled": true
-           }
-           """;
+    {
+        "publicationChannelCacheEnabled": true
+    }
+    """;
   }
 
   private static StartConfigurationSessionResponse mockedStartResponse() {
