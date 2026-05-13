@@ -9,7 +9,7 @@ dependencies {
     implementation libs.aws.sdk2.dynamodb.enhanced
     implementation libs.aws.sdk2.s3
     implementation libs.commons.validator
-    implementation libs.guava
+    implementation libs.httpclient5
     implementation libs.jackson.annotations
     implementation libs.jackson.core
     implementation libs.jackson.databind

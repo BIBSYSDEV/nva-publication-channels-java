@@ -3,9 +3,9 @@ package no.sikt.nva.pubchannels.handler.fetch;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static nva.commons.apigateway.MediaType.JSON_UTF_8;
 import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
+import static org.apache.hc.core5.http.HttpHeaders.CACHE_CONTROL;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.common.net.HttpHeaders;
 import java.util.List;
 import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -60,8 +60,7 @@ public class FetchPublicationChannelHandler extends ApiGatewayHandler<Void, Publ
   @Override
   protected PublicationChannelDto processInput(Void input, RequestInfo requestInfo, Context context)
       throws ApiGatewayException {
-    addAdditionalHeaders(
-        () -> Map.of(HttpHeaders.CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
+    addAdditionalHeaders(() -> Map.of(CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
     return publicationChannelService.fetch(RequestObject.fromRequestInfo(requestInfo));
   }
 

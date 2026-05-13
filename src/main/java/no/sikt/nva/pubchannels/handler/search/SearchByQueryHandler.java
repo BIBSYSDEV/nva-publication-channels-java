@@ -7,9 +7,9 @@ import static nva.commons.apigateway.MediaType.JSON_UTF_8;
 import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.paths.UriWrapper.HTTPS;
+import static org.apache.hc.core5.http.HttpHeaders.CACHE_CONTROL;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.common.net.HttpHeaders;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.HashMap;
@@ -89,8 +89,7 @@ public abstract class SearchByQueryHandler<T>
       baseQueryParameters.put(YEAR_QUERY_PARAM, searchParameters.year());
     }
 
-    addAdditionalHeaders(
-        () -> Map.of(HttpHeaders.CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
+    addAdditionalHeaders(() -> Map.of(CACHE_CONTROL, "max-age=" + CACHE_MAX_AGE_SECONDS));
 
     return PaginatedSearchResult.create(
         constructBaseUri(),

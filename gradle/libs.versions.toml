@@ -1,4 +1,5 @@
 [versions]
+apache-http-client = { strictly = '5.6' }
 awsDynamoDbLocal = { strictly = '3.3.0' }
 awsLambdaJavaCore = { strictly = '1.4.0' }
 awsSdk2 = { strictly = '2.42.39' }
@@ -26,6 +27,7 @@ nva-json = { group = 'com.github.bibsysdev', name = 'json', version.ref = 'nva-c
 nva-s3 = { group = 'com.github.bibsysdev', name = 's3', version.ref = 'nva-commons' }
 zalando = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
 guava = { group = 'com.google.guava', name = 'guava', version.ref = 'guava' }
+httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version.ref = "apache-http-client" }
 
 nva-commons-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nva-commons' }
 nva-commons-apigateway = { group = 'com.github.bibsysdev', name = 'apigateway', version.ref = 'nva-commons' }
