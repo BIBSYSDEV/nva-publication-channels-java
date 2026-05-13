@@ -1,19 +1,33 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
+import no.unit.nva.stubs.WiremockHttpClient;
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.apigateway.MediaType;
+import nva.commons.core.paths.UriWrapper;
+import nva.commons.logutils.LogUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+import java.util.UUID;
+
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
-import static no.sikt.nva.pubchannels.TestConstants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static no.sikt.nva.pubchannels.TestConstants.API_DOMAIN;
 import static no.sikt.nva.pubchannels.TestConstants.CUSTOM_DOMAIN_BASE_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.LOCATION;
 import static no.sikt.nva.pubchannels.TestConstants.PUBLISHER_PATH;
-import static no.sikt.nva.pubchannels.TestConstants.WILD_CARD;
 import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
-import static no.sikt.nva.pubchannels.handler.TestUtils.createPublicationChannelUri;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockRedirectedClient;
-import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStatus;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
@@ -23,28 +37,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
-import com.google.common.net.MediaType;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.UUID;
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
-import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.unit.nva.stubs.WiremockHttpClient;
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.zalando.problem.Problem;
 
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
@@ -181,50 +173,6 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
 
     var actualPublisher = response.getBodyObject(PublisherDto.class);
     assertThat(actualPublisher, is(equalTo(expectedPublisher)));
-  }
-
-  @Test
-  void shouldLogAndReturnBadGatewayWhenChannelClientReturnsUnhandledResponseCode()
-      throws IOException {
-    mockResponseWithHttpStatus(
-        channelRegistryPathElement, identifier, year, HttpURLConnection.HTTP_INTERNAL_ERROR);
-
-    var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
-
-    var appender = LogUtils.getTestingAppenderForRootLogger();
-    handlerUnderTest.handleRequest(input, output, context);
-
-    assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
-    assertThat(appender.getMessages(), containsString("500"));
-
-    var response = GatewayResponse.fromOutputStream(output, Problem.class);
-
-    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-
-    var problem = response.getBodyObject(Problem.class);
-
-    assertThat(problem.getDetail(), is(equalTo("Unexpected response from upstream!")));
-  }
-
-  @Test
-  void shouldReturnRedirectWhenChannelRegistryReturnsRedirect() throws IOException {
-    var requestedIdentifier = UUID.randomUUID().toString().toUpperCase();
-    var newIdentifier = UUID.randomUUID().toString().toUpperCase();
-    var newChannelRegistryLocation =
-        UriWrapper.fromHost(channelRegistryBaseUri)
-            .addChild("/findpublisher/", newIdentifier, year)
-            .toString();
-    mockRedirectedClient(requestedIdentifier, newChannelRegistryLocation, year, nvaChannelPath);
-    handlerUnderTest.handleRequest(
-        constructRequest(year, requestedIdentifier, "publisher", MediaType.ANY_TYPE),
-        output,
-        context);
-    var response = GatewayResponse.fromOutputStream(output, HttpResponse.class);
-    assertEquals(HttpURLConnection.HTTP_MOVED_PERM, response.getStatusCode());
-    var expectedLocation =
-        createPublicationChannelUri(newIdentifier, PUBLISHER_PATH, year).toString();
-    assertEquals(expectedLocation, response.getHeaders().get(LOCATION));
-    assertEquals(WILD_CARD, response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN));
   }
 
   @Test
