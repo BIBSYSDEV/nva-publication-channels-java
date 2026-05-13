@@ -4,7 +4,6 @@ import static java.util.Objects.nonNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.opencsv.bean.AbstractBeanField;
-import com.opencsv.exceptions.CsvConstraintViolationException;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import java.util.Arrays;
 import java.util.List;
@@ -12,9 +11,10 @@ import no.unit.nva.commons.json.JsonUtils;
 
 public class LevelForYearConverter extends AbstractBeanField<List<LevelForYear>, String> {
 
+  // FIXME: NP-48927
+  @SuppressWarnings("PMD.AvoidCatchingGenericException")
   @Override
-  public List<LevelForYear> convert(String value)
-      throws CsvDataTypeMismatchException, CsvConstraintViolationException {
+  public List<LevelForYear> convert(String value) throws CsvDataTypeMismatchException {
     try {
       return nonNull(value) ? convertStringToList(value) : List.of();
     } catch (Exception e) {

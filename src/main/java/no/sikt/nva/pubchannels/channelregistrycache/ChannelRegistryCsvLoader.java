@@ -59,6 +59,8 @@ public final class ChannelRegistryCsvLoader {
     return new LoadResult(stream, reportSupplier);
   }
 
+  // FIXME: NP-48927
+  @SuppressWarnings("PMD.AvoidCatchingGenericException")
   private static ChannelRegistryCacheEntry processLine(
       Entry<Integer, String> entry, String header, Map<Integer, FailureInfo> failures) {
     try {
