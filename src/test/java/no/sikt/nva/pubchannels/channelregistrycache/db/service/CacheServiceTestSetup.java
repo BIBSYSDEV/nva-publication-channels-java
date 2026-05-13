@@ -4,7 +4,6 @@ import static no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegis
 import static no.sikt.nva.pubchannels.channelregistrycache.db.model.ChannelRegistryCacheDao.SORT_KEY;
 import static nva.commons.core.attempt.Try.attempt;
 
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import java.nio.file.Path;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.utils.AppConfig;
@@ -22,6 +21,7 @@ import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.dynamodb.services.local.embedded.DynamoDBEmbedded;
 
 public class CacheServiceTestSetup {
 
@@ -48,7 +48,7 @@ public class CacheServiceTestSetup {
   }
 
   protected void setupDynamoDbTable() {
-    this.client = DynamoDBEmbedded.create().dynamoDbClient();
+    this.client = DynamoDBEmbedded.create(null, true).dynamoDbClient();
     createTable(new Environment().readEnv("TABLE_NAME"));
   }
 

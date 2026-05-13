@@ -13,7 +13,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.net.MediaType;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +21,7 @@ import no.sikt.nva.pubchannels.handler.TestChannel;
 import no.sikt.nva.pubchannels.handler.model.SerialPublicationDto;
 import no.unit.nva.commons.pagination.PaginatedSearchResult;
 import nva.commons.apigateway.GatewayResponse;
+import nva.commons.apigateway.MediaType;
 import nva.commons.apigateway.exceptions.UnprocessableContentException;
 import org.junit.jupiter.api.Test;
 

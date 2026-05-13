@@ -1,12 +1,11 @@
 package no.sikt.nva.pubchannels.handler.fetch;
 
-import static com.google.common.net.MediaType.JSON_UTF_8;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static nva.commons.apigateway.MediaType.JSON_UTF_8;
 import static nva.commons.apigateway.MediaTypes.APPLICATION_JSON_LD;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.google.common.net.HttpHeaders;
-import com.google.common.net.MediaType;
 import java.util.List;
 import java.util.Map;
 import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
@@ -16,6 +15,7 @@ import no.sikt.nva.pubchannels.handler.model.PublicationChannelDto;
 import no.sikt.nva.pubchannels.utils.AppConfig;
 import no.sikt.nva.pubchannels.utils.ApplicationConfiguration;
 import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.MediaType;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;

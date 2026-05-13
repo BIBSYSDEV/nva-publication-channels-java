@@ -1,25 +1,5 @@
 package no.sikt.nva.pubchannels.handler.fetch.publisher;
 
-import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
-import no.sikt.nva.pubchannels.handler.TestChannel;
-import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
-import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
-import no.sikt.nva.pubchannels.handler.model.PublisherDto;
-import no.unit.nva.stubs.WiremockHttpClient;
-import nva.commons.apigateway.GatewayResponse;
-import nva.commons.apigateway.MediaType;
-import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
-import java.util.UUID;
-
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.sikt.nva.pubchannels.HttpHeaders.CONTENT_TYPE;
@@ -37,6 +17,25 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+import java.util.UUID;
+import no.sikt.nva.pubchannels.channelregistry.ChannelRegistryClient;
+import no.sikt.nva.pubchannels.handler.TestChannel;
+import no.sikt.nva.pubchannels.handler.fetch.FetchByIdentifierAndYearHandlerTest;
+import no.sikt.nva.pubchannels.handler.fetch.FetchPublicationChannelHandler;
+import no.sikt.nva.pubchannels.handler.model.PublisherDto;
+import no.unit.nva.stubs.WiremockHttpClient;
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.apigateway.MediaType;
+import nva.commons.core.paths.UriWrapper;
+import nva.commons.logutils.LogUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndYearHandlerTest {
 
