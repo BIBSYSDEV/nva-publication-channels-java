@@ -7,7 +7,5 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jacoco:org.jacoco.core:0.8.14"
-    implementation "org.jacoco:org.jacoco.report:0.8.14"
-    implementation "com.diffplug.spotless:spotless-plugin-gradle:8.4.0"
+    implementation 'com.github.bibsysdev:nva-gradle-plugins:1.0.7'
 }

@@ -1,4 +1,3 @@
 plugins {
     id 'nva.publication.channels.java.rootplugin'
-    id("com.autonomousapps.dependency-analysis") version "3.11.0"
 }

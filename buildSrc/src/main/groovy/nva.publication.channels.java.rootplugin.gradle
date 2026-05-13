@@ -1,9 +1,13 @@
 plugins {
-    id 'jacoco-report-aggregation'
-    id 'base'
-    id 'java-library'
+    id 'nva.root-module-conventions'
 }
 
-tasks.named('check') {
-    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+nva {
+    dependencyAnalysis {
+        enforced = false
+    }
+    spectral {
+        documents = ['docs/*.yaml']
+        rulesetFile = file('.spectral.yaml')
+    }
 }
