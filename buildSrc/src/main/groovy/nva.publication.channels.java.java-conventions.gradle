@@ -15,7 +15,7 @@ tasks.named('test') {
     useJUnitPlatform()
     failFast = true
     testLogging {
-        events 'skipped', 'passed', 'failed'
+        events 'skipped', 'failed'
     }
 }
 
