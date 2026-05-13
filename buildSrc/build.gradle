@@ -1,16 +1,13 @@
 plugins {
-    // Support convention plugins written in Groovy. Convention plugins are build scripts in 'src/main' that automatically become available as plugins in the main build.
     id 'groovy-gradle-plugin'
 }
 
 repositories {
-    // Use the plugin portal to apply community plugins in convention plugins.
     gradlePluginPortal()
 }
 
 dependencies {
-    implementation group: 'nebula.lint', name: 'nebula.lint.gradle.plugin', version: '20.6.2'
-    implementation group: 'org.jacoco', name: 'org.jacoco.core', version: '0.8.7'
-    implementation group: 'org.jacoco', name: 'org.jacoco.report', version: '0.8.7'
-    implementation group: 'com.diffplug.spotless', name: 'spotless-plugin-gradle', version: '7.0.1'
+    implementation "org.jacoco:org.jacoco.core:0.8.14"
+    implementation "org.jacoco:org.jacoco.report:0.8.14"
+    implementation "com.diffplug.spotless:spotless-plugin-gradle:8.4.0"
 }

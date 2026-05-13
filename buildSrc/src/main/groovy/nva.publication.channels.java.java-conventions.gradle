@@ -1,66 +1,29 @@
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'pmd'
     id 'jacoco-report-aggregation'
     id 'com.diffplug.spotless'
 }
 
-group 'no.sikt.nva'
-
-dependencies {
-    testImplementation libs.bundles.testing
-
-    implementation libs.nva.s3
-    implementation libs.aws.lambda.java.core
-    implementation libs.bundles.nva
-    implementation libs.bundles.logging
-    implementation libs.bundles.jackson
-    implementation libs.commons.validator
-    implementation libs.open.csv
-    implementation libs.aws.sdk2.s3
-    implementation libs.aws.sdk2.dynamodb.enhanced
-    implementation libs.aws.appconfig
-    implementation libs.aws.appconfigdata
-    implementation libs.guava
-
-    testImplementation libs.dynamodDbLocal
-}
-
-sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility
-targetCompatibility = JavaVersion.VERSION_21 // bytecode target version
+group = 'no.sikt.nva'
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
     failFast = true
     testLogging {
-        events 'skipped', 'passed', 'failed'
+        events = ['skipped', 'failed']
     }
 }
 
 pmd {
-    toolVersion = '7.11.0'
+    toolVersion = '7.23.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
-}
-
-checkstyle {
-    configFile = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml').asFile()
-    showViolations = true
-}
-
-tasks.withType(Checkstyle).configureEach {
-    reports {
-        xml.required
-        html.required
-        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
-    }
 }
 
 check.dependsOn jacocoTestCoverageVerification

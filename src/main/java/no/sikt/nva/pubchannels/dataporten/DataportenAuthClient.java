@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import no.sikt.nva.pubchannels.HttpHeaders;
@@ -72,8 +73,9 @@ public class DataportenAuthClient implements AuthClient {
 
   private String getCredentialsString(String clientId, String clientSecret) {
     var credentials = clientId + ":" + clientSecret;
-    var encodedCredentials = Base64.getEncoder().encode(credentials.getBytes());
-    return String.format("Basic %s", new String(encodedCredentials));
+    var encodedCredentials =
+        Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8));
+    return String.format("Basic %s", new String(encodedCredentials, StandardCharsets.UTF_8));
   }
 
   private URI getTokenRequestUri() {
