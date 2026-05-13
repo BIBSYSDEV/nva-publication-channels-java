@@ -5,7 +5,7 @@ plugins {
     id 'com.diffplug.spotless'
 }
 
-group 'no.sikt.nva'
+group = 'no.sikt.nva'
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ tasks.named('test') {
     useJUnitPlatform()
     failFast = true
     testLogging {
-        events 'skipped', 'failed'
+        events = ['skipped', 'failed']
     }
 }
 
