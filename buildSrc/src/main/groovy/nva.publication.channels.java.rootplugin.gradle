@@ -1,14 +1,13 @@
 plugins {
-    id 'jacoco-report-aggregation'
-    id 'base'
-    id 'java-library'
+    id 'nva.root-module-conventions'
 }
 
-allprojects {
-    //workaround for jacoco-merge to work
-    apply plugin: 'nva.publication.channels.java.java-conventions'
-}
-
-tasks.named('check') {
-    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+nva {
+    dependencyAnalysis {
+        enforced = true
+    }
+    spectral {
+        documents = ['docs/*.yaml']
+        rulesetFile = file('.spectral.yaml')
+    }
 }
