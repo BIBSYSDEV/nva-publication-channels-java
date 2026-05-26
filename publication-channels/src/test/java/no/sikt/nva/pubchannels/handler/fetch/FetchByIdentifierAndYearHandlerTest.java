@@ -42,7 +42,8 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.MediaType;
 import nva.commons.core.Environment;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.LogRecorder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -157,11 +158,14 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     var input = constructRequest(year, identifier, nvaChannelPath, MediaType.ANY_TYPE);
 
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
     handlerUnderTest.handleRequest(input, output, context);
 
-    assertThat(appender.getMessages(), containsString("Error fetching publication channel"));
-    assertThat(appender.getMessages(), containsString("500"));
+    Assertions.assertThat(logRecorder.messages())
+        .anyMatch(
+            message ->
+                message.startsWith("Error fetching publication channel:")
+                    && message.contains(identifier));
 
     var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
@@ -181,11 +185,13 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
 
     var input = constructRequest(year, identifier, "journal", MediaType.ANY_TYPE);
 
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
     handlerUnderTest.handleRequest(input, output, context);
 
-    assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-    assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+    Assertions.assertThat(logRecorder.messages())
+        .anyMatch(message -> message.startsWith("Unable to reach upstream:"));
+    Assertions.assertThat(logRecorder.events())
+        .anyMatch(event -> event.getThrown() instanceof InterruptedException);
 
     var response = GatewayResponse.fromOutputStream(output, Problem.class);
 

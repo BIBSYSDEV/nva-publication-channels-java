@@ -17,7 +17,6 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.mockResponseWithHttpStat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -34,7 +33,8 @@ import no.sikt.nva.pubchannels.utils.AppConfig;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.MediaType;
 import nva.commons.core.Environment;
-import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.LogRecorder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -247,12 +247,12 @@ public abstract class BaseFetchSerialPublicationByIdentifierAndYearHandlerTest
 
     var input = constructRequest(year, identifier, type, MediaType.ANY_TYPE);
 
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
 
     handlerUnderTest.handleRequest(input, output, context);
 
-    assertThat(
-        appender.getMessages(), containsString("Could not find cached publication channel with"));
+    Assertions.assertThat(logRecorder.messages())
+        .contains("Could not find cached publication channel with identifier " + identifier);
 
     var response = GatewayResponse.fromOutputStream(output, Problem.class);
 
