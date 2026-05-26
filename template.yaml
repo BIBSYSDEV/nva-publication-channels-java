@@ -21,6 +21,8 @@ Globals:
         CUSTOM_DOMAIN_BASE_PATH: !Ref CustomDomainBasePath
         DATAPORTEN_CHANNEL_REGISTRY_BASE_URL: !Ref DataportenChannelRegistryBaseUrl
         COGNITO_AUTHORIZER_URLS: !Join [",", !Ref CognitoAuthorizerUrls]
+        LOG_LEVEL: "info"
+        LOG4J_CONFIGURATION_FILE: classpath:nva-log4j2.xml
   Api:
     Cors:
       AllowOrigin: "'*'"
