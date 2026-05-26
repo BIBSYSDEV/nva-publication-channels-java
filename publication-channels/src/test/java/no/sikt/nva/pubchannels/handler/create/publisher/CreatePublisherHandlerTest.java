@@ -32,7 +32,8 @@ import no.sikt.nva.pubchannels.handler.TestUtils;
 import no.sikt.nva.pubchannels.handler.create.CreateHandlerTest;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.LogRecorder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -185,12 +186,14 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
 
     var input = constructRequest(new CreatePublisherRequestBuilder().withName(VALID_NAME).build());
 
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(CreatePublisherHandler.class);
 
     handlerUnderTest.handleRequest(input, output, context);
 
-    assertThat(appender.getMessages(), containsString("Unable to reach upstream!"));
-    assertThat(appender.getMessages(), containsString(InterruptedException.class.getSimpleName()));
+    Assertions.assertThat(logRecorder.messages())
+        .anyMatch(message -> message.startsWith("Unable to reach upstream:"));
+    Assertions.assertThat(logRecorder.events())
+        .anyMatch(event -> event.getThrown() instanceof InterruptedException);
 
     var response = GatewayResponse.fromOutputStream(output, Problem.class);
 

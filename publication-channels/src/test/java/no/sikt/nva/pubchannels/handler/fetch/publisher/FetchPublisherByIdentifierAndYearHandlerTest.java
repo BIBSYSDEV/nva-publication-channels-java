@@ -10,11 +10,8 @@ import static no.sikt.nva.pubchannels.handler.TestUtils.constructRequest;
 import static no.sikt.nva.pubchannels.handler.TestUtils.mockChannelRegistryResponse;
 import static no.sikt.nva.pubchannels.handler.TestUtils.randomYear;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsStringIgnoringCase;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -31,7 +28,8 @@ import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.apigateway.MediaType;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.LogRecorder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -191,16 +189,15 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
             channelRegistryClient,
             cacheService,
             super.getAppConfigWithCacheEnabled(true));
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
 
     handlerUnderTest.handleRequest(input, output, context);
 
     var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
     assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-    assertThat(
-        appender.getMessages(),
-        containsString("Fetching PUBLISHER from cache: " + publisherIdentifier));
+    Assertions.assertThat(logRecorder.messages())
+        .contains("Fetching PUBLISHER from cache: " + publisherIdentifier);
   }
 
   @Test
@@ -214,17 +211,16 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     this.handlerUnderTest =
         new FetchPublicationChannelHandler(
             environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
 
     handlerUnderTest.handleRequest(input, output, context);
 
     var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
     assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-    assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
-    assertThat(
-        appender.getMessages(),
-        containsStringIgnoringCase("Fetching PUBLISHER from cache: " + publisherIdentifier));
+    Assertions.assertThat(logRecorder.messages())
+        .noneMatch(message -> message.contains("Unable to reach upstream"))
+        .contains("Fetching PUBLISHER from cache: " + publisherIdentifier);
   }
 
   @Test
@@ -257,17 +253,16 @@ class FetchPublisherByIdentifierAndYearHandlerTest extends FetchByIdentifierAndY
     this.handlerUnderTest =
         new FetchPublicationChannelHandler(
             environment, null, cacheService, super.getAppConfigWithCacheEnabled(true));
-    var appender = LogUtils.getTestingAppenderForRootLogger();
+    var logRecorder = LogRecorder.forRoot(FetchPublicationChannelHandler.class);
 
     handlerUnderTest.handleRequest(input, output, context);
 
     var response = GatewayResponse.fromOutputStream(output, PublisherDto.class);
 
     assertThat(response.getStatusCode(), is(equalTo(HTTP_OK)));
-    assertThat(appender.getMessages(), not(containsString("Unable to reach upstream!")));
-    assertThat(
-        appender.getMessages(),
-        containsStringIgnoringCase("Fetching PUBLISHER from cache: " + publisherIdentifier));
+    Assertions.assertThat(logRecorder.messages())
+        .noneMatch(message -> message.contains("Unable to reach upstream"))
+        .contains("Fetching PUBLISHER from cache: " + publisherIdentifier);
   }
 
   private PublisherDto mockPublisherFound(String year, String identifier) {
