@@ -445,6 +445,27 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: "apigateway.amazonaws.com"
 
+  DeletePublicationChannelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.sikt.nva.pubchannels.handler.delete.DeletePublicationChannelHandler::handleRequest
+      Policies:
+        - !GetAtt ReadSecretsPolicy.PolicyArn
+      Events:
+        DeleteChannelEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /{identifier}
+            Method: delete
+
+  DeletePublicationChannelFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt DeletePublicationChannelFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: "apigateway.amazonaws.com"
+
   DataportenChannelRegistryHealthCheck:
     Type: AWS::Route53::HealthCheck
     Properties:
