@@ -295,6 +295,21 @@ class CreatePublisherHandlerTest extends CreateHandlerTest {
     assertThat(problem.getDetail(), is(containsString("Unauthorized")));
   }
 
+  @Test
+  void shouldAllowBackendClientWithoutCurrentCustomerToCreatePublisher() throws IOException {
+    var expectedPid = UUID.randomUUID().toString();
+    var request = new ChannelRegistryCreatePublisherRequest(VALID_NAME, null, null);
+    var requestBody = new CreatePublisherRequestBuilder().withName(VALID_NAME).build();
+
+    setupStub(expectedPid, request, HttpURLConnection.HTTP_CREATED);
+
+    handlerUnderTest.handleRequest(constructBackendRequest(requestBody), output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, CreatePublisherResponse.class);
+
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+  }
+
   private static Stream<String> invalidIsbnPrefixes() {
     return Stream.of("12345678912345", "978-12345-1234567", "String-String", "mWhEbgV6GfS6CQRWW");
   }

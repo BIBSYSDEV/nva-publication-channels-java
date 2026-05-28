@@ -86,6 +86,29 @@ public abstract class BaseCreateSerialPublicationHandlerTest extends CreateHandl
   }
 
   @Test
+  void shouldAllowBackendClientWithoutCurrentCustomerToCreateChannel() throws IOException {
+    var expectedPid = UUID.randomUUID().toString();
+
+    var channelRegistryRequest =
+        new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
+    stubPostResponse(
+        expectedPid,
+        channelRegistryRequest,
+        HttpURLConnection.HTTP_CREATED,
+        channelRegistryCreatePathElement);
+
+    var testChannel =
+        createEmptyTestChannel(currentYearAsInteger(), expectedPid, type).withName(VALID_NAME);
+    stubFetchOKResponse(testChannel, channelRegistryFetchPathElement);
+
+    var requestBody = requestBuilderWithRequiredFields().build();
+    handlerUnderTest.handleRequest(constructBackendRequest(requestBody), output, context);
+
+    var response = GatewayResponse.fromOutputStream(output, SerialPublicationDto.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_CREATED)));
+  }
+
+  @Test
   void shouldReturnBadGatewayWhenUnauthorized() throws IOException {
     var input = constructRequest(requestBuilderWithRequiredFields().build());
     var request = new ChannelRegistryCreateSerialPublicationRequest(VALID_NAME, null, null, null);
