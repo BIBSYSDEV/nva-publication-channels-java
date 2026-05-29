@@ -54,6 +54,9 @@ public abstract class CreateHandler<I, O> extends ApiGatewayHandler<I, O> {
   }
 
   protected void userIsAuthorizedToCreate(RequestInfo requestInfo) throws UnauthorizedException {
+    if (requestInfo.clientIsInternalBackend()) {
+      return;
+    }
     if (isNull(requestInfo.getCurrentCustomer())) {
       throw new UnauthorizedException();
     }

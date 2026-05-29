@@ -46,6 +46,7 @@ public abstract class CreateHandlerTest {
   protected static final String USERNAME = "";
   protected static final String VALID_NAME = "Valid Name";
   protected static final String PROBLEM = "Some problem";
+  protected static final String BACKEND_SCOPE = "https://api.nva.unit.no/scopes/backend";
   protected static final Context context = new FakeContext();
   private static final TokenBodyResponse TOKEN_BODY = new TokenBodyResponse("token1", "Bearer");
   protected static Environment environment;
@@ -121,6 +122,13 @@ public abstract class CreateHandlerTest {
   protected static <T> InputStream constructUnauthorizedRequest(T body)
       throws JsonProcessingException {
     return new HandlerRequestBuilder<T>(dtoObjectMapper).withBody(body).build();
+  }
+
+  protected static <T> InputStream constructBackendRequest(T body) throws JsonProcessingException {
+    return new HandlerRequestBuilder<T>(dtoObjectMapper)
+        .withScope(BACKEND_SCOPE)
+        .withBody(body)
+        .build();
   }
 
   protected static void stubGetResponse(int statusCode, String url, String body) {

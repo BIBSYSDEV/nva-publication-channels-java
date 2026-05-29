@@ -41,6 +41,7 @@ class UpdatePublicationChannelHandlerTest {
 
   protected static final FakeContext CONTEXT = new FakeContext();
   protected static final String IDENTIFIER = "identifier";
+  private static final String BACKEND_SCOPE = "https://api.nva.unit.no/scopes/backend";
   private UpdatePublicationChannelHandler handler;
   private PublicationChannelUpdateClient client;
   private ByteArrayOutputStream output;
@@ -141,7 +142,18 @@ class UpdatePublicationChannelHandlerTest {
 
     handler.handleRequest(request, output, CONTEXT);
 
-    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Void.class);
+
+    assertEquals(HTTP_ACCEPTED, response.getStatusCode());
+  }
+
+  @Test
+  void shouldReturnAcceptedWhenBackendClientWithoutManageCustomersAccessRight() throws IOException {
+    var request = createBackendRequest(randomUUID().toString(), validRequestBody());
+
+    handler.handleRequest(request, output, CONTEXT);
+
+    var response = GatewayResponse.fromOutputStream(output, Void.class);
 
     assertEquals(HTTP_ACCEPTED, response.getStatusCode());
   }
@@ -161,6 +173,15 @@ class UpdatePublicationChannelHandlerTest {
       throws JsonProcessingException {
     return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
         .withAccessRights(randomUri(), AccessRight.MANAGE_CUSTOMERS)
+        .withBody(body)
+        .withPathParameters(Map.of(IDENTIFIER, identifier))
+        .build();
+  }
+
+  private InputStream createBackendRequest(String identifier, UpdateChannelRequest body)
+      throws JsonProcessingException {
+    return new HandlerRequestBuilder<UpdateChannelRequest>(dtoObjectMapper)
+        .withScope(BACKEND_SCOPE)
         .withBody(body)
         .withPathParameters(Map.of(IDENTIFIER, identifier))
         .build();

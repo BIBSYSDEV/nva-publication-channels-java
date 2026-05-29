@@ -242,6 +242,8 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       tags:
         - Journal
       summary: Create journal
@@ -348,6 +350,8 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       tags:
         - Publisher
       summary: Create publisher
@@ -495,6 +499,8 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       tags:
         - Series
       summary: Create series
@@ -605,6 +611,8 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSerialPublicationFunction.Arn}/invocations
         httpMethod: POST
         type: "AWS_PROXY"
+      security:
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "https://api.nva.unit.no/scopes/frontend"]
       tags:
         - SerialPublication
       summary: Create series/journal

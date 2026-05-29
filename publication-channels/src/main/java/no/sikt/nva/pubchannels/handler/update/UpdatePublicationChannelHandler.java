@@ -44,7 +44,7 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
     if (!requestInfo.isGatewayAuthorized()) {
       throw new UnauthorizedException();
     }
-    if (!requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS)) {
+    if (!isAuthorizedToUpdate(requestInfo)) {
       throw new ForbiddenException();
     }
     if (!requestInfo.getPathParameters().containsKey(IDENTIFIER)) {
@@ -70,5 +70,10 @@ public class UpdatePublicationChannelHandler extends ApiGatewayHandler<UpdateCha
   @Override
   protected Integer getSuccessStatusCode(UpdateChannelRequest input, Void output) {
     return HTTP_ACCEPTED;
+  }
+
+  private static boolean isAuthorizedToUpdate(RequestInfo requestInfo) {
+    return requestInfo.clientIsInternalBackend()
+        || requestInfo.userIsAuthorized(AccessRight.MANAGE_CUSTOMERS);
   }
 }
