@@ -456,7 +456,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref PublicationChannelsApi
-            Path: /{identifier}
+            Path: /channel/{identifier}
             Method: delete
 
   DeletePublicationChannelFunctionPermission:

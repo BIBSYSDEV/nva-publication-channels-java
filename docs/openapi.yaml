@@ -675,7 +675,7 @@ paths:
           $ref: "#/components/responses/404"
         "502":
           $ref: "#/components/responses/502"
-  /{identifier}:
+  /channel/{identifier}:
     delete:
       x-amazon-apigateway-integration:
         uri:
