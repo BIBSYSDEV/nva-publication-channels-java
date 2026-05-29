@@ -237,6 +237,12 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /{type}/{identifier}/{year}
             Method: get
+        FetchPublisherByIdentifierEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicationChannelsApi
+            Path: /{type}/{identifier}
+            Method: get
       Environment:
         Variables:
           TABLE_NAME: !Ref ChannelRegisterCacheTable
