@@ -142,7 +142,7 @@ class UpdatePublicationChannelHandlerTest {
 
     handler.handleRequest(request, output, CONTEXT);
 
-    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Void.class);
 
     assertEquals(HTTP_ACCEPTED, response.getStatusCode());
   }
@@ -153,7 +153,7 @@ class UpdatePublicationChannelHandlerTest {
 
     handler.handleRequest(request, output, CONTEXT);
 
-    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    var response = GatewayResponse.fromOutputStream(output, Void.class);
 
     assertEquals(HTTP_ACCEPTED, response.getStatusCode());
   }
