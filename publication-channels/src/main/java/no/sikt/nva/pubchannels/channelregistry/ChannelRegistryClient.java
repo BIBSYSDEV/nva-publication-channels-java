@@ -48,12 +48,18 @@ import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.GodClass")
 public class ChannelRegistryClient implements PublicationChannelClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ChannelRegistryClient.class);
   private static final String ENV_CHANNEL_REGISTRY_BASE_URL =
       "DATAPORTEN_CHANNEL_REGISTRY_BASE_URL";
   private static final String SEARCH_PATH_ELEMENT = "channels";
+  private static final String ADMIN_PATH_ELEMENT = "admin";
+  private static final String DELETE_PID_PATH_ELEMENT = "delete-pid";
+  private static final String UPSTREAM_RESPONSE_LOG_FORMAT = "Channel registry responded with: {}";
+  private static final String UPSTREAM_UNEXPECTED_RESPONSE = "Unexpected response from upstream!";
+  private static final String UPSTREAM_REJECTED_REQUEST = "Channel registry rejected the request!";
   private static final int ONE_HUNDRED = 100;
   private static final int FOUR = 4;
   private static final int FIVE = 5;
@@ -153,15 +159,43 @@ public class ChannelRegistryClient implements PublicationChannelClient {
     var httpRequest = createChangeChannelRequest(request, token);
     var response =
         attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
+    failOnWriteErrorStatus(response);
+  }
 
+  @Override
+  public void deleteChannel(String identifier) throws ApiGatewayException {
+    var token = attempt(authClient::getToken).orElseThrow(failure -> new UnauthorizedException());
+    var httpRequest = createDeleteChannelRequest(identifier, token);
+    var response =
+        attempt(() -> httpClient.send(httpRequest, BodyHandlers.ofString())).orElseThrow();
+
+    if (response.statusCode() == HTTP_NOT_FOUND) {
+      LOGGER.info("Publication channel not found on delete: {}", httpRequest.uri());
+      throw new NotFoundException("Publication channel not found!");
+    }
+    failOnWriteErrorStatus(response);
+  }
+
+  private static void failOnWriteErrorStatus(HttpResponse<String> response)
+      throws ApiGatewayException {
     if (response.statusCode() / ONE_HUNDRED == FOUR) {
-      LOGGER.error("Channel registry responded with: {}", response.body());
-      throw new BadRequestException(response.body());
+      LOGGER.error(UPSTREAM_RESPONSE_LOG_FORMAT, response.body());
+      throw new BadRequestException(UPSTREAM_REJECTED_REQUEST);
     }
     if (response.statusCode() / ONE_HUNDRED == FIVE) {
-      LOGGER.error("Channel registry responded with: {}", response.body());
-      throw new BadGatewayException("Unexpected response from upstream!");
+      LOGGER.error(UPSTREAM_RESPONSE_LOG_FORMAT, response.body());
+      throw new BadGatewayException(UPSTREAM_UNEXPECTED_RESPONSE);
     }
+  }
+
+  private HttpRequest createDeleteChannelRequest(String identifier, String token) {
+    return HttpRequest.newBuilder()
+        .header(ACCEPT, CONTENT_TYPE_APPLICATION_JSON)
+        .header(AUTHORIZATION, "Bearer " + token)
+        .uri(constructUri(ADMIN_PATH_ELEMENT, DELETE_PID_PATH_ELEMENT, identifier))
+        .timeout(HTTP_REQUEST_TIMEOUT)
+        .DELETE()
+        .build();
   }
 
   private ThirdPartyPublicationChannel getChannel(ChannelRegistryUpdateChannelRequest request)

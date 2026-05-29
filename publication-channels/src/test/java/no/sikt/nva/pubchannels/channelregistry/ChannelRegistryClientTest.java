@@ -1,6 +1,7 @@
 package no.sikt.nva.pubchannels.channelregistry;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -9,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static java.util.UUID.randomUUID;
@@ -21,6 +23,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.StringUtils.EMPTY_STRING;
 import static nva.commons.core.attempt.Try.attempt;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -224,6 +227,65 @@ class ChannelRegistryClientTest {
     stubFor(
         patch(urlPathEqualTo("/admin/change"))
             .withHeader(ACCEPT, WireMock.equalTo(CONTENT_TYPE_APPLICATION_JSON))
+            .willReturn(
+                aResponse()
+                    .withStatus(statusCode)
+                    .withHeader(CONTENT_TYPE, CONTENT_TYPE_APPLICATION_JSON_UTF8)
+                    .withBody(EMPTY_STRING)));
+  }
+
+  @Test
+  void shouldThrowUnauthorizedWhenAuthorizingFailsOnDelete() {
+    var identifier = randomPublicationChannelIdentifier();
+
+    stubTokenResponse(HTTP_UNAUTHORIZED);
+
+    assertThrows(UnauthorizedException.class, () -> client.deleteChannel(identifier));
+  }
+
+  @Test
+  void shouldThrowNotFoundWhenDeletingNonExistingChannel() {
+    var identifier = randomPublicationChannelIdentifier();
+
+    stubTokenResponse(HTTP_OK);
+    stubDeleteChannelResponse(identifier, HTTP_NOT_FOUND);
+
+    assertThrows(NotFoundException.class, () -> client.deleteChannel(identifier));
+  }
+
+  @Test
+  void shouldThrowBadRequestWhenChannelRegistryRespondsWith4XXOnDelete() {
+    var identifier = randomPublicationChannelIdentifier();
+
+    stubTokenResponse(HTTP_OK);
+    stubDeleteChannelResponse(identifier, HTTP_BAD_REQUEST);
+
+    assertThrows(BadRequestException.class, () -> client.deleteChannel(identifier));
+  }
+
+  @Test
+  void shouldThrowBadGatewayWhenChannelRegistryRespondsWith5XXOnDelete() {
+    var identifier = randomPublicationChannelIdentifier();
+
+    stubTokenResponse(HTTP_OK);
+    stubDeleteChannelResponse(identifier, HTTP_BAD_GATEWAY);
+
+    assertThrows(BadGatewayException.class, () -> client.deleteChannel(identifier));
+  }
+
+  @Test
+  void shouldSucceedWhenChannelRegistryRespondsWith204OnDelete() {
+    var identifier = randomPublicationChannelIdentifier();
+
+    stubTokenResponse(HTTP_OK);
+    stubDeleteChannelResponse(identifier, HTTP_NO_CONTENT);
+
+    assertDoesNotThrow(() -> client.deleteChannel(identifier));
+  }
+
+  private static void stubDeleteChannelResponse(String identifier, int statusCode) {
+    stubFor(
+        delete(urlPathEqualTo("/admin/delete-pid/" + identifier))
             .willReturn(
                 aResponse()
                     .withStatus(statusCode)
