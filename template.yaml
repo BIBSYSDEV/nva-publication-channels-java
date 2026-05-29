@@ -245,13 +245,6 @@ Resources:
           APPLICATION_CONFIG_ENVIRONMENT_NAME: !Ref EnvironmentName
           APPLICATION_ID: !Ref ApplicationIdName
 
-  FetchPublicationChannelByIdentifierAndYearFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt FetchPublicationChannelByIdentifierAndYearFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   SearchJournalByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -263,13 +256,6 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /journal
             Method: get
-
-  SearchJournalByQueryFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt SearchJournalByQueryFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
 
   PublicationChannelsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -294,13 +280,6 @@ Resources:
             Path: /journal
             Method: post
 
-  CreateJournalFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt CreateJournalFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   CreateSerialPublicationFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -316,13 +295,6 @@ Resources:
             Path: /serial-publication
             Method: post
 
-  CreateSerialPublicationFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt CreateSerialPublicationFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   SearchSerialPublicationByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -335,13 +307,6 @@ Resources:
             Path: /serial-publication
             Method: get
 
-  SearchSerialPublicationByQueryFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt SearchSerialPublicationByQueryFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   SearchPublisherByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -353,13 +318,6 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /publisher
             Method: get
-
-  SearchPublisherByQueryFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt SearchPublisherByQueryFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
 
   CreatePublisherFunction:
     Type: AWS::Serverless::Function
@@ -376,13 +334,6 @@ Resources:
             Path: /publisher
             Method: post
 
-  CreatePublisherFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt CreatePublisherFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   SearchSeriesByQueryFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -394,13 +345,6 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /series
             Method: get
-
-  SearchSeriesByQueryFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt SearchSeriesByQueryFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
 
   CreateSeriesFunction:
     Type: AWS::Serverless::Function
@@ -417,13 +361,6 @@ Resources:
             Path: /series
             Method: post
 
-  CreateSeriesFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt CreateSeriesFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   UpdatePublicationChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -438,13 +375,6 @@ Resources:
             Path: /{type}/{identifier}
             Method: put
 
-  UpdatePublicationChannelFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt UpdatePublicationChannelFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
-
   DeletePublicationChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -458,13 +388,6 @@ Resources:
             RestApiId: !Ref PublicationChannelsApi
             Path: /{identifier}
             Method: delete
-
-  DeletePublicationChannelFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt DeletePublicationChannelFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: "apigateway.amazonaws.com"
 
   DataportenChannelRegistryHealthCheck:
     Type: AWS::Route53::HealthCheck
