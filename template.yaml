@@ -9,7 +9,7 @@ Globals:
     CodeUri: publication-channels
     Timeout: 30
     MemorySize: 1798
-    Runtime: java21
+    Runtime: java25
     Architectures:
       - arm64
     Environment:
