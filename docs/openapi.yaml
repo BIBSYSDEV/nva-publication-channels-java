@@ -27,7 +27,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.path.type: "method.request.path.type"
@@ -103,7 +103,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FetchPublicationChannelByIdentifierAndYearFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.path.type: "method.request.path.type"
@@ -169,7 +169,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchJournalByQueryFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.querystring.query: "method.request.querystring.query"
@@ -239,7 +239,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateJournalFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -277,7 +277,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchPublisherByQueryFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.querystring.query: "method.request.querystring.query"
@@ -347,7 +347,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreatePublisherFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -385,7 +385,7 @@ paths:
     put:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -426,7 +426,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSeriesByQueryFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.querystring.query: "method.request.querystring.query"
@@ -496,7 +496,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSeriesFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -534,7 +534,7 @@ paths:
     get:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSerialPublicationByQueryFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchSerialPublicationByQueryFunction.Arn}:live/invocations
         httpMethod: POST
         requestParameters:
           integration.request.querystring.query: "method.request.querystring.query"
@@ -608,7 +608,7 @@ paths:
     post:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSerialPublicationFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateSerialPublicationFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -646,7 +646,7 @@ paths:
     put:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdatePublicationChannelFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
@@ -687,7 +687,7 @@ paths:
     delete:
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeletePublicationChannelFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeletePublicationChannelFunction.Arn}:live/invocations
         httpMethod: POST
         type: "AWS_PROXY"
       security:
