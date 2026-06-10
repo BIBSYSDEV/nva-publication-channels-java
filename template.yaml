@@ -11,7 +11,7 @@ Globals:
     MemorySize: 1798
     Runtime: java21
     Architectures:
-      - x86_64
+      - arm64
     Environment:
       Variables:
         ALLOWED_ORIGIN: !Ref AllowedOrigins
