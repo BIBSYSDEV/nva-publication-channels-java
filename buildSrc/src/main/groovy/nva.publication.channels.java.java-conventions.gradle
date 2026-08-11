@@ -13,3 +13,8 @@ nva {
         rulesetFile = rootProject.file('config/pmd/ruleset.xml')
     }
 }
+
+dependencies {
+    testRuntimeOnly(nvaCatalog.junit.jupiter.engine)
+    testRuntimeOnly(nvaCatalog.junit.platform.launcher)
+}
