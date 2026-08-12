@@ -20,7 +20,7 @@ dependencies {
     implementation(nvaCatalog.jackson.core)
     implementation(nvaCatalog.slf4j.api)
     implementation(nvaLibs.secrets)
-    implementation(platform("software.amazon.awssdk:bom:${nvaCatalog.versions.aws.sdk2.asProvider().get()}"))
+    implementation(platform(nvaCatalog.aws.sdk2.bom))
     testImplementation('software.amazon.awssdk:appconfig')
     testImplementation('software.amazon.awssdk:dynamodb')
     testImplementation(nvaCatalog.assertj.core)
