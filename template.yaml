@@ -125,6 +125,7 @@ Resources:
         DefaultAuthorizer: NONE
       EndpointConfiguration:
         Type: REGIONAL
+        IpAddressType: DUALSTACK
 
   ChannelRegisterCacheTable:
     Type: "AWS::DynamoDB::Table"
