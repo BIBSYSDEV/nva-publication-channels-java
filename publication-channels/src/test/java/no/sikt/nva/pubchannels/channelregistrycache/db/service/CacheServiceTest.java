@@ -87,6 +87,28 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
   @Test
   void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoryLevelWhenCurrentLevelIsMissing()
+          throws ApiGatewayException {
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withLevelHistory(List.of(new LevelForYear(currentYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), currentYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ZERO, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
       shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoricalLevelWhenNoCurrentYear()
           throws ApiGatewayException {
     var historicalYear = "2025";
