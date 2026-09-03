@@ -7,6 +7,7 @@ import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.Year;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -199,7 +200,7 @@ public class ChannelRegistryCacheEntry {
   }
 
   private static boolean isCurrentYear(String year) {
-    return nonNull(year) && Year.now().toString().equals(year);
+    return nonNull(year) && Year.now(ZoneId.systemDefault()).toString().equals(year);
   }
 
   private String getLevelForYear(String year) {
