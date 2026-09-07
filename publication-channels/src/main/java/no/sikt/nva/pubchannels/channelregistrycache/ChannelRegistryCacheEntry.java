@@ -6,6 +6,7 @@ import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -133,7 +134,7 @@ public class ChannelRegistryCacheEntry {
   }
 
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
-    var currentYear = String.valueOf(LocalDate.now().getYear());
+    var currentYear = String.valueOf(LocalDate.now(ZoneId.systemDefault()).getYear());
     return switch (requestObject.channelType()) {
       case JOURNAL, SERIES, SERIAL_PUBLICATION ->
           requestObject
