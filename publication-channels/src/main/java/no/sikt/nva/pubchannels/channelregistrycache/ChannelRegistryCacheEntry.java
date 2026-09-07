@@ -6,8 +6,6 @@ import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.Year;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -190,17 +188,20 @@ public class ChannelRegistryCacheEntry {
   }
 
   private ChannelRegistryLevel getChannelRegistryLevel(String year) {
-    return new ChannelRegistryLevel(Integer.parseInt(year), getLevel(year), null, null, null);
+    return ChannelRegistryLevel.fromYearAndLevel(Integer.parseInt(year), getLevel(year));
   }
 
   private String getLevel(String year) {
-    return isCurrentYear(year) && nonNull(getCurrentLevel())
-        ? getCurrentLevel().level()
+    var currentLevel = getCurrentLevel();
+    return currentLevelIsForCurrentYear(year, currentLevel)
+        ? currentLevel.level()
         : getLevelForYear(year);
   }
 
-  private static boolean isCurrentYear(String year) {
-    return nonNull(year) && Year.now(ZoneId.systemDefault()).toString().equals(year);
+  private static boolean currentLevelIsForCurrentYear(String year, LevelForYear currentLevel) {
+    return nonNull(currentLevel)
+        && year.equals(currentLevel.year())
+        && nonNull(currentLevel.level());
   }
 
   private String getLevelForYear(String year) {

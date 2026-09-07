@@ -21,6 +21,10 @@ public record ChannelRegistryLevel(
   private static final String NORWEGIAN = "no";
   private static final String ENGLISH = "en";
 
+  public static ChannelRegistryLevel fromYearAndLevel(Integer year, String level) {
+    return new ChannelRegistryLevel(year, level, null, null, null);
+  }
+
   public ScientificValueReviewNotice reviewNotice() {
     return Optional.ofNullable(levelDisplay)
         .filter(levelDisplay -> CHANNEL_REGISTRY_REVIEW_MARK.equals(levelDisplay()))
