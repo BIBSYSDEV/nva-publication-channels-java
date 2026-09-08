@@ -6,6 +6,7 @@ import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -48,6 +49,9 @@ public class ChannelRegistryCacheEntry {
   @CsvCustomBindByName(column = "Nivåhistorikk", converter = LevelForYearConverter.class)
   private List<LevelForYear> levelHistory;
 
+  @CsvCustomBindByName(column = "Gjeldende nivå", converter = ChannelRegistryLevelConverter.class)
+  private LevelForYear currentLevel;
+
   @CsvBindByName(column = "KURL")
   private String uri;
 
@@ -65,6 +69,7 @@ public class ChannelRegistryCacheEntry {
         .withIsbn(dao.isbn())
         .withCeased(dao.ceased())
         .withLevelHistory(dao.levelHistory())
+        .withCurrentLevel(dao.currentLevel())
         .withUri(dao.uri().toString())
         .build();
   }
@@ -116,6 +121,10 @@ public class ChannelRegistryCacheEntry {
     return nonNull(levelHistory) ? parseLevels() : List.of();
   }
 
+  public LevelForYear getCurrentLevel() {
+    return currentLevel;
+  }
+
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(
       ChannelType type, String year) {
     return switch (type) {
@@ -125,7 +134,7 @@ public class ChannelRegistryCacheEntry {
   }
 
   public ThirdPartyPublicationChannel toThirdPartyPublicationChannel(RequestObject requestObject) {
-    var currentYear = String.valueOf(LocalDate.now().getYear());
+    var currentYear = String.valueOf(LocalDate.now(ZoneId.systemDefault()).getYear());
     return switch (requestObject.channelType()) {
       case JOURNAL, SERIES, SERIAL_PUBLICATION ->
           requestObject
@@ -147,6 +156,7 @@ public class ChannelRegistryCacheEntry {
         .isbn(getIsbn())
         .ceased(getCeased())
         .levelHistory(getLevelHistory())
+        .currentLevel(getCurrentLevel())
         .uri(getUri())
         .build();
   }
@@ -179,8 +189,20 @@ public class ChannelRegistryCacheEntry {
   }
 
   private ChannelRegistryLevel getChannelRegistryLevel(String year) {
-    return new ChannelRegistryLevel(
-        Integer.parseInt(year), getLevelForYear(year), null, null, null);
+    return ChannelRegistryLevel.fromYearAndLevel(Integer.parseInt(year), getLevel(year));
+  }
+
+  private String getLevel(String year) {
+    var currentLevel = getCurrentLevel();
+    return currentLevelIsForCurrentYear(year, currentLevel)
+        ? currentLevel.level()
+        : getLevelForYear(year);
+  }
+
+  private static boolean currentLevelIsForCurrentYear(String year, LevelForYear currentLevel) {
+    return nonNull(currentLevel)
+        && year.equals(currentLevel.year())
+        && nonNull(currentLevel.level());
   }
 
   private String getLevelForYear(String year) {
@@ -201,6 +223,7 @@ public class ChannelRegistryCacheEntry {
     private String isbn;
     private String ceased;
     private List<LevelForYear> levelHistory;
+    private LevelForYear currentLevel;
     private String uri;
 
     private Builder() {}
@@ -245,6 +268,11 @@ public class ChannelRegistryCacheEntry {
       return this;
     }
 
+    public Builder withCurrentLevel(LevelForYear currentLevel) {
+      this.currentLevel = currentLevel;
+      return this;
+    }
+
     public Builder withUri(String uri) {
       this.uri = uri;
       return this;
@@ -256,6 +284,7 @@ public class ChannelRegistryCacheEntry {
       channelRegistryCacheEntry.type = this.type;
       channelRegistryCacheEntry.isbn = this.isbn;
       channelRegistryCacheEntry.levelHistory = this.levelHistory;
+      channelRegistryCacheEntry.currentLevel = this.currentLevel;
       channelRegistryCacheEntry.uri = this.uri;
       channelRegistryCacheEntry.originalTitle = this.originalTitle;
       channelRegistryCacheEntry.ceased = this.ceased;

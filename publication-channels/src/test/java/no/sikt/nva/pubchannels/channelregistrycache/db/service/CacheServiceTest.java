@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.time.Year;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import no.sikt.nva.pubchannels.channelregistry.ChannelType;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryLevel;
@@ -17,6 +20,8 @@ import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistryPublisher;
 import no.sikt.nva.pubchannels.channelregistry.model.ChannelRegistrySerialPublication;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheConfig;
 import no.sikt.nva.pubchannels.channelregistrycache.ChannelRegistryCacheEntry;
+import no.sikt.nva.pubchannels.channelregistrycache.LevelForYear;
+import no.sikt.nva.pubchannels.handler.ScientificValue;
 import no.sikt.nva.pubchannels.handler.fetch.RequestObject;
 import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
@@ -55,6 +60,168 @@ class CacheServiceTest extends CacheServiceTestSetup {
 
     assertEquals(
         channel.toThirdPartyPublicationChannel(ChannelType.JOURNAL, year), persistedChannel);
+  }
+
+  @Test
+  void shouldReturnThirdPartyChannelWithScientificValueCorrespondingToCurrentLevelWhenCurrentYear()
+      throws ApiGatewayException {
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var currentLevel = "1";
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(currentYear, currentLevel))
+            .withLevelHistory(List.of(new LevelForYear(currentYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), currentYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ONE, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoryLevelWhenCurrentLevelIsMissing()
+          throws ApiGatewayException {
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withLevelHistory(List.of(new LevelForYear(currentYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), currentYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ZERO, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoricalLevelWhenNoCurrentYear()
+          throws ApiGatewayException {
+    var historicalYear = "2025";
+    var historicalLevel = "1";
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(Year.now(ZoneId.systemDefault()).toString(), "2"))
+            .withLevelHistory(List.of(new LevelForYear(historicalYear, historicalLevel)))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), historicalYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ONE, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoryLevelWhenCurrentLevelYearDoesNotMatchRequestedYear()
+          throws ApiGatewayException {
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var staleYear = Year.now(ZoneId.systemDefault()).minusYears(1).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(staleYear, "1"))
+            .withLevelHistory(List.of(new LevelForYear(currentYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), currentYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ZERO, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoryLevelWhenCurrentLevelHasNullLevel()
+          throws ApiGatewayException {
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(currentYear, null))
+            .withLevelHistory(List.of(new LevelForYear(currentYear, "2")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), currentYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_TWO, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void shouldReturnThirdPartyChannelWithScientificValueCorrespondingToCurrentLevelWhenFutureYear()
+      throws ApiGatewayException {
+    var futureYear = Year.now(ZoneId.systemDefault()).plusYears(3).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(futureYear, "1"))
+            .withLevelHistory(List.of(new LevelForYear(futureYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), futureYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ONE, persistedChannel.getScientificValue());
+  }
+
+  @Test
+  void
+      shouldReturnThirdPartyChannelWithScientificValueCorrespondingToHistoryLevelForFutureYearWhenCurrentLevelIsForDifferentYear()
+          throws ApiGatewayException {
+    var futureYear = Year.now(ZoneId.systemDefault()).plusYears(3).toString();
+    var currentYear = Year.now(ZoneId.systemDefault()).toString();
+    var channel =
+        ChannelRegistryCacheEntry.builder()
+            .withPid(UUID.randomUUID())
+            .withIsbn(randomString())
+            .withUri(randomUri().toString())
+            .withCurrentLevel(new LevelForYear(currentYear, "2"))
+            .withLevelHistory(List.of(new LevelForYear(futureYear, "0")))
+            .build();
+
+    cacheService.save(channel);
+
+    var requestObject =
+        new RequestObject(ChannelType.JOURNAL, channel.getPid().toString(), futureYear);
+    var persistedChannel = cacheService.getChannel(requestObject);
+
+    assertEquals(ScientificValue.LEVEL_ZERO, persistedChannel.getScientificValue());
   }
 
   @Test

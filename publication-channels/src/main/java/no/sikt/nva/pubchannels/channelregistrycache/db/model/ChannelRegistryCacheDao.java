@@ -19,6 +19,7 @@ public record ChannelRegistryCacheDao(
     String isbn,
     String ceased,
     List<LevelForYear> levelHistory,
+    LevelForYear currentLevel,
     URI uri) {
 
   public static final String PRIMARY_KEY = "PK0";
@@ -50,6 +51,7 @@ public record ChannelRegistryCacheDao(
     private String isbn;
     private String ceased;
     private List<LevelForYear> levelHistory;
+    private LevelForYear currentLevel;
     private URI uri;
 
     private Builder() {}
@@ -94,6 +96,11 @@ public record ChannelRegistryCacheDao(
       return this;
     }
 
+    public Builder currentLevel(LevelForYear currentLevel) {
+      this.currentLevel = currentLevel;
+      return this;
+    }
+
     public Builder uri(URI uri) {
       this.uri = uri;
       return this;
@@ -111,7 +118,16 @@ public record ChannelRegistryCacheDao(
 
     public ChannelRegistryCacheDao build() {
       return new ChannelRegistryCacheDao(
-          identifier, type, title, printIssn, onlineIssn, isbn, ceased, levelHistory, uri);
+          identifier,
+          type,
+          title,
+          printIssn,
+          onlineIssn,
+          isbn,
+          ceased,
+          levelHistory,
+          currentLevel,
+          uri);
     }
   }
 }
