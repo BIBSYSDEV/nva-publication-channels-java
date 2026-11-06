@@ -211,7 +211,7 @@ class ChannelRegistryClientTest {
     return attempt(() ->
             JsonUtils.dtoObjectMapper.writeValueAsString(
                 new ChannelRegistryPublisher(
-                    randomPublicationChannelIdentifier().toString(),
+                    randomPublicationChannelIdentifier(),
                     randomLevel(level),
                     null,
                     null,
