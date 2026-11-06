@@ -59,24 +59,23 @@ public class CacheService implements PublicationChannelFetchClient {
         .entries()
         .filter(entry -> seenPids.putIfAbsent(entry.getPid(), Boolean.TRUE) == null)
         .map(ChannelRegistryCacheEntry::toDao)
-        .forEach(
-            dao -> {
-              counter.incrementAndGet();
-              batchLock.lock();
-              try {
-                batch.add(dao);
-                if (batch.size() == BATCH_SIZE) {
-                  writeBatch(batch);
-                  int totalProcessed = batchCounter.addAndGet(BATCH_SIZE);
-                  if (totalProcessed % 2000 == 0) {
-                    LOGGER.info("Loaded {} entries", totalProcessed);
-                  }
-                  batch.clear();
-                }
-              } finally {
-                batchLock.unlock();
+        .forEach(dao -> {
+          counter.incrementAndGet();
+          batchLock.lock();
+          try {
+            batch.add(dao);
+            if (batch.size() == BATCH_SIZE) {
+              writeBatch(batch);
+              int totalProcessed = batchCounter.addAndGet(BATCH_SIZE);
+              if (totalProcessed % 2000 == 0) {
+                LOGGER.info("Loaded {} entries", totalProcessed);
               }
-            });
+              batch.clear();
+            }
+          } finally {
+            batchLock.unlock();
+          }
+        });
 
     if (!batch.isEmpty()) {
       writeBatch(batch);

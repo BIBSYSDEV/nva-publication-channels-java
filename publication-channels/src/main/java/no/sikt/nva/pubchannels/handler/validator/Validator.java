@@ -57,9 +57,8 @@ public class Validator {
     if (value != null) {
       var year =
           attempt(() -> Year.parse(value))
-              .orElseThrow(
-                  failure ->
-                      new ValidationException("Invalid year: Failed to parse year parameter"));
+              .orElseThrow(failure ->
+                  new ValidationException("Invalid year: Failed to parse year parameter"));
       if (year.isBefore(MIN_ACCEPTABLE_YEAR) || year.isAfter(MAX_ACCEPTABLE_YEAR)) {
         throw new ValidationException(
             format(

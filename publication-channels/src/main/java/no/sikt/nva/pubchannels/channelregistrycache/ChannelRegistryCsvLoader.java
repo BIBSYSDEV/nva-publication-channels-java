@@ -84,13 +84,12 @@ public final class ChannelRegistryCsvLoader {
   private static String generateReport(Map<Integer, FailureInfo> failures, int totalLines) {
     if (!failures.isEmpty()) {
       return failures.entrySet().stream()
-          .map(
-              entry ->
-                  "Line %d: %s | Content: %s%n"
-                      .formatted(
-                          entry.getKey(),
-                          entry.getValue().errorMessage(),
-                          truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
+          .map(entry ->
+              "Line %d: %s | Content: %s%n"
+                  .formatted(
+                      entry.getKey(),
+                      entry.getValue().errorMessage(),
+                      truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
           .collect(
               Collectors.joining(
                   "%n".formatted(),
