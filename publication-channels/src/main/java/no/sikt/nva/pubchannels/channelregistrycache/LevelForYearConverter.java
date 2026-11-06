@@ -11,8 +11,6 @@ import no.unit.nva.commons.json.JsonUtils;
 
 public class LevelForYearConverter extends AbstractBeanField<List<LevelForYear>, String> {
 
-  // FIXME: NP-48927
-  @SuppressWarnings("PMD.AvoidCatchingGenericException")
   @Override
   public List<LevelForYear> convert(String value) throws CsvDataTypeMismatchException {
     try {

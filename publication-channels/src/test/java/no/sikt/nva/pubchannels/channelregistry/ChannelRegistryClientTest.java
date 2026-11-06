@@ -201,25 +201,23 @@ class ChannelRegistryClientTest {
                 aResponse()
                     .withStatus(statusCode)
                     .withBody(
-                        attempt(
-                                () ->
-                                    dtoObjectMapper.writeValueAsString(
-                                        new TokenBodyResponse("token1", "Bearer")))
+                        attempt(() ->
+                                dtoObjectMapper.writeValueAsString(
+                                    new TokenBodyResponse("token1", "Bearer")))
                             .orElseThrow())));
   }
 
   private String channelWithScientValue(String level) {
-    return attempt(
-            () ->
-                JsonUtils.dtoObjectMapper.writeValueAsString(
-                    new ChannelRegistryPublisher(
-                        randomPublicationChannelIdentifier().toString(),
-                        randomLevel(level),
-                        null,
-                        null,
-                        null,
-                        null,
-                        "publisher")))
+    return attempt(() ->
+            JsonUtils.dtoObjectMapper.writeValueAsString(
+                new ChannelRegistryPublisher(
+                    randomPublicationChannelIdentifier(),
+                    randomLevel(level),
+                    null,
+                    null,
+                    null,
+                    null,
+                    "publisher")))
         .orElseThrow();
   }
 

@@ -52,11 +52,10 @@ class ChannelRegistryCsvLoaderTest {
 
   @Test
   void emptyCsv() {
-    attempt(
-            () ->
-                s3Driver.insertFile(
-                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
-                    EMPTY_STRING))
+    attempt(() ->
+            s3Driver.insertFile(
+                UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT),
+                EMPTY_STRING))
         .orElseThrow();
     var result = csvLoader.getEntries();
     var cacheEntries = result.entries().toList();
@@ -67,10 +66,9 @@ class ChannelRegistryCsvLoaderTest {
 
   private void loadCsv(String csvFile) {
     var csv = IoUtils.stringFromResources(Path.of(csvFile));
-    attempt(
-            () ->
-                s3Driver.insertFile(
-                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
+    attempt(() ->
+            s3Driver.insertFile(
+                UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
         .orElseThrow();
   }
 }
