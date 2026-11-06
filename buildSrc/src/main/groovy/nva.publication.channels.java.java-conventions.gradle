@@ -12,7 +12,7 @@ nva {
     pmd {
         analyzeTests = false
         excludedRules = [
-                'AvoidCatchingGenericException',
+                'AvoidCatchingGenericException', // FIXME: NP-48927
                 'AvoidFieldNameMatchingMethodName',
                 'AvoidThrowingRawExceptionTypes',
                 'ClassNamingConventions',
