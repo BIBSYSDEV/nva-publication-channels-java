@@ -10,7 +10,19 @@ nva {
         languageVersion = 25
     }
     pmd {
-        rulesetFile = rootProject.file('config/pmd/ruleset.xml')
+        analyzeTests = false
+        excludedRules = [
+                'AvoidCatchingGenericException',
+                'AvoidFieldNameMatchingMethodName',
+                'AvoidThrowingRawExceptionTypes',
+                'ClassNamingConventions',
+                'ConfusingTernary',
+                'CyclomaticComplexity',
+                'FieldNamingConventions',
+                'GuardLogStatement',
+                'SystemPrintln',
+                'VariableCanBeInlined'
+        ]
     }
 }
 

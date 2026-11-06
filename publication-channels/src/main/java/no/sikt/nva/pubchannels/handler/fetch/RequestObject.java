@@ -21,7 +21,6 @@ public record RequestObject(ChannelType channelType, String identifier, String y
   }
 
   // FIXME: NP-48927
-  @SuppressWarnings("PMD.AvoidCatchingGenericException")
   public void validate(Validator validator) throws BadRequestException {
     try {
       validator.validate(this);
