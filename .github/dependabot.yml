@@ -1,9 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directory: "/"
+    directories:
+      - "/"
+      - "/buildSrc"
     schedule:
-      interval: "weekly"
+      interval: weekly
+      day: "monday"
+      time: "07:00"
+      timezone: Europe/Oslo
     open-pull-requests-limit: 10
     cooldown:
       default-days: 7
@@ -18,7 +23,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: weekly
+      day: "monday"
+      time: "07:00"
+      timezone: Europe/Oslo
     cooldown:
       default-days: 7
     commit-message:
