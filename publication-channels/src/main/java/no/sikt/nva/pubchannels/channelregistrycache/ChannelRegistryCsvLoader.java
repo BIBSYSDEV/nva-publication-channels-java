@@ -59,8 +59,6 @@ public final class ChannelRegistryCsvLoader {
     return new LoadResult(stream, reportSupplier);
   }
 
-  // FIXME: NP-48927
-  @SuppressWarnings("PMD.AvoidCatchingGenericException")
   private static ChannelRegistryCacheEntry processLine(
       Entry<Integer, String> entry, String header, Map<Integer, FailureInfo> failures) {
     try {
@@ -85,13 +83,12 @@ public final class ChannelRegistryCsvLoader {
   private static String generateReport(Map<Integer, FailureInfo> failures, int totalLines) {
     if (!failures.isEmpty()) {
       return failures.entrySet().stream()
-          .map(
-              entry ->
-                  "Line %d: %s | Content: %s%n"
-                      .formatted(
-                          entry.getKey(),
-                          entry.getValue().errorMessage(),
-                          truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
+          .map(entry ->
+              "Line %d: %s | Content: %s%n"
+                  .formatted(
+                      entry.getKey(),
+                      entry.getValue().errorMessage(),
+                      truncate(entry.getValue().line(), MAX_LOG_LENGTH)))
           .collect(
               Collectors.joining(
                   "%n".formatted(),

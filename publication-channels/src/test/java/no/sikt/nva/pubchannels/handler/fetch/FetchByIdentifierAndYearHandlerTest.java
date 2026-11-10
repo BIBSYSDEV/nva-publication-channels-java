@@ -162,10 +162,9 @@ public abstract class FetchByIdentifierAndYearHandlerTest extends CacheServiceTe
     handlerUnderTest.handleRequest(input, output, context);
 
     Assertions.assertThat(logRecorder.messages())
-        .anyMatch(
-            message ->
-                message.startsWith("Error fetching publication channel:")
-                    && message.contains(identifier));
+        .anyMatch(message ->
+            message.startsWith("Error fetching publication channel:")
+                && message.contains(identifier));
 
     var response = GatewayResponse.fromOutputStream(output, Problem.class);
 

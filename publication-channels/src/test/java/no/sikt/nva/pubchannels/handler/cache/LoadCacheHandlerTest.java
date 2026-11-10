@@ -43,10 +43,9 @@ class LoadCacheHandlerTest extends CacheServiceTestSetup {
     var csv = IoUtils.stringFromResources(Path.of("cache.csv"));
     var s3Client = new FakeS3Client();
     var s3Driver = new S3Driver(s3Client, ChannelRegistryCacheConfig.CACHE_BUCKET);
-    attempt(
-            () ->
-                s3Driver.insertFile(
-                    UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
+    attempt(() ->
+            s3Driver.insertFile(
+                UnixPath.of(ChannelRegistryCacheConfig.CHANNEL_REGISTER_CACHE_S3_OBJECT), csv))
         .orElseThrow();
     return s3Client;
   }
